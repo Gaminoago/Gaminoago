@@ -19,7 +19,7 @@ struct Counselor {
     }
 };
 
-// Global array to store data
+// Global array to store
 Counselor counselors[MAX_COUNSELORS];
 int counselorCount = 0;
 
