@@ -1,30 +1,24 @@
-101
+1
 Dr. Sarah Johnson
-Psychology
-102
-Dr. Michael Chen
-Career Counseling
-103
-Dr. Emily Rodriguez
-Academic Advising
-104
-Dr. James Wilson
-Mental Health
-105
-Dr. Lisa Thompson
-Substance Abuse
-106
-Dr. Robert Davis
+sarah_johnson
 Family Therapy
-107
-Dr. Amanda Miller
-Student Support
-108
-Dr. Kevin Brown
-Crisis Intervention
-109
-Dr. Jennifer Lee
-Behavioral Therapy
-110
-Dr. David Garcia
-Stress Management
+
+2
+Dr. Michael Chen
+mike_chen
+Cognitive Behavioral Therapy
+
+3
+Dr. Emily Rodriguez
+emily_rodriguez
+Marriage Counseling
+
+4
+Dr. James Wilson
+james_wilson
+Anxiety and Depression
+
+5
+Dr. Lisa Thompson
+lisa_thompson
+Child Psychology
