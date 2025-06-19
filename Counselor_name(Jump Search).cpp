@@ -413,7 +413,7 @@ class StaffHT {
 		void searchByEmail() {
 		    string targetEmail;
 		    
-		    cout << "Enter email to search: ";
+		    cout << "\nEnter email to search: ";
 		    cin.ignore();
 		    getline(cin, targetEmail);
 		    
@@ -954,7 +954,7 @@ public:
 		int count = 0;
 		
 		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != nullptr) {
+			if (tbl[i] != NULL) {
 				serviceArray[count++] = tbl[i];
 			}
 		}
@@ -988,7 +988,7 @@ public:
 		int count = 0;
 		
 		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != nullptr) {
+			if (tbl[i] != NULL) {
 				serviceArray[count++] = tbl[i];
 			}
 		}
@@ -1022,7 +1022,7 @@ public:
 		int count = 0;
 		
 		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != nullptr) {
+			if (tbl[i] != NULL) {
 				serviceArray[count++] = tbl[i];
 			}
 		}
@@ -1056,7 +1056,7 @@ public:
 		int count = 0;
 		
 		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != nullptr) {
+			if (tbl[i] != NULL) {
 				serviceArray[count++] = tbl[i];
 			}
 		}
@@ -1614,7 +1614,7 @@ class Appoint {
 			int tableIndices[appointmentTable.getTableSize()]; // To track original indices
 			
 			for (int i = 0; i < appointmentTable.getTableSize(); i++) {
-				if (appointmentTable.getEntry(i) != nullptr) {
+				if (appointmentTable.getEntry(i) != NULL) {
 					appointArray[count] = appointmentTable.getEntry(i);
 					tableIndices[count] = i;
 					count++;
@@ -1838,7 +1838,7 @@ class Appoint {
 			int tableIndices[appointmentTable.getTableSize()]; // To track original indices
 			
 			for (int i = 0; i < appointmentTable.getTableSize(); i++) {
-				if (appointmentTable.getEntry(i) != nullptr) {
+				if (appointmentTable.getEntry(i) != NULL) {
 					appointArray[count] = appointmentTable.getEntry(i);
 					tableIndices[count] = i;
 					count++;
@@ -2045,7 +2045,7 @@ class CatHT {
 			int count = 0;
 			
 			for (int i = 0; i < TBL_SIZE; i++) {
-				if (tbl[i] != nullptr) {
+				if (tbl[i] != NULL) {
 					catArray[count++] = tbl[i];
 				}
 			}
@@ -2634,6 +2634,92 @@ public:
 	    *tbl[(hash + i * i) % TBL_SIZE] = *question;
 	}
 
+	// Function to edit a question
+	void editQuestion(testHT& questionTable) {
+		// Create an array of questions
+		qn* questionArray[10]; // Assuming max 100 questions
+		int count = 0;
+		int tableIndices[10]; // To track original indices
+		
+		for (int i = 0; i < questionTable.TBL_SIZE; i++) {
+			if (questionTable.tbl[i] != NULL) {
+				questionArray[count] = questionTable.tbl[i];
+				tableIndices[count] = i;
+				count++;
+			}
+		}
+		
+		if (count == 0) {
+			cout << "No questions available to edit." << endl;
+			return;
+		}
+		
+		// Display all questions with numbers
+		cout << "\n--- Available Questions ---\n";
+		for (int i = 0; i < count; i++) {
+			cout << (i+1) << ". " << questionArray[i]->questionText << endl;
+		}
+		
+		// Let admin select a question
+		int questionChoice;
+		cout << "\nEnter the number of the question to edit (1-" << count << "): ";
+		cin >> questionChoice;
+		
+		if (questionChoice < 1 || questionChoice > count) {
+			cout << "Invalid selection." << endl;
+			return;
+		}
+		
+		int selectedIndex = tableIndices[questionChoice-1];
+		qn* selectedQuestion = questionTable.tbl[selectedIndex];
+		
+		// Edit menu
+		int choice;
+		do {
+			cout << "\n--- Edit Question ---" << endl;
+			cout << "1. Edit Question Text (Current: " << selectedQuestion->questionText << ")" << endl;
+			cout << "0. Save and Return\n" << endl;
+			cout << "Select field to edit (0-1): ";
+			cin >> choice;
+			
+			cin.ignore(); // Clear input buffer
+			
+			switch(choice) {
+				case 1: {
+					string newText;
+					cout << "Enter new Question Text: ";
+					getline(cin, newText);
+					selectedQuestion->questionText = newText;
+					break;
+				}
+				case 0:
+					// Update the file
+					updateQuestionFile(questionTable);
+					cout << "Question updated successfully!" << endl;
+					break;
+				default:
+					cout << "Invalid choice, please try again." << endl;
+			}
+		} while (choice != 0);
+	}
+
+	// Function to update the question file after editing
+	void updateQuestionFile(testHT& questionTable) {
+		ofstream outFile("qn.txt");
+		
+		if (outFile.is_open()) {
+			for (int i = 0; i < questionTable.TBL_SIZE; i++) {
+				if (questionTable.tbl[i] != NULL) {
+					outFile << questionTable.tbl[i]->questionText << endl;
+				}
+			}
+			outFile.close();
+		} else {
+			cout << "Unable to open qn.txt for updating." << endl;
+		}
+	}
+
+
 };
 
 // Class for managing results and saving/loading
@@ -2784,6 +2870,156 @@ public:
         }
         tbl[(hash + i * i) % TBL_SIZE] = res;
     }
+
+	// Add this function to the resultHT class
+	void deleteResult(resultHT& resultTable) {
+		// Create an array of results
+		result* resultArray[resultTable.getTableSize()];
+		int count = 0;
+		int tableIndices[resultTable.getTableSize()]; // To track original indices
+		
+		for (int i = 0; i < resultTable.getTableSize(); i++) {
+			if (resultTable.getEntry(i) != nullptr) {
+				resultArray[count] = resultTable.getEntry(i);
+				tableIndices[count] = i;
+				count++;
+			}
+		}
+		
+		if (count == 0) {
+			cout << "No results available to delete." << endl;
+			return;
+		}
+		
+		// Display all results with numbers
+		cout << "\n--- Available Results ---\n";
+		for (int i = 0; i < count; i++) {
+			cout << (i+1) << ". " << resultArray[i]->name << " - " 
+				<< resultArray[i]->email << " (Score: " 
+				<< resultArray[i]->score << ")" << endl;
+		}
+		
+		// Let user select a result
+		int resultChoice;
+		cout << "\nEnter the number of the result to delete (1-" << count << "): ";
+		cin >> resultChoice;
+		
+		if (resultChoice < 1 || resultChoice > count) {
+			cout << "Invalid selection." << endl;
+			return;
+		}
+		
+		int selectedIndex = tableIndices[resultChoice-1];
+		result* selectedResult = resultTable.getEntry(selectedIndex);
+		
+		char confirm;
+		cout << "\nAre you sure you want to delete result for " 
+			<< selectedResult->name << " (Email: " << selectedResult->email << ")? (Y/N): ";
+		cin >> confirm;
+		
+		if (toupper(confirm) == 'Y') {
+			// Delete the result from the hash table
+			delete resultTable.getEntry(selectedIndex);
+			
+			// Set the entry to NULL
+			setTableElement(selectedIndex, NULL);
+			
+			// Update the file
+			updateResultFile(resultTable);
+			cout << "Result deleted successfully!" << endl;
+		} else {
+			cout << "Deletion cancelled." << endl;
+		}
+	}
+
+	// Function to allow a patient to delete their own results
+	void deleteResult(resultHT& resultTable, string currentEmail) {
+		// Create an array of results that belong to the current user
+		result* resultArray[resultTable.getTableSize()];
+		int count = 0;
+		int tableIndices[resultTable.getTableSize()]; // To track original indices
+		
+		for (int i = 0; i < resultTable.getTableSize(); i++) {
+			if (resultTable.getEntry(i) != nullptr && resultTable.getEntry(i)->email == currentEmail) {
+				resultArray[count] = resultTable.getEntry(i);
+				tableIndices[count] = i;
+				count++;
+			}
+		}
+		
+		if (count == 0) {
+			cout << "You have no test results available to delete." << endl;
+			return;
+		}
+		
+		// Display only the current user's results with numbers
+		cout << "\n--- Your Test Results ---\n";
+		for (int i = 0; i < count; i++) {
+			cout << (i+1) << ". Score: " << resultArray[i]->score 
+				<< " - Situation: " << resultArray[i]->situation << endl;
+		}
+		
+		// Let user select a result
+		int resultChoice;
+		cout << "\nEnter the number of the result to delete (1-" << count << "): ";
+		cin >> resultChoice;
+		
+		if (resultChoice < 1 || resultChoice > count) {
+			cout << "Invalid selection." << endl;
+			return;
+		}
+		
+		int selectedIndex = tableIndices[resultChoice-1];
+		result* selectedResult = resultTable.getEntry(selectedIndex);
+		
+		char confirm;
+		cout << "\nAre you sure you want to delete this result? (Y/N): ";
+		cin >> confirm;
+		
+		if (toupper(confirm) == 'Y') {
+			// Delete the result from the hash table
+			delete resultTable.getEntry(selectedIndex);
+			
+			// Set the entry to NULL
+			resultTable.setTableElement(selectedIndex, NULL);
+			
+			// Update the file
+			resultTable.updateResultFile(resultTable);
+			cout << "Result deleted successfully!" << endl;
+		} else {
+			cout << "Deletion cancelled." << endl;
+		}
+	}
+
+
+	// Add this setter method to the resultHT class
+	void setTableElement(int index, result* value) {
+		if (index >= 0 && index < TBL_SIZE)
+			tbl[index] = value;
+	}
+
+	// Add this function to update the result file after deletion
+	void updateResultFile(resultHT& resultTable) {
+		ofstream outFile("result.txt");
+		
+		if (outFile.is_open()) {
+			for (int i = 0; i < resultTable.getTableSize(); i++) {
+				result* res = resultTable.getEntry(i);
+				if (res != NULL) {
+					outFile << res->name << endl;
+					outFile << res->phone << endl;
+					outFile << res->email << endl;
+					outFile << res->score << endl;
+					outFile << res->situation << endl;
+					outFile << endl;  // Empty line between results
+				}
+			}
+			outFile.close();
+		} else {
+			cout << "Unable to open result.txt for updating." << endl;
+		}
+	}
+
 };
 
 // Class to manage the test and calculate results
@@ -2802,7 +3038,7 @@ public:
 	    int score = 0;
 	    
 	    cin.ignore(); 
-	    cout << "Enter your name: ";
+	    cout << "\nEnter your full name: ";
 	    getline(cin, name);
 	    cout << "Enter your phone number: ";
 	    cin >> phone;
@@ -2855,7 +3091,7 @@ public:
 	    newResult->situation = situation;
 	
 	    cout << "\nYour total score: " << score << endl;
-	    cout << "Your situation: " << situation << endl;
+	    cout << "Your situation  : " << situation << endl;
 	
 	    char save;
 	    cout << "\nDo you want to save the result? (Y/N): ";
@@ -2863,37 +3099,11 @@ public:
 	    if (save == 'Y' || save == 'y') {
 	        resultTable.saveResultToFile(newResult);
 	        resultTable.insert(newResult);
-	    }
+	    } else {
+			cout << "Result not saved!" << endl;
+		}
 	}
 	
-	// In test class
-void addQn(testHT& testTable) {
-    string questionText;
-
-    cout << "\nEnter Question Text: ";
-    cin.ignore(); // Clear any leftover newline
-    getline(cin, questionText);
-
-    // Populate data
-    qn newQuestion;
-    newQuestion.questionText = questionText;
-    newQuestion.options[0] = "Never";    newQuestion.points[0] = 0;
-    newQuestion.options[1] = "Sometimes"; newQuestion.points[1] = 1;
-    newQuestion.options[2] = "Often";    newQuestion.points[2] = 2;
-    newQuestion.options[3] = "Always";   newQuestion.points[3] = 3;
-
-    char choice;
-    cout << "\nDo you want to save this question? (Y/N): ";
-    cin >> choice;
-
-    if (toupper(choice) == 'Y') {
-        testTable.saveQnToFile(&newQuestion);  // Save to file
-        testTable.insert(&newQuestion);  // Insert into hash table
-    } else {
-		cout << "Questions not saved!" << endl;
-	}
-}
-
 
 };
 
@@ -3179,7 +3389,7 @@ class Tx {
 			int tableIndices[treatmentTable.getTblSize()]; // To track original indices
 			
 			for (int i = 0; i < treatmentTable.getTblSize(); i++) {
-				if (treatmentTable.getEntry(i) != nullptr) {
+				if (treatmentTable.getEntry(i) != NULL) {
 					txArray[count] = treatmentTable.getEntry(i);
 					tableIndices[count] = i;
 					count++;
@@ -4009,7 +4219,7 @@ class SearchSort{
 		void SearchbyPatientName(AppointHT& appointmentTable) {
 			string targetName;
 			
-			cout << "Enter Customer Name to search: ";
+			cout << "\nEnter Customer Name to search: ";
 			cin.ignore();
 			getline(cin, targetName);
 			
@@ -4168,7 +4378,7 @@ class SearchSort{
 		void SearchbyEmail(AppointHT& appointmentTable) {
 			string targetEmail;
 			
-			cout << "Enter counsellor to search: ";
+			cout << "\nEnter counsellor to search: ";
 			cin.ignore();
 			getline(cin, targetEmail);
 			
@@ -4247,7 +4457,7 @@ class SearchSort{
 		void SearchbyService(AppointHT& appointmentTable) {
 			string targetSvc;
 			
-			cout << "Enter service to search: ";
+			cout << "\nEnter service to search: ";
 			cin.ignore();
 			getline(cin, targetSvc);
 			
@@ -4405,7 +4615,7 @@ class SearchSort{
 		void SearchbyPtPhone(AppointHT& appointmentTable) {
 			int targetPhone;
 			
-			cout << "Enter patient's phone number to search: ";
+			cout << "\nEnter patient's phone number to search: ";
 			cin >> targetPhone;
 			cin.ignore(); // Clear newline
 			
@@ -4802,7 +5012,7 @@ class SearchSort{
 		// Patient search appointments by Service (Binary Search)
 		void PatientSearchByService(AppointHT& appointmentTable, string patientEmail) {
 		    string targetService;
-		    cout << "Enter service type to search: ";
+		    cout << "\nEnter service type to search: ";
 		    cin.ignore();
 		    getline(cin, targetService);
 		    
@@ -4876,7 +5086,7 @@ class SearchSort{
 		void SearchTxByAppointID(TxHT& treatmentTable) {
 		    string targetID;
 		    
-		    cout << "Enter Appointment ID to search: ";
+		    cout << "\nEnter Appointment ID to search: ";
 		    cin.ignore();
 		    getline(cin, targetID);
 		    
@@ -4962,7 +5172,7 @@ class SearchSort{
 		void SearchTxByPatientName(TxHT& treatmentTable) {
 		    string targetName;
 		    
-		    cout << "Enter Patient Name to search: ";
+		    cout << "\nEnter Patient Name to search: ";
 		    cin.ignore();
 		    getline(cin, targetName);
 		    
@@ -5048,7 +5258,7 @@ class SearchSort{
 		void SearchTxByPatientPhone(TxHT& treatmentTable) {
 		    int targetPhone;
 		    
-		    cout << "Enter Patient Phone to search: ";
+		    cout << "\nEnter Patient Phone to search: ";
 		    cin >> targetPhone;
 		    cin.ignore();
 		    
@@ -5134,7 +5344,7 @@ class SearchSort{
 		void SearchTxByPatientEmail(TxHT& treatmentTable) {
 		    string targetEmail;
 		    
-		    cout << "Enter Patient Email to search: ";
+		    cout << "\nEnter Patient Email to search: ";
 		    cin.ignore();
 		    getline(cin, targetEmail);
 		    
@@ -5219,16 +5429,16 @@ class SearchSort{
 		// Helper function to display treatment details
 		void DisplayTreatment(tx* treatment) {
 		    cout << "\n--- Treatment Details ---" << endl;
-		    cout << "Appointment ID: " << treatment->appointID << endl;
-		    cout << "Patient Name  : " << treatment->ptName << endl;
-		    cout << "Patient Phone : " << treatment->ptPhone << endl;
-		    cout << "Patient Email : " << treatment->ptEmail << endl;
-		    cout << "Summary       : " << treatment->summary << endl;
-		    cout << "Intervention  : " << treatment->intervention << endl;
-		    cout << "Response      : " << treatment->response << endl;
-		    cout << "Progress      : " << treatment->progress << endl;
-		    cout << "Homework      : " << treatment->homework << endl;
-		    cout << "Next Session  : " << treatment->nextSession << endl;
+		    cout << "Appointment ID : " << treatment->appointID << endl;
+		    cout << "Patient Name   : " << treatment->ptName << endl;
+		    cout << "Patient Phone  : " << treatment->ptPhone << endl;
+		    cout << "Patient Email  : " << treatment->ptEmail << endl;
+		    cout << "Summary        : " << treatment->summary << endl;
+		    cout << "Intervention   : " << treatment->intervention << endl;
+		    cout << "Response       : " << treatment->response << endl;
+		    cout << "Progress       : " << treatment->progress << endl;
+		    cout << "Homework       : " << treatment->homework << endl;
+		    cout << "Next Session   : " << treatment->nextSession << endl;
 		}
 
 		// Search Results by Situation (Binary Search)
@@ -6020,7 +6230,7 @@ class SearchSort{
 		// Search Patients by First Name (Binary Search)
 		void SearchbyFirstName(PtHT& patientTable) {
 			string targetFName;
-			cout << "Enter first name to search: ";
+			cout << "\nEnter first name to search: ";
 			cin.ignore();
 			getline(cin, targetFName);
 			
@@ -6110,7 +6320,7 @@ class SearchSort{
 		// Search Patients by Last Name (Binary Search)
 		void SearchbyLastName(PtHT& patientTable) {
 			string targetLName;
-			cout << "Enter last name to search: ";
+			cout << "\nEnter last name to search: ";
 			cin.ignore();
 			getline(cin, targetLName);
 			
@@ -6200,7 +6410,7 @@ class SearchSort{
 		// Search Patients by Phone (Binary Search)
 		void SearchbyPhone(PtHT& patientTable) {
 			int targetPhone;
-			cout << "Enter phone number to search: ";
+			cout << "\nEnter phone number to search: ";
 			cin >> targetPhone;
 			cin.ignore();
 			
@@ -6290,7 +6500,7 @@ class SearchSort{
 		// Search Patients by Status (Binary Search)
 		void SearchbyStatus(PtHT& patientTable) {
 			string targetStatus;
-			cout << "Enter status to search (Active/Inactive): ";
+			cout << "\nEnter status to search (Active/Inactive): ";
 			cin.ignore();
 			getline(cin, targetStatus);
 			
@@ -6417,7 +6627,7 @@ class SearchSort{
 			}
 			
 			// Display sorted patients
-			cout << "\n--- Patients Sorted by Age (Young to Old) ---" << endl;
+			cout << "\nPatients sorted by age (young to old): " << endl;
 			for (i = 0; i < count; i++) {
 				cout << "\n--- Patient " << i+1 << " ---" << endl;
 				cout << "First Name: " << patients[i]->getFName() << endl;
@@ -6471,7 +6681,7 @@ class SearchSort{
 			}
 			
 			// Display sorted patients
-			cout << "\n--- Patients Sorted by Age (Old to Young) ---" << endl;
+			cout << "\nPatients sorted by age (old to young):" << endl;
 			for (i = 0; i < count; i++) {
 				cout << "\n--- Patient " << i+1 << " ---" << endl;
 				cout << "First Name: " << patients[i]->getFName() << endl;
@@ -6501,7 +6711,7 @@ class SearchSort{
 		// Search Staff by First Name (Binary Search)
 		void SearchStaffByFirstName(StaffHT& staffTable) {
 			string targetFName;
-			cout << "Enter first name to search: ";
+			cout << "\nEnter first name to search: ";
 			cin.ignore();
 			getline(cin, targetFName);
 			
@@ -6591,7 +6801,7 @@ class SearchSort{
 		// Search Staff by Last Name (Binary Search)
 		void SearchStaffByLastName(StaffHT& staffTable) {
 			string targetLName;
-			cout << "Enter last name to search: ";
+			cout << "\nEnter last name to search: ";
 			cin.ignore();
 			getline(cin, targetLName);
 			
@@ -6681,7 +6891,7 @@ class SearchSort{
 		// Search Staff by Phone (Binary Search)
 		void SearchStaffByPhone(StaffHT& staffTable) {
 			int targetPhone;
-			cout << "Enter phone number to search: ";
+			cout << "\nEnter phone number to search: ";
 			cin >> targetPhone;
 			cin.ignore();
 			
@@ -6771,7 +6981,7 @@ class SearchSort{
 		// Search Staff by Role (Binary Search)
 		void SearchStaffByRole(StaffHT& staffTable) {
 			string targetRole;
-			cout << "Enter role to search: ";
+			cout << "\nEnter role to search: ";
 			cin.ignore();
 			getline(cin, targetRole);
 			
@@ -6861,7 +7071,7 @@ class SearchSort{
 		// Search Staff by Status (Binary Search)
 		void SearchStaffByStatus(StaffHT& staffTable) {
 			string targetStatus;
-			cout << "Enter status to search (Active/Inactive): ";
+			cout << "\nEnter status to search (Active/Inactive): ";
 			cin.ignore();
 			getline(cin, targetStatus);
 			
@@ -7114,7 +7324,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\n--- Appointments Sorted by date (ascending):" << endl;
+        cout << "\nAppointments Sorted by date (ascending):" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -7163,7 +7373,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\n--- Appointments Sorted by Date (Ascending) ---" << endl;
+        cout << "\nAppointments sorted by date (ascending):" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -7216,7 +7426,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\n--- Appointments sorted by date (Ascending) ---" << endl;
+        cout << "\nAppointments sorted by date (ascending): " << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -7269,7 +7479,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\n--- Appointments Sorted by Date (Ascending) ---" << endl;
+        cout << "\nAppointments sorted by date (ascending) ---" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -7319,7 +7529,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\n--- Appointments Sorted by Date (Ascending) ---" << endl;
+        cout << "\nAppointments sorted by date (ascending):" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -7369,7 +7579,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\n--- Appointments Sorted by Net Amount (Descending) ---" << endl;
+        cout << "\nAppointments sorted by net amount (descending): " << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -7423,7 +7633,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\n--- Appointments Sorted by Date (Oldest to Newest) ---" << endl;
+	    cout << "\nAppointments sorted by date (oldest to newest):" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7477,6 +7687,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
+	    cout << "\nAppointments sorted by date (oldest first):" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7533,7 +7744,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\n--- Appointments Sorted by Time (Earliest First) ---" << endl;
+	    cout << "\nAppointments sorted by time (earliest first):" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7590,7 +7801,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\n--- Appointments Sorted by Time (Latest First) ---" << endl;
+	    cout << "\nAppointments sorted by time (latest first):" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7644,7 +7855,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\n--- Appointments Sorted by Cost (Lowest to Highest) ---" << endl;
+	    cout << "\nAppointments sorted by cost (lowest to highest):" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7698,7 +7909,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\n--- Appointments sorted by cost (Highest to Lowest) ---" << endl;
+	    cout << "\nAppointments sorted by cost (Highest to Lowest): " << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7990,7 +8201,6 @@ int main() {
 						switch(subChoice) {
 							case 1: 
 								// View All Services
-								cout << "\n--- View All Services ---" << endl;
 								serviceTable.dispAllSvc();
 								break;
 							case 2: 
@@ -8051,24 +8261,22 @@ int main() {
                         cout << "5. Delete Appointment\n";
                         cout << "0. Back to Main Menu\n\n";
                         
-                        cout << "Enter your choice (0-3): ";
+                        cout << "Enter your choice (0-5): ";
                         cin >> subChoice;
                         
                         switch(subChoice) {
                             case 1:
-                            	cout << "--- Book New Appointment ---\n\n";
                             	
                                 appointment.addAppoint(appointmentTable, serviceTable, staffTable);
                                 break;
                             case 2: {
-                            	cout << "\n--- View My Appointments ---\n";
                             	
                             	appointmentTable.displayPatientAppointments(currentEmail);
                             	
 								break;
 							}
 							case 3: {
-                            	cout << "--- Search Appointments ---\n\n";
+                            	cout << "\n--- Search Appointments ---\n";
                         		cout << "1. Search Appointments by Counsellor Name\n";
                         		cout << "2. Search Appointments by Service\n";
                         		cout << "0. Back to Main Menu\n\n";
@@ -8109,37 +8317,31 @@ int main() {
 		                        
 		                        switch(subChoice2) {
 		                        	case 1: {
-		                        		cout << "\n--- Sorted Appointments by Date (Newest to Oldest) ---\n";
 		                        		PatientsortByDateDescending(appointmentTable, currentEmail);
 										break;
 									}
 									
 									case 2: {
-		                        		cout << "\n--- Sort Appointments by Date (Oldest to Newest) ---\n\n";
 										PatientsortByDateAscending(appointmentTable, currentEmail);
 										break;
 									}
 									
 									case 3: {
-		                        		cout << "\n--- Sort Appointments by Time (Newest to Oldest) ---\n\n";
 										PatientsortByTimeDescending(appointmentTable, currentEmail);
 										break;
 									}
 									
 									case 4: {
-		                        		cout << "\n--- Sort Appointments by Time (Oldest to Newest) ---\n\n";
 										PatientsortByTimeAscending(appointmentTable, currentEmail);
 										break;
 									}
 									
 									case 5: {
-		                        		cout << "\n--- Sort Appointments by Amount (Most to Least) ---\n\n";
 										PatientsortByNetAmountDescending(appointmentTable, currentEmail);
 										break;
 									}
 									
 									case 6: {
-		                        		cout << "--- Sort Appointments by Amount (Least to Most) ---\n\n";
 										PatientsortByNetAmountAscending(appointmentTable, currentEmail);
 										break;
 									}
@@ -8207,13 +8409,11 @@ int main() {
                         
                         switch(subChoice) {
                             case 1:
-                            	cout << "--- Take New Test ---\n\n";
 								 
                                 testManager.takeTest();
                                 
                                 break;
                             case 2:
-                            	cout << "--- View All Results ---\n\n";
                             	
                             	resultTable.displayPatientResult(currentEmail);
                             	
@@ -8225,7 +8425,7 @@ int main() {
 							}
                                 
                             case 4:
-                            	cout << "--- Sort Results ---\n\n";
+                            	cout << "\n--- Sort Results ---\n";
                             	cout << "1. Sort Results by Score (High to Low)\n";
                             	cout << "2. Sort Results by Score (Low to High)\n";
 		                        cout << "0. Back to Main Menu\n\n";
@@ -8244,6 +8444,12 @@ int main() {
 										break;
 									}
 								}
+
+							case 5: {
+								resultTable.deleteResult(resultTable, currentEmail);
+								break;
+							}
+
                             case 0:
                                 break;
                                 
@@ -8287,12 +8493,10 @@ int main() {
 						switch(subChoice) {
 							case 1: 
 								// View All Services
-								cout << "\n--- View All Services ---" << endl;
 								serviceTable.dispAllSvc();
 								break;
 							case 2: 
 								// Search Services by Name
-								cout << "--- Search Services by Name ---\n\n" << endl;
 								serviceTable.searchServiceByName();
 								break;
 							case 3: 
@@ -8348,24 +8552,22 @@ int main() {
                         cout << "4. Sort Appointments\n";
                         cout << "5. Edit Appointment\n";
                         cout << "0. Back to Main Menu\n\n";
-                        cout << "Enter your choice (0-3): ";
+                        cout << "Enter your choice (0-5): ";
                         cin >> subChoice;
                         
                         switch(subChoice) {
                             case 1:
-                            	cout << "--- Book New Appointment ---\n\n";
                             	
                                 appointment.addAppoint(appointmentTable, serviceTable, staffTable);
                                 break;
                             case 2: {
-                            	cout << "\n--- View All Appointments ---\n";
                             	
                             	appointmentTable.displayAllAppoint();
                             	
 								break;
 							}
 							case 3: {
-                            	cout << "--- Search Appointments ---\n\n";
+                            	cout << "\n--- Search Appointments ---\n";
                         		cout << "1. Search Appointments by Service\n";
                         		cout << "2. Search Appointments by Patient Name\n";
                         		cout << "3. Search Appointments by Patient Phone\n";
@@ -8375,6 +8577,39 @@ int main() {
                         
 		                        cout << "Enter your choice (0-5): ";
 		                        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										ss.SearchbyService(appointmentTable);
+										break;
+									}
+
+									case 2: {
+										ss.SearchbyPatientName(appointmentTable);
+										break;
+									}
+
+									case 3: {
+										ss.SearchbyPtPhone(appointmentTable);
+										break;
+									}
+
+									case 4: {
+										ss.SearchbyEmail(appointmentTable);
+										break;
+									}
+
+									case 5: {
+										ss.SearchbyStatus(appointmentTable);
+										break;
+									}
+
+									case 0:
+										break;
+										
+									default:
+										cout << "Invalid choice, please try again.\n";
+								}
 		                        
 								break;
 							}
@@ -8388,6 +8623,30 @@ int main() {
                         
 		                        cout << "Enter your choice (0-4): ";
 		                        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										sortByDateAscending(appointmentTable);
+										break;
+									} 
+									
+									case 2: {
+										sortByDateDescending(appointmentTable);
+										break;
+									} 
+									
+									case 3: {
+										sortByTimeAscending(appointmentTable);
+										break;
+									} 
+									
+									case 4: {
+										sortByTimeDescending(appointmentTable);
+										break;
+									} 
+									break;
+								}
+
 								break;
 							} 
 							case 5: {
@@ -8481,29 +8740,26 @@ int main() {
                         cout << "3. Search Results\n";
                         cout << "4. Sort Results\n";
                         cout << "5. Delete Results\n";
-                        cout << "6. Add New Question\n";
-                        cout << "7. View All Question\n";
-                        cout << "8. Edit Question\n";
+                        cout << "6. View All Question\n";
+                        cout << "7. Edit Question\n";
                         cout << "0. Back to Main Menu\n\n";
                         
-                        cout << "Enter your choice (0-8): ";
+                        cout << "Enter your choice (0-7): ";
                         cin >> subChoice;
                         
                         switch(subChoice) {
                             case 1:
-                            	cout << "--- Take New Test ---\n\n";
 								 
                                 testManager.takeTest();
                                 
                                 break;
                             case 2:
-                            	cout << "--- View All Results ---\n\n";
                             	
                             	resultTable.displayPatientResult(currentEmail);
                             	
                                 break;
                             case 3:
-                            	cout << "--- Search Results ---\n\n";
+                            	cout << "\n--- Search Results ---\n";
                             	cout << "1. Search Results by Name\n";
                             	cout << "2. Search Results by Phone\n";
                             	cout << "3. Search Results by Email\n";
@@ -8549,7 +8805,7 @@ int main() {
                         		
                         		break;
                             case 4:
-                            	cout << "--- Sort Results ---\n\n";
+                            	cout << "\n--- Sort Results ---\n";
                             	cout << "1. Sort Results by Score (High to Low)\n";
                             	cout << "2. Sort Results by Score (Low to High)\n";
 		                        cout << "0. Back to Main Menu\n\n";
@@ -8578,19 +8834,23 @@ int main() {
 								}
                         		
                         		break;
-                        	case 6: {
-                        		
-                                testManager.addQn(testTable);
-                                
+							
+							case 5: {
+								resultTable.deleteResult(resultTable);
 								break;
 							}
-                        	case 7: {
-                        		cout << "--- View All Questions ---\n\n";
+                        	case 6: {
                             	
                             	testTable.displayAllQuestions();
                             	
 								break;
 							}
+
+							case 7: {
+								testTable.editQuestion(testTable);
+								break;
+							}
+
                             case 0:
                                 break;
                                 
@@ -8622,7 +8882,7 @@ int main() {
 		                        break;
 		                        
 		                    case 3: {
-                        		cout << "--- Search Patients ---\n\n";
+                        		cout << "\n--- Search Patients ---\n";
                         		cout << "1. Search Patients by First Name\n";
                         		cout << "2. Search Patients by Last Name\n";
                         		cout << "3. Search Patients by Phone\n";
@@ -8672,7 +8932,7 @@ int main() {
 							}
 							
 							case 4: {
-                        		cout << "--- Sort Patients ---\n\n";
+                        		cout << "\n--- Sort Patients ---\n";
                         		cout << "1. Sort Patients by Age (Young to Old)\n";
                         		cout << "2. Sort Patients by Age (Old to Young)\n";
                         		cout << "0. Back to Main Menu\n\n";
@@ -8746,7 +9006,6 @@ int main() {
 								break;
 							case 2: 
 								// View All Services
-								cout << "\n--- View All Services ---" << endl;
 								serviceTable.dispAllSvc();
 								break;
 							case 3: 
@@ -8819,19 +9078,17 @@ int main() {
                         
                         switch(subChoice) {
                             case 1:
-                            	cout << "--- Book New Appointment ---\n\n";
                             	
                                 appointment.addAppoint(appointmentTable, serviceTable, staffTable);
                                 break;
                             case 2: {
-                            	cout << "\n--- View All Appointments ---\n";
                             	
                             	appointmentTable.displayAllAppoint();
                             	
 								break;
 							}
 							case 3: {
-                            	cout << "--- Search Appointments ---\n\n";
+                            	cout << "\n--- Search Appointments ---\n";
                         		cout << "1. Search Appointments by Service\n";
                         		cout << "2. Search Appointments by Patient Name\n";
                         		cout << "3. Search Appointments by Patient Phone\n";
@@ -8841,19 +9098,88 @@ int main() {
                         
 		                        cout << "Enter your choice (0-5): ";
 		                        cin >> subChoice2;
-		                        
+
+								switch(subChoice2) {
+									case 1: {
+										ss.SearchbyService(appointmentTable);
+										break;
+									}
+
+									case 2: {
+										ss.SearchbyPatientName(appointmentTable);
+										break;
+									}
+
+									case 3: {
+										ss.SearchbyPtPhone(appointmentTable);
+										break;
+									}
+
+									case 4: {
+										ss.SearchbyEmail(appointmentTable);
+										break;
+									}
+
+									case 5: {
+										ss.SearchbyStatus(appointmentTable);
+										break;
+									}
+
+									case 0:
+										break;
+										
+									default:
+										cout << "Invalid choice, please try again.\n";
+								}
+
 								break;
 							}
 							case 4: {
 								cout << "--- Sort Appointments ---\n\n";
-		                        cout << "1. Sort Appointments by Date (Newest to Oldest)\n";
-		                        cout << "2. Sort Appointments by Date (Oldest to Newest)\n";
-		                        cout << "3. Sort Appointments by Time (Newest to Oldest)\n";
-		                        cout << "4. Sort Appointments by Time (Oldest to Newest)\n";
+		                        cout << "1. Sort Appointments by Date   (Newest to Oldest)\n";
+		                        cout << "2. Sort Appointments by Date   (Oldest to Newest)\n";
+		                        cout << "3. Sort Appointments by Time   (Newest to Oldest)\n";
+		                        cout << "4. Sort Appointments by Time   (Oldest to Newest)\n";
+		                        cout << "5. Sort Appointments by Amount (Highest to Lowest)\n";
+		                        cout << "6. Sort Appointments by Amount (Lowest to Highest)\n";
                         		cout << "0. Back to Main Menu\n\n";
                         
-		                        cout << "Enter your choice (0-4): ";
+		                        cout << "Enter your choice (0-6): ";
 		                        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										sortByDateAscending(appointmentTable);
+										break;
+									} 
+									
+									case 2: {
+										sortByDateDescending(appointmentTable);
+										break;
+									} 
+									
+									case 3: {
+										sortByTimeAscending(appointmentTable);
+										break;
+									} 
+									
+									case 4: {
+										sortByTimeDescending(appointmentTable);
+										break;
+									} 
+
+									case 5: {
+										sortByNetAmountAscending(appointmentTable);
+										break;
+									} 
+
+									case 6: {
+										sortByNetAmountDescending(appointmentTable);
+										break;
+									} 
+									break;
+								}
+
 								break;
 							} 
 							case 5: {
@@ -8945,29 +9271,26 @@ int main() {
                         cout << "3. Search Results\n";
                         cout << "4. Sort Results\n";
                         cout << "5. Delete Results\n";
-                        cout << "6. Add New Question\n";
-                        cout << "7. View All Question\n";
-                        cout << "8. Edit Question\n";
+                        cout << "6. View All Question\n";
+                        cout << "7. Edit Question\n";
                         cout << "0. Back to Main Menu\n\n";
                         
-                        cout << "Enter your choice (0-8): ";
+                        cout << "Enter your choice (0-7): ";
                         cin >> subChoice;
                         
                         switch(subChoice) {
                             case 1:
-                            	cout << "--- Take New Test ---\n\n";
 								 
                                 testManager.takeTest();
                                 
                                 break;
                             case 2:
-                            	cout << "--- View All Results ---\n\n";
                             	
                             	resultTable.displayPatientResult(currentEmail);
                             	
                                 break;
                             case 3:
-                            	cout << "--- Search Results ---\n\n";
+                            	cout << "\n--- Search Results ---\n";
                             	cout << "1. Search Results by Name\n";
                             	cout << "2. Search Results by Phone\n";
                             	cout << "3. Search Results by Email\n";
@@ -9013,7 +9336,7 @@ int main() {
                         		
                         		break;
                             case 4:
-                            	cout << "--- Sort Results ---\n\n";
+                            	cout << "\n--- Sort Results ---\n";
                             	cout << "1. Sort Results by Score (High to Low)\n";
                             	cout << "2. Sort Results by Score (Low to High)\n";
 		                        cout << "0. Back to Main Menu\n\n";
@@ -9042,18 +9365,19 @@ int main() {
 								}
                         		
                         		break;
-                        	case 6: {
-                        		cout << "--- Add New Questions ---\n\n";
-                        		
-                                testManager.addQn(testTable);
-                                
+							case 5: {
+								resultTable.deleteResult(resultTable);
 								break;
 							}
-                        	case 7: {
-                        		cout << "--- View All Questions ---\n\n";
+                        	case 6: {
                             	
                             	testTable.displayAllQuestions();
                             	
+								break;
+							}
+
+							case 7: {
+								testTable.editQuestion(testTable);
 								break;
 							}
                             case 0:
@@ -9097,7 +9421,7 @@ int main() {
 				                        break;
 				                        
 				                    case 3: {
-		                        		cout << "--- Search Patients ---\n\n";
+		                        		cout << "\n--- Search Patients ---\n";
 		                        		cout << "1. Search Patients by First Name\n";
 		                        		cout << "2. Search Patients by Last Name\n";
 		                        		cout << "3. Search Patients by Phone\n";
@@ -9147,7 +9471,7 @@ int main() {
 									}
 									
 									case 4: {
-		                        		cout << "--- Sort Patients ---\n\n";
+		                        		cout << "\n--- Sort Patients ---\n";
 		                        		cout << "1. Sort Patients by Age (Young to Old)\n";
 		                        		cout << "2. Sort Patients by Age (Old to Young)\n";
 		                        		cout << "0. Back to Main Menu\n\n";
@@ -9315,7 +9639,6 @@ int main() {
 										break;
 									case 2: 
 										// View All Services
-										cout << "\n--- View All Services ---" << endl;
 										serviceTable.dispAllSvc();
 										break;
 									case 3: 
@@ -9420,57 +9743,123 @@ int main() {
 		                        
 		                        switch(subChoice) {
 		                            case 1:
-		                            	cout << "--- Book New Appointment ---\n\n";
 		                            	
 		                                appointment.addAppoint(appointmentTable, serviceTable, staffTable);
 		                                break;
 		                            case 2: {
-		                            	cout << "\n--- View All Appointments ---\n";
 		                            	
 		                            	appointmentTable.displayAllAppoint();
 		                            	
 										break;
 									}
 									case 3: {
-		                            	cout << "--- Search Appointments ---\n\n";
-		                        		cout << "1. Search Appointments by Service\n";
-		                        		cout << "2. Search Appointments by Patient Name\n";
-		                        		cout << "3. Search Appointments by Patient Phone\n";
-		                        		cout << "4. Search Appointments by Patient Email\n";
-		                        		cout << "5. Search Appointments by Status\n";
-		                        		cout << "0. Back to Main Menu\n\n";
-		                        
-				                        cout << "Enter your choice (0-5): ";
-				                        cin >> subChoice2;
-				                        
-										break;
-									}
-									case 4: {
-										cout << "--- Sort Appointments ---\n\n";
-				                        cout << "1. Sort Appointments by Date (Newest to Oldest)\n";
-				                        cout << "2. Sort Appointments by Date (Oldest to Newest)\n";
-				                        cout << "3. Sort Appointments by Time (Newest to Oldest)\n";
-				                        cout << "4. Sort Appointments by Time (Oldest to Newest)\n";
-		                        		cout << "0. Back to Main Menu\n\n";
-		                        
-				                        cout << "Enter your choice (0-4): ";
-				                        cin >> subChoice2;
-										break;
-									} 
-									case 5: {
-										appointment.editAppointment(appointmentTable);
-										break;
-									}
-									case 6: {
-										appointment.deleteAppointment(appointmentTable);
-										break;
-									}
-		                            case 0:
-		                                break;
-		                            default:
-		                                cout << "Invalid choice, please try again.\n";
-		                        }
-		                        break;
+										cout << "\n--- Search Appointments ---\n";
+										cout << "1. Search Appointments by Service\n";
+										cout << "2. Search Appointments by Patient Name\n";
+										cout << "3. Search Appointments by Patient Phone\n";
+										cout << "4. Search Appointments by Patient Email\n";
+										cout << "5. Search Appointments by Status\n";
+										cout << "0. Back to Main Menu\n\n";
+								
+										cout << "Enter your choice (0-5): ";
+										cin >> subChoice2;
+
+										switch(subChoice2) {
+											case 1: {
+												ss.SearchbyService(appointmentTable);
+												break;
+											}
+
+											case 2: {
+												ss.SearchbyPatientName(appointmentTable);
+												break;
+											}
+
+											case 3: {
+												ss.SearchbyPtPhone(appointmentTable);
+												break;
+											}
+
+											case 4: {
+												ss.SearchbyEmail(appointmentTable);
+												break;
+											}
+
+											case 5: {
+												ss.SearchbyStatus(appointmentTable);
+												break;
+											}
+
+											case 0:
+												break;
+												
+											default:
+												cout << "Invalid choice, please try again.\n";
+										}
+												
+												break;
+											}
+											case 4: {
+												cout << "--- Sort Appointments ---\n\n";
+												cout << "1. Sort Appointments by Date   (Newest to Oldest)\n";
+												cout << "2. Sort Appointments by Date   (Oldest to Newest)\n";
+												cout << "3. Sort Appointments by Time   (Newest to Oldest)\n";
+												cout << "4. Sort Appointments by Time   (Oldest to Newest)\n";
+												cout << "5. Sort Appointments by Amount (Highest to Lowest)\n";
+												cout << "6. Sort Appointments by Amount (Lowest to Highest)\n";
+												cout << "0. Back to Main Menu\n\n";
+										
+												cout << "Enter your choice (0-6): ";
+												cin >> subChoice2;
+
+												switch(subChoice2) {
+													case 1: {
+														sortByDateAscending(appointmentTable);
+														break;
+													} 
+													
+													case 2: {
+														sortByDateDescending(appointmentTable);
+														break;
+													} 
+													
+													case 3: {
+														sortByTimeAscending(appointmentTable);
+														break;
+													} 
+													
+													case 4: {
+														sortByTimeDescending(appointmentTable);
+														break;
+													} 
+
+													case 5: {
+														sortByNetAmountAscending(appointmentTable);
+														break;
+													} 
+
+													case 6: {
+														sortByNetAmountDescending(appointmentTable);
+														break;
+													} 
+													break;
+												}
+												break;
+											} 
+											case 5: {
+												appointment.editAppointment(appointmentTable);
+												break;
+											}
+											case 6: {
+												appointment.deleteAppointment(appointmentTable);
+												break;
+											}
+											case 0:
+												break;
+											default:
+												cout << "Invalid choice, please try again.\n";
+										}
+		                        	break;
 		                    
 		                    // Manage Treatments
 		                    case 4: 
@@ -9555,29 +9944,26 @@ int main() {
 		                        cout << "4. Sort Results\n";
 		                        cout << "5. Delete Results\n";
 		                        cout << "6. Add New Question\n";
-		                        cout << "7. View All Question\n";
-		                        cout << "8. Edit Question\n";
-		                        cout << "9. Delete Questions\n";
+		                        cout << "7. Edit Question\n";
+		                        cout << "8. Delete Questions\n";
 		                        cout << "0. Back to Main Menu\n\n";
 		                        
-		                        cout << "Enter your choice (0-9): ";
+		                        cout << "Enter your choice (0-8): ";
 		                        cin >> subChoice;
 		                        
 		                        switch(subChoice) {
 		                            case 1:
-		                            	cout << "--- Take New Test ---\n\n";
 										 
 		                                testManager.takeTest();
 		                                
 		                                break;
 		                            case 2:
-		                            	cout << "--- View All Results ---\n\n";
 		                            	
 		                            	resultTable.displayPatientResult(currentEmail);
 		                            	
 		                                break;
 		                            case 3:
-		                            	cout << "--- Search Results ---\n\n";
+		                            	cout << "\n--- Search Results ---\n";
 		                            	cout << "1. Search Results by Name\n";
 		                            	cout << "2. Search Results by Phone\n";
 		                            	cout << "3. Search Results by Email\n";
@@ -9620,7 +10006,7 @@ int main() {
 		                        		break;
 
 		                            case 4:
-		                            	cout << "--- Sort Results ---\n\n";
+		                            	cout << "\n--- Sort Results ---\n";
 		                            	cout << "1. Sort Results by Score (High to Low)\n";
 		                            	cout << "2. Sort Results by Score (Low to High)\n";
 				                        cout << "0. Back to Main Menu\n\n";
@@ -9649,18 +10035,18 @@ int main() {
 										}
 		                        		
 		                        		break;
-		                        	case 6: {
-		                        		cout << "--- Add New Questions ---\n\n";
-		                        		
-		                                testManager.addQn(testTable);
-		                                
+									case 5: {
+										resultTable.deleteResult(resultTable);
 										break;
 									}
-		                        	case 7: {
-		                        		cout << "--- View All Questions ---\n\n";
+		                        	case 6: {
 		                            	
 		                            	testTable.displayAllQuestions();
 		                            	
+										break;
+									}
+									case 7: {
+										testTable.editQuestion(testTable);
 										break;
 									}
 		                            case 0:
@@ -9704,7 +10090,7 @@ int main() {
 						                        break;
 						                        
 						                    case 3: {
-				                        		cout << "--- Search Patients ---\n\n";
+				                        		cout << "\n--- Search Patients ---\n";
 				                        		cout << "1. Search Patients by First Name\n";
 				                        		cout << "2. Search Patients by Last Name\n";
 				                        		cout << "3. Search Patients by Phone\n";
@@ -9754,7 +10140,7 @@ int main() {
 											}
 											
 											case 4: {
-				                        		cout << "--- Sort Patients ---\n\n";
+				                        		cout << "\n--- Sort Patients ---\n";
 				                        		cout << "1. Sort Patients by Age (Young to Old)\n";
 				                        		cout << "2. Sort Patients by Age (Old to Young)\n";
 				                        		cout << "0. Back to Main Menu\n\n";
