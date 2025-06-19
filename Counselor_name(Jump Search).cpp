@@ -1599,11 +1599,323 @@ class Appoint {
 		        outFile << apt.appointPayStat << endl;
 		        outFile << apt.appointStat << endl << endl;
 		
-		        cout << "Appointment saved successfully!" << endl;
 		        outFile.close();
 		    } else {
 		        cout << "Unable to open appoint.txt for saving." << endl;
 		    }
+		}
+
+		
+		// Edit appointment - modeled after editPatient
+		void editAppointment(AppointHT& appointmentTable) {
+			// Create an array of appointments
+			appoint* appointArray[appointmentTable.getTableSize()];
+			int count = 0;
+			int tableIndices[appointmentTable.getTableSize()]; // To track original indices
+			
+			for (int i = 0; i < appointmentTable.getTableSize(); i++) {
+				if (appointmentTable.getEntry(i) != nullptr) {
+					appointArray[count] = appointmentTable.getEntry(i);
+					tableIndices[count] = i;
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No appointments available to edit." << endl;
+				return;
+			}
+			
+			// Display all appointments with numbers
+			cout << "\n--- Available Appointments ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << (i+1) << ". " << appointArray[i]->appointID << " - " 
+					<< appointArray[i]->appointPtName << " (" 
+					<< appointArray[i]->appointDate << " " 
+					<< appointArray[i]->appointTime << ")" << endl;
+			}
+			
+			// Let user select an appointment
+			int aptChoice;
+			cout << "\nEnter the number of the appointment to edit (1-" << count << "): ";
+			cin >> aptChoice;
+			
+			if (aptChoice < 1 || aptChoice > count) {
+				cout << "Invalid selection." << endl;
+				return;
+			}
+			
+			int selectedIndex = tableIndices[aptChoice-1];
+			appoint* selectedApt = appointmentTable.getEntry(selectedIndex);
+			int choice;
+			
+			do {
+				cout << "\n--- Edit Appointment ---" << endl;
+				cout << "1. Edit Service         (Current: " << selectedApt->appointSvc << ")" << endl;
+				cout << "2. Edit Counselor       (Current: " << selectedApt->appointCouns << ")" << endl;
+				cout << "3. Edit Mode            (Current: " << selectedApt->appointMode << ")" << endl;
+				cout << "4. Edit Date            (Current: " << selectedApt->appointDate << ")" << endl;
+				cout << "5. Edit Time            (Current: " << selectedApt->appointTime << ")" << endl;
+				cout << "6. Edit Patient Name    (Current: " << selectedApt->appointPtName << ")" << endl;
+				cout << "7. Edit Patient Phone   (Current: " << selectedApt->appointPtPhone << ")" << endl;
+				cout << "8. Edit Patient Email   (Current: " << selectedApt->appointPtEmail << ")" << endl;
+				cout << "9. Edit Amount          (Current: " << selectedApt->appointNetAmt << ")" << endl;
+				cout << "10. Edit Payment Status (Current: " << selectedApt->appointPayStat << ")" << endl;
+				cout << "11. Edit Status         (Current: " << selectedApt->appointStat << ")" << endl;
+				cout << "0. Save and Return\n" << endl;
+				cout << "Select field to edit (0-11): ";
+				cin >> choice;
+				
+				cin.ignore();
+				
+				switch(choice) {
+					case 1: {
+						string newSvc;
+						cout << "Enter new Service: ";
+						getline(cin, newSvc);
+						selectedApt->appointSvc = newSvc;
+						break;
+					}
+					case 2: {
+						string newCouns;
+						cout << "Enter new Counselor: ";
+						getline(cin, newCouns);
+						selectedApt->appointCouns = newCouns;
+						break;
+					}
+					case 3: {
+						int modeOp;
+						cout << "\n--- Available Modes ---\n";
+						cout << "1. Online\n";
+						cout << "2. Offline\n\n";
+						cout << "Enter your choice (1-2): ";
+						cin >> modeOp;
+						cin.ignore();
+						
+						switch(modeOp) {
+							case 1: {
+								selectedApt->appointMode = "Online";
+								cout << "Selected: Online\n";
+								break;
+							}
+							case 2: {
+								selectedApt->appointMode = "Offline";
+								cout << "Selected: Offline\n";
+								break;
+							}
+							default: {
+								cout << "Invalid choice, mode unchanged." << endl;
+							}
+						}
+						break;
+					}
+					case 4: {
+						int newDate;
+						cout << "Enter new Date (YYYYMMDD): ";
+						cin >> newDate;
+						cin.ignore();
+						selectedApt->appointDate = newDate;
+						break;
+					}
+					case 5: {
+						string newTime;
+						cout << "Enter new Time (HHMM): ";
+						getline(cin, newTime);
+						selectedApt->appointTime = newTime;
+						break;
+					}
+					case 6: {
+						string newName;
+						cout << "Enter new Patient Name: ";
+						getline(cin, newName);
+						selectedApt->appointPtName = newName;
+						break;
+					}
+					case 7: {
+						int newPhone;
+						cout << "Enter new Patient Phone: ";
+						cin >> newPhone;
+						cin.ignore();
+						selectedApt->appointPtPhone = newPhone;
+						break;
+					}
+					case 8: {
+						string newEmail;
+						cout << "Enter new Patient Email: ";
+						getline(cin, newEmail);
+						selectedApt->appointPtEmail = newEmail;
+						break;
+					}
+					case 9: {
+						double newAmount;
+						cout << "Enter new Amount: ";
+						cin >> newAmount;
+						cin.ignore();
+						selectedApt->appointNetAmt = newAmount;
+						selectedApt->appointGrossAmt = newAmount;
+						break;
+					}
+					case 10: {
+						int statusOp;
+						cout << "\n--- Payment Status Options ---\n";
+						cout << "1. Paid\n";
+						cout << "2. Unpaid\n\n";
+						cout << "Enter your choice (1-2): ";
+						cin >> statusOp;
+						cin.ignore();
+						
+						switch(statusOp) {
+							case 1: {
+								selectedApt->appointPayStat = "Paid";
+								cout << "Selected: Paid\n";
+								break;
+							}
+							case 2: {
+								selectedApt->appointPayStat = "Unpaid";
+								cout << "Selected: Unpaid\n";
+								break;
+							}
+							default: {
+								cout << "Invalid choice, payment status unchanged." << endl;
+							}
+						}
+						break;
+					}
+					case 11: {
+						int statusOp;
+						cout << "\n--- Appointment Status Options ---\n";
+						cout << "1. Pending\n";
+						cout << "2. Confirmed\n";
+						cout << "3. Completed\n";
+						cout << "4. Cancelled\n\n";
+						cout << "Enter your choice (1-4): ";
+						cin >> statusOp;
+						cin.ignore();
+						
+						switch(statusOp) {
+							case 1: {
+								selectedApt->appointStat = "Pending";
+								cout << "Selected: Pending\n";
+								break;
+							}
+							case 2: {
+								selectedApt->appointStat = "Confirmed";
+								cout << "Selected: Confirmed\n";
+								break;
+							}
+							case 3: {
+								selectedApt->appointStat = "Completed";
+								cout << "Selected: Completed\n";
+								break;
+							}
+							case 4: {
+								selectedApt->appointStat = "Cancelled";
+								cout << "Selected: Cancelled\n";
+								break;
+							}
+							default: {
+								cout << "Invalid choice, appointment status unchanged." << endl;
+							}
+						}
+						break;
+					}
+					case 0:
+						// Save updates to file
+						updateAppointmentFile(appointmentTable);
+						cout << "Appointment " << selectedApt->appointID << " updated successfully!" << endl;
+						break;
+					default:
+						cout << "Invalid choice, please try again." << endl;
+				}
+			} while (choice != 0);
+		}
+
+		// Delete appointment
+		void deleteAppointment(AppointHT& appointmentTable) {
+			// Create an array of appointments
+			appoint* appointArray[appointmentTable.getTableSize()];
+			int count = 0;
+			int tableIndices[appointmentTable.getTableSize()]; // To track original indices
+			
+			for (int i = 0; i < appointmentTable.getTableSize(); i++) {
+				if (appointmentTable.getEntry(i) != nullptr) {
+					appointArray[count] = appointmentTable.getEntry(i);
+					tableIndices[count] = i;
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No appointments available to delete." << endl;
+				return;
+			}
+			
+			// Display all appointments with numbers
+			cout << "\n--- Available Appointments ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << (i+1) << ". " << appointArray[i]->appointID << " - " 
+					<< appointArray[i]->appointPtName << " (" 
+					<< appointArray[i]->appointDate << " " 
+					<< appointArray[i]->appointTime << ")" << endl;
+			}
+			
+			// Let user select an appointment
+			int aptChoice;
+			cout << "\nEnter the number of the appointment to delete (1-" << count << "): ";
+			cin >> aptChoice;
+			
+			if (aptChoice < 1 || aptChoice > count) {
+				cout << "Invalid selection." << endl;
+				return;
+			}
+			
+			int selectedIndex = tableIndices[aptChoice-1];
+			appoint* selectedApt = appointmentTable.getEntry(selectedIndex);
+			
+			char confirm;
+			cout << "\nAre you sure you want to delete appointment " << selectedApt->appointID 
+				<< " for " << selectedApt->appointPtName << "? (Y/N): ";
+			cin >> confirm;
+			
+			if (toupper(confirm) == 'Y') {
+				// Delete the appointment from the hash table
+				delete appointmentTable.getEntry(selectedIndex);
+				appointmentTable.setTableElement(selectedIndex, NULL);
+				
+				// Update the file
+				updateAppointmentFile(appointmentTable);
+				cout << "Appointment deleted successfully!" << endl;
+			} else {
+				cout << "Deletion cancelled." << endl;
+			}
+		}
+
+		void updateAppointmentFile(AppointHT& appointmentTable) {
+			ofstream outFile("appoint.txt");
+			
+			if (outFile.is_open()) {
+				for (int i = 0; i < appointmentTable.getTableSize(); i++) {
+					appoint* apt = appointmentTable.getEntry(i);
+					if (apt != NULL) {
+						outFile << apt->appointID << endl;
+						outFile << apt->appointSvc << endl;
+						outFile << apt->appointCouns << endl;
+						outFile << apt->appointMode << endl;
+						outFile << apt->appointDate << endl;
+						outFile << apt->appointTime << endl;
+						outFile << apt->appointPtName << endl;
+						outFile << apt->appointPtPhone << endl;
+						outFile << apt->appointPtEmail << endl;
+						outFile << apt->appointGrossAmt << endl;
+						outFile << apt->appointNetAmt << endl;
+						outFile << apt->appointPayStat << endl;
+						outFile << apt->appointStat << endl << endl;
+					}
+				}
+				outFile.close();
+			} else {
+				cout << "Unable to open appoint.txt for updating." << endl;
+			}
 		}
 
 };
@@ -1611,7 +1923,6 @@ class Appoint {
 /* [Error] request for member 'TBL_SIZE' in 'serviceTable', which is of non-class type 'int'
 [Error] request for member 'tbl' in 'serviceTable', which is of non-class type 'int'
 */
-class Appoint; // Forward declaration
 
 // Hash table for categories using quadratic probing
 class CatHT {
@@ -1765,9 +2076,9 @@ class CatHT {
 			
 			do {
 				cout << "\n--- Edit Category ---" << endl;
-				cout << "1. Edit Category ID (Current: " << selectedCat->catID << ")" << endl;
+				cout << "1. Edit Category ID   (Current: " << selectedCat->catID << ")" << endl;
 				cout << "2. Edit Category Name (Current: " << selectedCat->catName << ")" << endl;
-				cout << "0. Save and Return" << endl;
+				cout << "0. Save and Return\n" << endl;
 				cout << "Select field to edit: ";
 				cin >> choice;
 				
@@ -2771,8 +3082,47 @@ class Tx {
 	        getline(cin, progress);
 	        cout << "Enter Homework: ";
 	        getline(cin, homework);
-	        cout << "Enter Next Session: ";
-	        getline(cin, nextSession);
+
+			int nextSessionOp;
+			bool nextSessionLoop=1;
+
+			do {
+				cout << "\n--- Available Choices ---\n";
+				cout << "1. Yes\n";
+				cout << "2. Maybe\n";
+				cout << "3. No\n\n";
+
+				cout << "Select choice (1-3): ";
+				cin >> nextSessionOp;
+
+				switch(nextSessionOp) {
+					case 1: {
+						nextSession="Yes";
+						cout << "Selected: Yes\n";
+						nextSessionLoop=1;
+						break;
+					}
+
+					case 2: {
+						nextSession="Maybe";
+						cout << "Selected: Maybe\n";
+						nextSessionLoop=1;
+						break;
+					}
+
+					case 3: {
+						nextSession="No";
+						cout << "Selected: No\n";
+						nextSessionLoop=1;
+						break;
+					}
+
+					default: {
+						cout << "Invalid choice, please try again.\n";
+						nextSessionLoop=0;
+					}
+				}
+			} while(nextSessionLoop==0);
 	
 	        tx treatment;
 	        treatment.appointID = appointID;
@@ -2820,6 +3170,192 @@ class Tx {
 	            cout << "Unable to open tx.txt for saving." << endl;
 	        }
 	    }
+
+		// Edit treatment record
+		void editTreatment(TxHT& treatmentTable) {
+			// Create an array of treatments
+			tx* txArray[treatmentTable.getTblSize()];
+			int count = 0;
+			int tableIndices[treatmentTable.getTblSize()]; // To track original indices
+			
+			for (int i = 0; i < treatmentTable.getTblSize(); i++) {
+				if (treatmentTable.getEntry(i) != nullptr) {
+					txArray[count] = treatmentTable.getEntry(i);
+					tableIndices[count] = i;
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No treatment records available to edit." << endl;
+				return;
+			}
+			
+			// Display all treatment records with numbers
+			cout << "\n--- Available Treatment Records ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << (i+1) << ". " << txArray[i]->appointID << " - " 
+					<< txArray[i]->ptName << endl;
+			}
+			
+			// Let user select a treatment record
+			int txChoice;
+			cout << "\nEnter the number of the treatment record to edit (1-" << count << "): ";
+			cin >> txChoice;
+			
+			if (txChoice < 1 || txChoice > count) {
+				cout << "Invalid selection." << endl;
+				return;
+			}
+			
+			int selectedIndex = tableIndices[txChoice-1];
+			tx* selectedTx = treatmentTable.getEntry(selectedIndex);
+			int choice;
+			
+			do {
+				cout << "\n--- Edit Treatment Record ---" << endl;
+				cout << "1. Edit Patient Name  (Current: " << selectedTx->ptName << ")" << endl;
+				cout << "2. Edit Patient Phone (Current: " << selectedTx->ptPhone << ")" << endl;
+				cout << "3. Edit Patient Email (Current: " << selectedTx->ptEmail << ")" << endl;
+				cout << "4. Edit Summary       (Current: " << selectedTx->summary << ")" << endl;
+				cout << "5. Edit Intervention  (Current: " << selectedTx->intervention << ")" << endl;
+				cout << "6. Edit Response      (Current: " << selectedTx->response << ")" << endl;
+				cout << "7. Edit Progress      (Current: " << selectedTx->progress << ")" << endl;
+				cout << "8. Edit Homework      (Current: " << selectedTx->homework << ")" << endl;
+				cout << "9. Edit Next Session  (Current: " << selectedTx->nextSession << ")" << endl;
+				cout << "0. Save and Return\n" << endl;
+				cout << "Select field to edit (0-9): ";
+				cin >> choice;
+				
+				cin.ignore();
+				
+				switch(choice) {
+					case 1: {
+						string newName;
+						cout << "Enter new Patient Name: ";
+						getline(cin, newName);
+						selectedTx->ptName = newName;
+						break;
+					}
+					case 2: {
+						int newPhone;
+						cout << "Enter new Patient Phone: ";
+						cin >> newPhone;
+						cin.ignore();
+						selectedTx->ptPhone = newPhone;
+						break;
+					}
+					case 3: {
+						string newEmail;
+						cout << "Enter new Patient Email: ";
+						getline(cin, newEmail);
+						selectedTx->ptEmail = newEmail;
+						break;
+					}
+					case 4: {
+						string newSummary;
+						cout << "Enter new Summary: ";
+						getline(cin, newSummary);
+						selectedTx->summary = newSummary;
+						break;
+					}
+					case 5: {
+						string newIntervention;
+						cout << "Enter new Intervention: ";
+						getline(cin, newIntervention);
+						selectedTx->intervention = newIntervention;
+						break;
+					}
+					case 6: {
+						string newResponse;
+						cout << "Enter new Response: ";
+						getline(cin, newResponse);
+						selectedTx->response = newResponse;
+						break;
+					}
+					case 7: {
+						string newProgress;
+						cout << "Enter new Progress: ";
+						getline(cin, newProgress);
+						selectedTx->progress = newProgress;
+						break;
+					}
+					case 8: {
+						string newHomework;
+						cout << "Enter new Homework: ";
+						getline(cin, newHomework);
+						selectedTx->homework = newHomework;
+						break;
+					}
+					case 9: {
+						int nextSessionOp;
+						cout << "\n--- Available Choices ---\n";
+						cout << "1. Yes\n";
+						cout << "2. Maybe\n";
+						cout << "3. No\n\n";
+						cout << "Select choice (1-3): ";
+						cin >> nextSessionOp;
+						cin.ignore();
+						
+						switch(nextSessionOp) {
+							case 1: {
+								selectedTx->nextSession = "Yes";
+								cout << "Selected: Yes\n";
+								break;
+							}
+							case 2: {
+								selectedTx->nextSession = "Maybe";
+								cout << "Selected: Maybe\n";
+								break;
+							}
+							case 3: {
+								selectedTx->nextSession = "No";
+								cout << "Selected: No\n";
+								break;
+							}
+							default: {
+								cout << "Invalid choice, next session status unchanged." << endl;
+							}
+						}
+						break;
+					}
+					case 0:
+						// Save updates to file
+						updateTreatmentFile(treatmentTable);
+						cout << "Treatment record for " << selectedTx->ptName << " updated successfully!" << endl;
+						break;
+					default:
+						cout << "Invalid choice, please try again." << endl;
+				}
+			} while (choice != 0);
+		}
+
+		// Helper function to update the treatment file after edits or deletions
+		void updateTreatmentFile(TxHT& treatmentTable) {
+			ofstream outFile("tx.txt");
+			
+			if (outFile.is_open()) {
+				for (int i = 0; i < treatmentTable.getTblSize(); i++) {
+					tx* treatment = treatmentTable.getEntry(i);
+					if (treatment != NULL) {
+						outFile << treatment->appointID << endl;
+						outFile << treatment->ptName << endl;
+						outFile << treatment->ptPhone << endl;
+						outFile << treatment->ptEmail << endl;
+						outFile << treatment->summary << endl;
+						outFile << treatment->intervention << endl;
+						outFile << treatment->response << endl;
+						outFile << treatment->progress << endl;
+						outFile << treatment->homework << endl;
+						outFile << treatment->nextSession << endl << endl;
+					}
+				}
+				outFile.close();
+			} else {
+				cout << "Unable to open tx.txt for updating." << endl;
+			}
+		}
+
 };
 
 class UserManager {
@@ -4179,12 +4715,11 @@ class SearchSort{
 			delete[] appointments; 
 		}
 		
-		
 		// Patient search appointments by Counsellor (Binary Search)
 		void PatientSearchByCounsellor(AppointHT& appointmentTable, string patientEmail) {
 	    
 		string counsellorName;
-		cout << "Enter counsellor name to search: ";
+		cout << "\nEnter counsellor name to search: ";
 		cin.ignore();
 		getline(cin, counsellorName);
 		
@@ -5469,7 +6004,1054 @@ class SearchSort{
 			// Clean up
 			delete[] results;
 		}
-  
+		
+		// Function to display patient information
+		void displayPatient(Pt* patient) {
+			if (!patient) return;
+			cout << "\n--- Patient Details ---" << endl;
+			cout << "First Name: " << patient->getFName() << endl;
+			cout << "Last Name : " << patient->getLName() << endl;
+			cout << "Phone     : " << patient->getPhone() << endl;
+			cout << "Email     : " << patient->getEmail() << endl;
+			cout << "Age       : " << patient->getAge() << endl;
+			cout << "Status    : " << patient->getStatus() << endl;
+		}
+
+		// Search Patients by First Name (Binary Search)
+		void SearchbyFirstName(PtHT& patientTable) {
+			string targetFName;
+			cout << "Enter first name to search: ";
+			cin.ignore();
+			getline(cin, targetFName);
+			
+			// Count non-null patients
+			count = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No patients available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			Pt** patients = new Pt*[count];
+			index = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					patients[index++] = patientTable.getTableElement(i);
+				}
+			}  
+			
+			// Sort by first name first (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (patients[j]->getFName() < patients[currentMin]->getFName()) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					Pt* temp = patients[i];
+					patients[i] = patients[currentMin];
+					patients[currentMin] = temp;
+				}
+			}
+			
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				string currentFName = patients[mid]->getFName();
+
+				if (currentFName == targetFName) {
+					displayPatient(patients[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int firstDup = mid - 1;
+					while (firstDup >= 0 && patients[firstDup]->getFName() == targetFName) {
+						displayPatient(patients[firstDup]);
+						found++;
+						firstDup--;
+					}
+
+					// Check for duplicates on right side
+					int lastDup = mid + 1;
+					while (lastDup < count && patients[lastDup]->getFName() == targetFName) {
+						displayPatient(patients[lastDup]);
+						found++;
+						lastDup++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] patients;
+					return;
+				}
+
+				if (currentFName < targetFName) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No patients found with first name: " << targetFName << endl;
+			}
+			delete[] patients; 
+		}
+
+		// Search Patients by Last Name (Binary Search)
+		void SearchbyLastName(PtHT& patientTable) {
+			string targetLName;
+			cout << "Enter last name to search: ";
+			cin.ignore();
+			getline(cin, targetLName);
+			
+			// Count non-null patients
+			count = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No patients available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			Pt** patients = new Pt*[count];
+			index = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					patients[index++] = patientTable.getTableElement(i);
+				}
+			}  
+			
+			// Sort by last name first (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (patients[j]->getLName() < patients[currentMin]->getLName()) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					Pt* temp = patients[i];
+					patients[i] = patients[currentMin];
+					patients[currentMin] = temp;
+				}
+			}
+			
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				string currentLName = patients[mid]->getLName();
+
+				if (currentLName == targetLName) {
+					displayPatient(patients[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int firstDup = mid - 1;
+					while (firstDup >= 0 && patients[firstDup]->getLName() == targetLName) {
+						displayPatient(patients[firstDup]);
+						found++;
+						firstDup--;
+					}
+
+					// Check for duplicates on right side
+					int lastDup = mid + 1;
+					while (lastDup < count && patients[lastDup]->getLName() == targetLName) {
+						displayPatient(patients[lastDup]);
+						found++;
+						lastDup++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] patients;
+					return;
+				}
+
+				if (currentLName < targetLName) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No patients found with last name: " << targetLName << endl;
+			}
+			delete[] patients; 
+		}
+
+		// Search Patients by Phone (Binary Search)
+		void SearchbyPhone(PtHT& patientTable) {
+			int targetPhone;
+			cout << "Enter phone number to search: ";
+			cin >> targetPhone;
+			cin.ignore();
+			
+			// Count non-null patients
+			count = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No patients available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			Pt** patients = new Pt*[count];
+			index = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					patients[index++] = patientTable.getTableElement(i);
+				}
+			}  
+			
+			// Sort by phone first (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (patients[j]->getPhone() < patients[currentMin]->getPhone()) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					Pt* temp = patients[i];
+					patients[i] = patients[currentMin];
+					patients[currentMin] = temp;
+				}
+			}
+			
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				int currentPhone = patients[mid]->getPhone();
+
+				if (currentPhone == targetPhone) {
+					displayPatient(patients[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int firstDup = mid - 1;
+					while (firstDup >= 0 && patients[firstDup]->getPhone() == targetPhone) {
+						displayPatient(patients[firstDup]);
+						found++;
+						firstDup--;
+					}
+
+					// Check for duplicates on right side
+					int lastDup = mid + 1;
+					while (lastDup < count && patients[lastDup]->getPhone() == targetPhone) {
+						displayPatient(patients[lastDup]);
+						found++;
+						lastDup++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] patients;
+					return;
+				}
+
+				if (currentPhone < targetPhone) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No patients found with phone: " << targetPhone << endl;
+			}
+			delete[] patients; 
+		}
+
+		// Search Patients by Status (Binary Search)
+		void SearchbyStatus(PtHT& patientTable) {
+			string targetStatus;
+			cout << "Enter status to search (Active/Inactive): ";
+			cin.ignore();
+			getline(cin, targetStatus);
+			
+			// Count non-null patients
+			count = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No patients available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			Pt** patients = new Pt*[count];
+			index = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					patients[index++] = patientTable.getTableElement(i);
+				}
+			}  
+			
+			// Sort by status first (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (patients[j]->getStatus() < patients[currentMin]->getStatus()) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					Pt* temp = patients[i];
+					patients[i] = patients[currentMin];
+					patients[currentMin] = temp;
+				}
+			}
+			
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				string currentStatus = patients[mid]->getStatus();
+
+				if (currentStatus == targetStatus) {
+					displayPatient(patients[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int firstDup = mid - 1;
+					while (firstDup >= 0 && patients[firstDup]->getStatus() == targetStatus) {
+						displayPatient(patients[firstDup]);
+						found++;
+						firstDup--;
+					}
+
+					// Check for duplicates on right side
+					int lastDup = mid + 1;
+					while (lastDup < count && patients[lastDup]->getStatus() == targetStatus) {
+						displayPatient(patients[lastDup]);
+						found++;
+						lastDup++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] patients;
+					return;
+				}
+
+				if (currentStatus < targetStatus) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No patients found with status: " << targetStatus << endl;
+			}
+			delete[] patients; 
+		}
+
+		// Sort Patients by Age (Young to Old - Ascending)
+		void sortByAgeAscending(PtHT& patientTable) {
+			// Count non-null patients
+			count = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No patients to display." << endl;
+				return;
+			}
+			
+			// Create dynamic array
+			Pt** patients = new Pt*[count];
+			index = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					patients[index++] = patientTable.getTableElement(i);
+				}
+			}
+			
+			// Selection sort by age (ascending)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i;
+				for (j = i + 1; j < count; j++) {
+					if (patients[j]->getAge() < patients[currentMin]->getAge()) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					Pt* temp = patients[i];
+					patients[i] = patients[currentMin];
+					patients[currentMin] = temp;
+				}
+			}
+			
+			// Display sorted patients
+			cout << "\n--- Patients Sorted by Age (Young to Old) ---" << endl;
+			for (i = 0; i < count; i++) {
+				cout << "\n--- Patient " << i+1 << " ---" << endl;
+				cout << "First Name: " << patients[i]->getFName() << endl;
+				cout << "Last Name : " << patients[i]->getLName() << endl;
+				cout << "Age       : " << patients[i]->getAge() << endl;
+				cout << "Phone     : " << patients[i]->getPhone() << endl;
+				cout << "Email     : " << patients[i]->getEmail() << endl;
+				cout << "Status    : " << patients[i]->getStatus() << endl;
+			}
+			
+			delete[] patients;
+		}
+
+		// Sort Patients by Age (Old to Young - Descending)
+		void sortByAgeDescending(PtHT& patientTable) {
+			// Count non-null patients
+			count = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No patients to display." << endl;
+				return;
+			}
+			
+			// Create dynamic array
+			Pt** patients = new Pt*[count];
+			index = 0;
+			for (i = 0; i < patientTable.getTblSize(); i++) {
+				if (patientTable.getTableElement(i) != NULL) {
+					patients[index++] = patientTable.getTableElement(i);
+				}
+			}
+			
+			// Selection sort by age (descending)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i;
+				for (j = i + 1; j < count; j++) {
+					if (patients[j]->getAge() > patients[currentMin]->getAge()) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					Pt* temp = patients[i];
+					patients[i] = patients[currentMin];
+					patients[currentMin] = temp;
+				}
+			}
+			
+			// Display sorted patients
+			cout << "\n--- Patients Sorted by Age (Old to Young) ---" << endl;
+			for (i = 0; i < count; i++) {
+				cout << "\n--- Patient " << i+1 << " ---" << endl;
+				cout << "First Name: " << patients[i]->getFName() << endl;
+				cout << "Last Name : " << patients[i]->getLName() << endl;
+				cout << "Age       : " << patients[i]->getAge() << endl;
+				cout << "Phone     : " << patients[i]->getPhone() << endl;
+				cout << "Email     : " << patients[i]->getEmail() << endl;
+				cout << "Status    : " << patients[i]->getStatus() << endl;
+			}
+			
+			delete[] patients;
+		}
+
+		// Function to display staff information
+		void displayStaff(Staff* staff) {
+			if (!staff) return;
+			cout << "\n--- Staff Details ---" << endl;
+			cout << "First Name : " << staff->getFName() << endl;
+			cout << "Last Name  : " << staff->getLName() << endl;
+			cout << "Phone      : " << staff->getPhone() << endl;
+			cout << "Email      : " << staff->getEmail() << endl;
+			cout << "NRIC       : " << staff->getNric() << endl;
+			cout << "Role       : " << staff->getRole() << endl;
+			cout << "Status     : " << staff->getStatus() << endl;
+		}
+
+		// Search Staff by First Name (Binary Search)
+		void SearchStaffByFirstName(StaffHT& staffTable) {
+			string targetFName;
+			cout << "Enter first name to search: ";
+			cin.ignore();
+			getline(cin, targetFName);
+			
+			// Count non-null staff
+			count = 0;
+			for (i = 0; i < staffTable.getTblSize(); i++) {
+				if (staffTable.getTableElement(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No staff available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			Staff** staffs = new Staff*[count];
+			index = 0;
+			for (i = 0; i < staffTable.getTblSize(); i++) {
+				if (staffTable.getTableElement(i) != NULL) {
+					staffs[index++] = staffTable.getTableElement(i);
+				}
+			}  
+			
+			// Sort by first name (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (staffs[j]->getFName() < staffs[currentMin]->getFName()) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					Staff* temp = staffs[i];
+					staffs[i] = staffs[currentMin];
+					staffs[currentMin] = temp;
+				}
+			}
+			
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				string currentFName = staffs[mid]->getFName();
+
+				if (currentFName == targetFName) {
+					displayStaff(staffs[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int firstDup = mid - 1;
+					while (firstDup >= 0 && staffs[firstDup]->getFName() == targetFName) {
+						displayStaff(staffs[firstDup]);
+						found++;
+						firstDup--;
+					}
+
+					// Check for duplicates on right side
+					int lastDup = mid + 1;
+					while (lastDup < count && staffs[lastDup]->getFName() == targetFName) {
+						displayStaff(staffs[lastDup]);
+						found++;
+						lastDup++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] staffs;
+					return;
+				}
+
+				if (currentFName < targetFName) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No staff found with first name: " << targetFName << endl;
+			}
+			delete[] staffs; 
+		}
+
+		// Search Staff by Last Name (Binary Search)
+		void SearchStaffByLastName(StaffHT& staffTable) {
+			string targetLName;
+			cout << "Enter last name to search: ";
+			cin.ignore();
+			getline(cin, targetLName);
+			
+			// Count non-null staff
+			count = 0;
+			for (i = 0; i < staffTable.getTblSize(); i++) {
+				if (staffTable.getTableElement(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No staff available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			Staff** staffs = new Staff*[count];
+			index = 0;
+			for (i = 0; i < staffTable.getTblSize(); i++) {
+				if (staffTable.getTableElement(i) != NULL) {
+					staffs[index++] = staffTable.getTableElement(i);
+				}
+			}  
+			
+			// Sort by last name (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (staffs[j]->getLName() < staffs[currentMin]->getLName()) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					Staff* temp = staffs[i];
+					staffs[i] = staffs[currentMin];
+					staffs[currentMin] = temp;
+				}
+			}
+			
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				string currentLName = staffs[mid]->getLName();
+
+				if (currentLName == targetLName) {
+					displayStaff(staffs[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int firstDup = mid - 1;
+					while (firstDup >= 0 && staffs[firstDup]->getLName() == targetLName) {
+						displayStaff(staffs[firstDup]);
+						found++;
+						firstDup--;
+					}
+
+					// Check for duplicates on right side
+					int lastDup = mid + 1;
+					while (lastDup < count && staffs[lastDup]->getLName() == targetLName) {
+						displayStaff(staffs[lastDup]);
+						found++;
+						lastDup++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] staffs;
+					return;
+				}
+
+				if (currentLName < targetLName) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No staff found with last name: " << targetLName << endl;
+			}
+			delete[] staffs; 
+		}
+
+		// Search Staff by Phone (Binary Search)
+		void SearchStaffByPhone(StaffHT& staffTable) {
+			int targetPhone;
+			cout << "Enter phone number to search: ";
+			cin >> targetPhone;
+			cin.ignore();
+			
+			// Count non-null staff
+			count = 0;
+			for (i = 0; i < staffTable.getTblSize(); i++) {
+				if (staffTable.getTableElement(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No staff available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			Staff** staffs = new Staff*[count];
+			index = 0;
+			for (i = 0; i < staffTable.getTblSize(); i++) {
+				if (staffTable.getTableElement(i) != NULL) {
+					staffs[index++] = staffTable.getTableElement(i);
+				}
+			}  
+			
+			// Sort by phone (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (staffs[j]->getPhone() < staffs[currentMin]->getPhone()) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					Staff* temp = staffs[i];
+					staffs[i] = staffs[currentMin];
+					staffs[currentMin] = temp;
+				}
+			}
+			
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				int currentPhone = staffs[mid]->getPhone();
+
+				if (currentPhone == targetPhone) {
+					displayStaff(staffs[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int firstDup = mid - 1;
+					while (firstDup >= 0 && staffs[firstDup]->getPhone() == targetPhone) {
+						displayStaff(staffs[firstDup]);
+						found++;
+						firstDup--;
+					}
+
+					// Check for duplicates on right side
+					int lastDup = mid + 1;
+					while (lastDup < count && staffs[lastDup]->getPhone() == targetPhone) {
+						displayStaff(staffs[lastDup]);
+						found++;
+						lastDup++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] staffs;
+					return;
+				}
+
+				if (currentPhone < targetPhone) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No staff found with phone: " << targetPhone << endl;
+			}
+			delete[] staffs; 
+		}
+
+		// Search Staff by Role (Binary Search)
+		void SearchStaffByRole(StaffHT& staffTable) {
+			string targetRole;
+			cout << "Enter role to search: ";
+			cin.ignore();
+			getline(cin, targetRole);
+			
+			// Count non-null staff
+			count = 0;
+			for (i = 0; i < staffTable.getTblSize(); i++) {
+				if (staffTable.getTableElement(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No staff available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			Staff** staffs = new Staff*[count];
+			index = 0;
+			for (i = 0; i < staffTable.getTblSize(); i++) {
+				if (staffTable.getTableElement(i) != NULL) {
+					staffs[index++] = staffTable.getTableElement(i);
+				}
+			}  
+			
+			// Sort by role (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (staffs[j]->getRole() < staffs[currentMin]->getRole()) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					Staff* temp = staffs[i];
+					staffs[i] = staffs[currentMin];
+					staffs[currentMin] = temp;
+				}
+			}
+			
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				string currentRole = staffs[mid]->getRole();
+
+				if (currentRole == targetRole) {
+					displayStaff(staffs[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int firstDup = mid - 1;
+					while (firstDup >= 0 && staffs[firstDup]->getRole() == targetRole) {
+						displayStaff(staffs[firstDup]);
+						found++;
+						firstDup--;
+					}
+
+					// Check for duplicates on right side
+					int lastDup = mid + 1;
+					while (lastDup < count && staffs[lastDup]->getRole() == targetRole) {
+						displayStaff(staffs[lastDup]);
+						found++;
+						lastDup++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] staffs;
+					return;
+				}
+
+				if (currentRole < targetRole) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No staff found with role: " << targetRole << endl;
+			}
+			delete[] staffs; 
+		}
+
+		// Search Staff by Status (Binary Search)
+		void SearchStaffByStatus(StaffHT& staffTable) {
+			string targetStatus;
+			cout << "Enter status to search (Active/Inactive): ";
+			cin.ignore();
+			getline(cin, targetStatus);
+			
+			// Count non-null staff
+			count = 0;
+			for (i = 0; i < staffTable.getTblSize(); i++) {
+				if (staffTable.getTableElement(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No staff available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			Staff** staffs = new Staff*[count];
+			index = 0;
+			for (i = 0; i < staffTable.getTblSize(); i++) {
+				if (staffTable.getTableElement(i) != NULL) {
+					staffs[index++] = staffTable.getTableElement(i);
+				}
+			}  
+			
+			// Sort by status (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (staffs[j]->getStatus() < staffs[currentMin]->getStatus()) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					Staff* temp = staffs[i];
+					staffs[i] = staffs[currentMin];
+					staffs[currentMin] = temp;
+				}
+			}
+			
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				string currentStatus = staffs[mid]->getStatus();
+
+				if (currentStatus == targetStatus) {
+					displayStaff(staffs[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int firstDup = mid - 1;
+					while (firstDup >= 0 && staffs[firstDup]->getStatus() == targetStatus) {
+						displayStaff(staffs[firstDup]);
+						found++;
+						firstDup--;
+					}
+
+					// Check for duplicates on right side
+					int lastDup = mid + 1;
+					while (lastDup < count && staffs[lastDup]->getStatus() == targetStatus) {
+						displayStaff(staffs[lastDup]);
+						found++;
+						lastDup++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] staffs;
+					return;
+				}
+
+				if (currentStatus < targetStatus) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No staff found with status: " << targetStatus << endl;
+			}
+			delete[] staffs; 
+		}
+
+		// Sort and Display Results by Score (High to Low) for a specific patient - Selection Sort
+		void sortPatientResultsByScoreDescending(resultHT& resultTable, string patientEmail) {
+			// Count non-null results for this patient
+			count = 0;
+			for (i = 0; i < resultTable.getTableSize(); i++) {
+				if (resultTable.getEntry(i) != NULL && 
+					resultTable.getEntry(i)->email == patientEmail) {
+					count++;
+				}
+			}
+			if (count == 0) {
+				cout << "No test results found for your account." << endl;
+				return;
+			}
+
+			// Create dynamic array of only this patient's results
+			result** patientResults = new result*[count];
+			index = 0;
+			for (i = 0; i < resultTable.getTableSize(); i++) {
+				if (resultTable.getEntry(i) != NULL && 
+					resultTable.getEntry(i)->email == patientEmail) {
+					patientResults[index++] = resultTable.getEntry(i);
+				}
+			}
+
+			// Sort results by score (descending - high to low)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i;
+				for (j = i + 1; j < count; j++) {
+					if (patientResults[j]->score > patientResults[currentMin]->score) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					result* temp = patientResults[i];
+					patientResults[i] = patientResults[currentMin];
+					patientResults[currentMin] = temp;
+				}
+			}
+
+			// Display the sorted results
+			cout << "\nYour results sorted by score (high to low):" << endl;
+			for (i = 0; i < count; i++) {
+				cout << "\n--- Result " << i+1 << " ---" << endl;
+				cout << "Score        : " << patientResults[i]->score << endl;
+				cout << "Situation    : " << patientResults[i]->situation << endl;
+			}
+
+			// Clean up
+			delete[] patientResults;
+		}
+
+		// Sort and Display Results by Score (Low to High) for a specific patient - Selection Sort
+		void sortPatientResultsByScoreAscending(resultHT& resultTable, string patientEmail) {
+			// Count non-null results for this patient
+			count = 0;
+			for (i = 0; i < resultTable.getTableSize(); i++) {
+				if (resultTable.getEntry(i) != NULL && 
+					resultTable.getEntry(i)->email == patientEmail) {
+					count++;
+				}
+			}
+			if (count == 0) {
+				cout << "No test results found for your account." << endl;
+				return;
+			}
+
+			// Create dynamic array of only this patient's results
+			result** patientResults = new result*[count];
+			index = 0;
+			for (i = 0; i < resultTable.getTableSize(); i++) {
+				if (resultTable.getEntry(i) != NULL && 
+					resultTable.getEntry(i)->email == patientEmail) {
+					patientResults[index++] = resultTable.getEntry(i);
+				}
+			}
+
+			// Sort results by score (descending - low to high)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i;
+				for (j = i + 1; j < count; j++) {
+					if (patientResults[j]->score < patientResults[currentMin]->score) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					result* temp = patientResults[i];
+					patientResults[i] = patientResults[currentMin];
+					patientResults[currentMin] = temp;
+				}
+			}
+
+			// Display the sorted results
+			cout << "\nYour results sorted by score (high to low):" << endl;
+			for (i = 0; i < count; i++) {
+				cout << "\n--- Result " << i+1 << " ---" << endl;
+				cout << "Score        : " << patientResults[i]->score << endl;
+				cout << "Situation    : " << patientResults[i]->situation << endl;
+			}
+
+			// Clean up
+			delete[] patientResults;
+		}
+
 	};
 
 
@@ -5532,7 +7114,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\nAppointments sorted by date (ascending):" << endl;
+        cout << "\n--- Appointments Sorted by date (ascending):" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -5581,7 +7163,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\nAppointments sorted by date (ascending):" << endl;
+        cout << "\n--- Appointments Sorted by Date (Ascending) ---" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -5634,7 +7216,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\nAppointments sorted by date (ascending):" << endl;
+        cout << "\n--- Appointments sorted by date (Ascending) ---" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -5687,7 +7269,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\nAppointments sorted by date (ascending):" << endl;
+        cout << "\n--- Appointments Sorted by Date (Ascending) ---" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -5737,7 +7319,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\nAppointments sorted by date (ascending):" << endl;
+        cout << "\n--- Appointments Sorted by Date (Ascending) ---" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -5787,7 +7369,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\nAppointments sorted by Net Amount (descending):" << endl;
+        cout << "\n--- Appointments Sorted by Net Amount (Descending) ---" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -5841,7 +7423,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\nYour appointments sorted by date (oldest to newest):" << endl;
+	    cout << "\n--- Appointments Sorted by Date (Oldest to Newest) ---" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -5951,7 +7533,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\nYour appointments sorted by time (earliest first):" << endl;
+	    cout << "\n--- Appointments Sorted by Time (Earliest First) ---" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -6008,7 +7590,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\nYour appointments sorted by time (latest first):" << endl;
+	    cout << "\n--- Appointments Sorted by Time (Latest First) ---" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -6062,7 +7644,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\nYour appointments sorted by cost (lowest to highest):" << endl;
+	    cout << "\n--- Appointments Sorted by Cost (Lowest to Highest) ---" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -6116,7 +7698,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\nYour appointments sorted by cost (highest to lowest):" << endl;
+	    cout << "\n--- Appointments sorted by cost (Highest to Lowest) ---" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -6650,6 +8232,18 @@ int main() {
 		                        
 		                        cout << "Enter your choice (0-2): ";
 		                        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										ss.sortPatientResultsByScoreDescending(resultTable, currentEmail);
+										break;
+									}
+
+									case 2: {
+										ss.sortPatientResultsByScoreAscending(resultTable, currentEmail);
+										break;
+									}
+								}
                             case 0:
                                 break;
                                 
@@ -6693,7 +8287,7 @@ int main() {
 						switch(subChoice) {
 							case 1: 
 								// View All Services
-								cout << "--- View All Services ---" << endl;
+								cout << "\n--- View All Services ---" << endl;
 								serviceTable.dispAllSvc();
 								break;
 							case 2: 
@@ -6764,7 +8358,7 @@ int main() {
                                 appointment.addAppoint(appointmentTable, serviceTable, staffTable);
                                 break;
                             case 2: {
-                            	cout << "--- View All Appointments ---\n\n";
+                            	cout << "\n--- View All Appointments ---\n";
                             	
                             	appointmentTable.displayAllAppoint();
                             	
@@ -6797,8 +8391,7 @@ int main() {
 								break;
 							} 
 							case 5: {
-                            	cout << "--- Delete Appointment ---\n\n";
-								
+                            	appointment.editAppointment(appointmentTable);
 								break;
 							}
                             case 0:
@@ -6865,6 +8458,13 @@ int main() {
 										cout << "Invalid choice, please try again.\n";
 									}
 								}	
+
+								break;
+							
+							case 4: {
+								treatment.editTreatment(treatmentTable);
+								break;
+							}
 
                             case 0:
                                 break;
@@ -6979,7 +8579,6 @@ int main() {
                         		
                         		break;
                         	case 6: {
-                        		cout << "--- Add New Questions ---\n\n";
                         		
                                 testManager.addQn(testTable);
                                 
@@ -7035,10 +8634,38 @@ int main() {
 				                cin >> subChoice2;
 		                    	
 		                    	switch(subChoice2) {
+									case 1: {
+										ss.SearchbyFirstName(patientTable);
+										break;
+									}
+
+									case 2: {
+										ss.SearchbyLastName(patientTable);
+										break;
+									}
+
+									case 3: {
+										ss.SearchbyPhone(patientTable);
+										break;
+									}
+									
+									case 5: {
+										ss.SearchbyStatus(patientTable);
+										break;
+									}
+
 		                    		case 4: {
 		                    			patientTable.searchByEmail();
 										break;
 									}
+
+									case 0: {
+														break;
+													}
+
+													default: {
+														cout << "Invalid choice, please try again.\n";
+													}
 								}
 								
 								break;
@@ -7054,10 +8681,24 @@ int main() {
 				                cin >> subChoice2;
 		                    	
 		                    	switch(subChoice2) {
-		                    		case 0: {
-										break;
-									}
-								}
+													case 1: {
+														ss.sortByAgeAscending(patientTable);
+														break;
+													}
+
+													case 2: {
+														ss.sortByAgeDescending(patientTable);
+														break;
+													}
+
+						                    		case 0: {
+														break;
+													}
+
+													default: {
+														cout << "Invalid choice, please try again.\n";
+													}
+												}
 								
 								break;
 							}
@@ -7101,12 +8742,11 @@ int main() {
 
 						switch(subChoice) {
 							case 1:
-								cout << "\n--- Add New Service ---\n" << endl;
 								serviceManager.addSvc(serviceTable);
 								break;
 							case 2: 
 								// View All Services
-								cout << "--- View All Services ---" << endl;
+								cout << "\n--- View All Services ---" << endl;
 								serviceTable.dispAllSvc();
 								break;
 							case 3: 
@@ -7184,7 +8824,7 @@ int main() {
                                 appointment.addAppoint(appointmentTable, serviceTable, staffTable);
                                 break;
                             case 2: {
-                            	cout << "--- View All Appointments ---\n\n";
+                            	cout << "\n--- View All Appointments ---\n";
                             	
                             	appointmentTable.displayAllAppoint();
                             	
@@ -7217,8 +8857,11 @@ int main() {
 								break;
 							} 
 							case 5: {
-                            	cout << "--- Delete Appointment ---\n\n";
-								
+                            	appointment.editAppointment(appointmentTable);
+								break;
+							}
+							case 6: {
+								appointment.deleteAppointment(appointmentTable);
 								break;
 							}
                             case 0:
@@ -7465,11 +9108,39 @@ int main() {
 						                cout << "Enter your choice (0-5): ";
 						                cin >> subChoice2;
 				                    	
-				                    	switch(subChoice2) {
-				                    		case 4: {
-				                    			patientTable.searchByEmail();
+										switch(subChoice2) {
+											case 1: {
+												ss.SearchbyFirstName(patientTable);
 												break;
 											}
+
+											case 2: {
+												ss.SearchbyLastName(patientTable);
+												break;
+											}
+
+											case 3: {
+												ss.SearchbyPhone(patientTable);
+												break;
+											}
+											
+											case 5: {
+												ss.SearchbyStatus(patientTable);
+												break;
+											}
+
+											case 4: {
+												patientTable.searchByEmail();
+												break;
+											}
+
+											case 0: {
+														break;
+													}
+
+													default: {
+														cout << "Invalid choice, please try again.\n";
+													}
 										}
 										
 										break;
@@ -7485,10 +9156,24 @@ int main() {
 						                cin >> subChoice2;
 				                    	
 				                    	switch(subChoice2) {
-				                    		case 0: {
-												break;
-											}
-										}
+													case 1: {
+														ss.sortByAgeAscending(patientTable);
+														break;
+													}
+
+													case 2: {
+														ss.sortByAgeDescending(patientTable);
+														break;
+													}
+
+						                    		case 0: {
+														break;
+													}
+
+													default: {
+														cout << "Invalid choice, please try again.\n";
+													}
+												}
 										
 										break;
 									}
@@ -7539,10 +9224,43 @@ int main() {
 						                cin >> subChoice2;
 				                    	
 				                    	switch(subChoice2) {
+											case 1: {
+												ss.SearchStaffByFirstName(staffTable);
+												break;
+											}
+
+											case 2: {
+												ss.SearchStaffByLastName(staffTable);
+												break;
+											}
+
+											case 3: {
+												ss.SearchStaffByPhone(staffTable);
+												break;
+											}
+											
 				                    		case 4: {
 			    								staffTable.searchByEmail();
 												break;
 											}
+
+											case 5: {
+												ss.SearchStaffByRole(staffTable);
+												break;
+											}
+
+											case 6: {
+												ss.SearchStaffByStatus(staffTable);
+												break;
+											}
+
+											case 0: {
+														break;
+													}
+
+													default: {
+														cout << "Invalid choice, please try again.\n";
+													}
 										}
 										
 										break;
@@ -7593,12 +9311,11 @@ int main() {
 		
 								switch(subChoice) {
 									case 1:
-										cout << "\n--- Add New Service ---\n" << endl;
 										serviceManager.addSvc(serviceTable);
 										break;
 									case 2: 
 										// View All Services
-										cout << "--- View All Services ---" << endl;
+										cout << "\n--- View All Services ---" << endl;
 										serviceTable.dispAllSvc();
 										break;
 									case 3: 
@@ -7659,13 +9376,14 @@ int main() {
 										break;
 									}
 		                    	}
+								break;
 		                    	
 		                    case 1: // Manage Categories
 		                        cout << "\n--- Category Management ---\n";
 		                        cout << "1. Add New Category\n";
 		                        cout << "2. View All Categories\n";
 		                        cout << "3. Edit Category\n";
-		                        cout << "0. Back to Main Menu\n";
+		                        cout << "0. Back to Main Menu\n\n";
 		                        cout << "Enter your choice (0-3): ";
 		                        cin >> subChoice;
 		                        
@@ -7707,7 +9425,7 @@ int main() {
 		                                appointment.addAppoint(appointmentTable, serviceTable, staffTable);
 		                                break;
 		                            case 2: {
-		                            	cout << "--- View All Appointments ---\n\n";
+		                            	cout << "\n--- View All Appointments ---\n";
 		                            	
 		                            	appointmentTable.displayAllAppoint();
 		                            	
@@ -7740,8 +9458,11 @@ int main() {
 										break;
 									} 
 									case 5: {
-		                            	cout << "--- Delete Appointment ---\n\n";
-										
+										appointment.editAppointment(appointmentTable);
+										break;
+									}
+									case 6: {
+										appointment.deleteAppointment(appointmentTable);
 										break;
 									}
 		                            case 0:
@@ -7810,6 +9531,13 @@ int main() {
 												cout << "Invalid choice, please try again.\n";
 											}
 										}	
+
+										break;
+
+									case 4: {
+										treatment.editTreatment(treatmentTable);
+										break;
+									}
 
 		                            case 0:
 		                                break;
@@ -7987,10 +9715,38 @@ int main() {
 								                cout << "Enter your choice (0-5): ";
 								                cin >> subChoice2;
 						                    	
-						                    	switch(subChoice2) {
-						                    		case 4: {
-						                    			patientTable.searchByEmail();
+												switch(subChoice2) {
+													case 1: {
+														ss.SearchbyFirstName(patientTable);
 														break;
+													}
+
+													case 2: {
+														ss.SearchbyLastName(patientTable);
+														break;
+													}
+
+													case 3: {
+														ss.SearchbyPhone(patientTable);
+														break;
+													}
+													
+													case 5: {
+														ss.SearchbyStatus(patientTable);
+														break;
+													}
+
+													case 4: {
+														patientTable.searchByEmail();
+														break;
+													}
+
+													case 0: {
+														break;
+													}
+
+													default: {
+														cout << "Invalid choice, please try again.\n";
 													}
 												}
 												
@@ -8007,8 +9763,22 @@ int main() {
 								                cin >> subChoice2;
 						                    	
 						                    	switch(subChoice2) {
+													case 1: {
+														ss.sortByAgeAscending(patientTable);
+														break;
+													}
+
+													case 2: {
+														ss.sortByAgeDescending(patientTable);
+														break;
+													}
+
 						                    		case 0: {
 														break;
+													}
+
+													default: {
+														cout << "Invalid choice, please try again.\n";
 													}
 												}
 												
@@ -8060,11 +9830,44 @@ int main() {
 								                cout << "Enter your choice (0-6): ";
 								                cin >> subChoice2;
 						                    	
-						                    	switch(subChoice2) {
-						                    		case 4: {
-					    								staffTable.searchByEmail();
+												switch(subChoice2) {
+													case 1: {
+														ss.SearchStaffByFirstName(staffTable);
 														break;
 													}
+
+													case 2: {
+														ss.SearchStaffByLastName(staffTable);
+														break;
+													}
+
+													case 3: {
+														ss.SearchStaffByPhone(staffTable);
+														break;
+													}
+													
+													case 4: {
+														staffTable.searchByEmail();
+														break;
+													}
+
+													case 5: {
+														ss.SearchStaffByRole(staffTable);
+														break;
+													}
+
+													case 6: {
+														ss.SearchStaffByStatus(staffTable);
+														break;
+													}
+
+													case 0: {
+																break;
+															}
+
+															default: {
+																cout << "Invalid choice, please try again.\n";
+															}
 												}
 												
 												break;
