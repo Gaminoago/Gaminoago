@@ -64,6 +64,13 @@ struct tx {
     string nextSession;  // Next session details
 };
 
+struct coupon {
+	string couponCode;
+	float couponDis;
+	int couponQty;
+	string couponStat;
+};
+
 // Function copied from TPD4124 project, TEO & FOOK
 void maskPwd(string& password) {
     char ch;
@@ -592,44 +599,13 @@ class StaffManager {
 
 			cin.ignore();
 			
-			int statusOp;
-			bool statusLoop=1;
-
-			do {
-				cout << "--- Available Status ---\n";
-				cout << "1. Active\n";
-				cout << "2. Inactive\n\n";
-
-				cout << "Select status (1-2): ";
-				cin >> statusOp;
-
-				switch(statusOp) {
-					case 1: {
-						status="Active";
-						cout << "Selected: Active\n";
-						statusLoop=1;
-						break;
-					}
-
-					case 2: {
-						status="Inactive";
-						cout << "Selected: Inactive\n";
-						statusLoop=1;
-						break;
-					}
-
-					default: {
-						cout << "Invalid choice, please try again.\n";
-						statusLoop=0;
-					}
-				}
-			} while(statusLoop==0);
+			status="Active";
 	
 	        // Create new Staff object
 	        Staff* newStaff = new Staff(fName, lName, phone, email, password, status, nric, role);
 	
 	        char choice;
-	        cout << "\nDo you want to save this staff? (Y/N): ";
+	        cout << "Do you want to save this staff? (Y/N): ";
 	        cin >> choice;
 	
 	        if (toupper(choice) == 'Y') {
@@ -863,10 +839,10 @@ public:
 		do {
 			cout << "\n--- Edit Service ---" << endl;
 			cout << "1. Edit Service Name (Current: " << selectedService->svcName << ")" << endl;
-			cout << "2. Edit Price (Current: " << selectedService->svcPrice << ")" << endl;
-			cout << "3. Edit Duration (Current: " << selectedService->svcDur << ")" << endl;
+			cout << "2. Edit Price        (Current: " << selectedService->svcPrice << ")" << endl;
+			cout << "3. Edit Duration     (Current: " << selectedService->svcDur << ")" << endl;
 			cout << "0. Save and Return\n" << endl;
-			cout << "Select field to edit (0-1): ";
+			cout << "Select field to edit (0-3): ";
 			cin >> choice;
 			
 			cin.ignore();
@@ -1140,6 +1116,407 @@ class Svc {
 	    }
 };
 
+// Coupon Hash Table class
+class CouponHT {
+private:
+    const int TBL_SIZE = 100;
+    coupon** tbl;  // Pointer to an array of coupon pointers
+    
+    // Hash function for coupon code
+    int hashFn(const string& code) {
+        int sum = 0;
+        for (int i = 0; i < code.length(); i++) {
+            sum += (int)code[i]; // Sum ASCII values
+        }
+        return sum % TBL_SIZE; // Hashing to table size
+    }
+
+public:
+    // Constructor
+    CouponHT() {
+        tbl = new coupon*[TBL_SIZE]; // Dynamic array for the hash table
+        for (int i = 0; i < TBL_SIZE; i++) {
+            tbl[i] = NULL; // Initialize each slot as NULL
+        }
+    }
+    
+    // Destructor
+    ~CouponHT() {
+        for (int i = 0; i < TBL_SIZE; i++) {
+            if (tbl[i] != NULL) {
+                delete tbl[i]; // Free the memory for non-NULL entries
+            }
+        }
+        delete[] tbl; // Free the dynamic array
+    }
+
+	// Add to CouponHT class
+	int getTableSize() const {
+		return TBL_SIZE;
+	}
+
+	coupon* getEntry(int index) const {
+		if (index >= 0 && index < TBL_SIZE)
+			return tbl[index];
+		return NULL;
+	}
+    
+    // Insert coupon into the hash table using quadratic probing
+    void insert(coupon* cp) {
+        int hash = hashFn(cp->couponCode);
+        int i = 0;
+        
+        // Quadratic probing
+        while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
+            i++;
+            if (i >= TBL_SIZE) {
+                cout << "Hash table is full!" << endl;
+                return;
+            }
+        }
+        
+        // Found an empty slot, create a new coupon object and copy data
+        tbl[(hash + i * i) % TBL_SIZE] = new coupon;
+        *tbl[(hash + i * i) % TBL_SIZE] = *cp;  // Copy data into the new slot
+    }
+    
+    // Load coupons from file (coupon.txt)
+	void loadFromFile() {
+		ifstream inFile("coupon.txt");
+		
+		if (!inFile.is_open()) {
+			cout << "Unable to open coupon.txt for reading." << endl;
+			return;
+		}
+		
+		// Clear existing entries
+		for (int i = 0; i < TBL_SIZE; i++) {
+			if (tbl[i] != NULL) {
+				delete tbl[i];
+				tbl[i] = NULL;
+			}
+		}
+		
+		string code, status, line;
+		float discount;
+		int qty;
+		
+		while (getline(inFile, code)) {
+			// Skip empty lines
+			if (code.empty()) {
+				continue;
+			}
+			
+			// Read discount
+			if (!(inFile >> discount)) {
+				break;
+			}
+			inFile.ignore(); // Skip newline
+			
+			// Read quantity
+			if (!(inFile >> qty)) {
+				break;
+			}
+			inFile.ignore(); // Skip newline
+			
+			// Read status
+			if (!getline(inFile, status)) {
+				break;
+			}
+			
+			// Skip empty line if present
+			getline(inFile, line);
+			
+			// Create and insert coupon
+			coupon* cp = new coupon();
+			cp->couponCode = code;
+			cp->couponDis = discount;
+			cp->couponQty = qty;
+			cp->couponStat = status;
+			
+			// cout << cp->couponCode << ", Discount: " << cp->couponDis << ", Qty: " << cp->couponQty << ", Status: '" << cp->couponStat << "'" << endl;
+			
+			insert(cp);
+		}
+		
+		inFile.close();
+	}
+
+    // Display all coupons in hash table
+    void displayAllCoupons() {
+        int count = 0;
+        for (int i = 0; i < TBL_SIZE; i++) {
+            if (tbl[i] != NULL) {
+                cout << "\n--- Coupon " << ++count << " ---" << endl;
+                cout << "Coupon Code     : " << tbl[i]->couponCode << endl;
+                cout << "Discount        : " << tbl[i]->couponDis * 100 << "%" << endl;
+                cout << "Quantity Left   : " << tbl[i]->couponQty << endl;
+                cout << "Status          : " << tbl[i]->couponStat << endl;
+            }
+        }
+        if (count == 0) {
+            cout << "No coupons found." << endl;
+        }
+    }
+    
+    // Save new coupon to coupon.txt
+    void saveCouponToFile(coupon* cp) {
+        ofstream outFile;
+        outFile.open("coupon.txt", ios::app); // Append mode
+        
+        if (outFile.is_open()) {
+            outFile << cp->couponCode << endl;
+            outFile << cp->couponDis << endl;
+            outFile << cp->couponQty << endl;
+            outFile << cp->couponStat << endl << endl;
+            cout << "Coupon saved successfully!" << endl;
+            outFile.close();
+        } else {
+            cout << "Unable to open coupon.txt for saving." << endl;
+        }
+    }
+    
+    // Edit an existing coupon
+    void editCoupon() {
+        // Create an array of coupons
+        coupon* couponArray[TBL_SIZE];
+        int count = 0;
+        
+        for (int i = 0; i < TBL_SIZE; i++) {
+            if (tbl[i] != NULL) {
+                couponArray[count++] = tbl[i];
+            }
+        }
+        
+        if (count == 0) {
+            cout << "No coupons available to edit." << endl;
+            return;
+        }
+        
+        // Display all coupons with numbers
+        cout << "\n--- Available Coupons ---\n";
+        for (int i = 0; i < count; i++) {
+            cout << (i+1) << ". " << couponArray[i]->couponCode << " (" 
+                 << couponArray[i]->couponDis * 100 << "%, " 
+                 << couponArray[i]->couponQty << " left, " 
+                 << couponArray[i]->couponStat << ")" << endl;
+        }
+        
+        // Let user select a coupon
+        int couponChoice;
+        cout << "\nEnter the number of the coupon to edit (1-" << count << "): ";
+        cin >> couponChoice;
+        
+        if (couponChoice < 1 || couponChoice > count) {
+            cout << "Invalid selection." << endl;
+            return;
+        }
+        
+        coupon* selectedCoupon = couponArray[couponChoice-1];
+        int choice;
+        
+        do {
+            cout << "\n--- Edit Coupon ---" << endl;
+            cout << "1. Edit Coupon Code     (Current: " << selectedCoupon->couponCode << ")" << endl;
+            cout << "2. Edit Discount        (Current: " << selectedCoupon->couponDis * 100 << "%)" << endl;
+            cout << "3. Edit Quantity        (Current: " << selectedCoupon->couponQty << ")" << endl;
+            cout << "4. Edit Status          (Current: " << selectedCoupon->couponStat << ")" << endl;
+            cout << "0. Save and Return\n" << endl;
+            cout << "Select field to edit (0-4): ";
+            cin >> choice;
+            
+            cin.ignore();
+            
+            switch(choice) {
+                case 1: {
+                    string newCode;
+                    cout << "Enter new Coupon Code: ";
+                    getline(cin, newCode);
+                    selectedCoupon->couponCode = newCode;
+                    break;
+                }
+                case 2: {
+                    float newDiscount;
+                    cout << "Enter new Discount (as decimal, e.g., 0.5 for 50%): ";
+                    cin >> newDiscount;
+                    selectedCoupon->couponDis = newDiscount;
+                    break;
+                }
+                case 3: {
+                    int newQuantity;
+                    cout << "Enter new Quantity: ";
+                    cin >> newQuantity;
+                    selectedCoupon->couponQty = newQuantity;
+                    break;
+                }
+                case 4: {
+                    int statusChoice;
+                    cout << "\n--- Available Status ---\n";
+                    cout << "1. Active\n";
+                    cout << "2. Inactive\n\n";
+                    
+                    do {
+                        cout << "Select status (1-2): ";
+                        cin >> statusChoice;
+                        
+                        if (statusChoice < 1 || statusChoice > 2) {
+                            cout << "Invalid selection. Please choose from the list (1-2)." << endl;
+                        }
+                    } while (statusChoice < 1 || statusChoice > 2);
+                    
+                    selectedCoupon->couponStat = (statusChoice == 1) ? "Active" : "Inactive";
+                    cout << "Selected: " << selectedCoupon->couponStat << endl;
+                    break;
+                }
+                case 0:
+                    // Update the file
+                    updateCouponFile();
+                    cout << selectedCoupon->couponCode << " coupon updated successfully!" << endl;
+                    break;
+                default:
+                    cout << "Invalid choice, please try again." << endl;
+            }
+        } while (choice != 0);
+    }
+    
+    // Delete a coupon
+    void deleteCoupon() {
+        // Create an array of coupons
+        coupon* couponArray[TBL_SIZE];
+        int count = 0;
+        int tableIndices[TBL_SIZE]; // To track original indices
+        
+        for (int i = 0; i < TBL_SIZE; i++) {
+            if (tbl[i] != NULL) {
+                couponArray[count] = tbl[i];
+                tableIndices[count] = i;
+                count++;
+            }
+        }
+        
+        if (count == 0) {
+            cout << "No coupons available to delete." << endl;
+            return;
+        }
+        
+        // Display all coupons with numbers
+        cout << "\n--- Available Coupons ---\n";
+        for (int i = 0; i < count; i++) {
+            cout << (i+1) << ". " << couponArray[i]->couponCode << " (" 
+                 << couponArray[i]->couponDis * 100 << "%, " 
+                 << couponArray[i]->couponQty << " left, " 
+                 << couponArray[i]->couponStat << ")" << endl;
+        }
+        
+        // Let user select a coupon
+        int couponChoice;
+        cout << "\nEnter the number of the coupon to delete (1-" << count << "): ";
+        cin >> couponChoice;
+        
+        if (couponChoice < 1 || couponChoice > count) {
+            cout << "Invalid selection." << endl;
+            return;
+        }
+        
+        int selectedIndex = tableIndices[couponChoice-1];
+        coupon* selectedCoupon = tbl[selectedIndex];
+        
+        char confirm;
+        cout << "\nAre you sure you want to delete coupon " 
+             << selectedCoupon->couponCode << "? (Y/N): ";
+        cin >> confirm;
+        
+        if (toupper(confirm) == 'Y') {
+            // Delete the coupon from the hash table
+            delete tbl[selectedIndex];
+            
+            // Set the entry to NULL
+            tbl[selectedIndex] = NULL;
+            
+            // Update the file
+            updateCouponFile();
+            cout << "Coupon deleted successfully!" << endl;
+        } else {
+            cout << "Deletion cancelled." << endl;
+        }
+    }
+    
+    // Update coupon.txt file after edits or deletions
+    void updateCouponFile() {
+        ofstream outFile("coupon.txt");
+        
+        if (outFile.is_open()) {
+            for (int i = 0; i < TBL_SIZE; i++) {
+                if (tbl[i] != NULL) {
+                    outFile << tbl[i]->couponCode << endl;
+                    outFile << tbl[i]->couponDis << endl;
+                    outFile << tbl[i]->couponQty << endl;
+                    outFile << tbl[i]->couponStat << endl << endl;
+                }
+            }
+            outFile.close();
+        } else {
+            cout << "Unable to open coupon.txt for updating." << endl;
+        }
+    }
+};
+
+// Class for managing Coupons
+class Coupon {
+public:
+    // Function to add a new coupon
+    void addCoupon(CouponHT& couponTable) {
+        string code, status;
+        float discount;
+        int quantity;
+
+        cout << "\nEnter Coupon Code: ";
+        cin.ignore(); // To clear any leftover newline character from previous input
+        getline(cin, code);
+        
+        cout << "Enter Discount (as decimal, e.g., 0.5 for 50%): ";
+        cin >> discount;
+        
+        cout << "Enter Quantity: ";
+        cin >> quantity;
+        
+        // Status selection
+        int statusChoice;
+        cout << "\n--- Available Status ---\n";
+        cout << "1. Active\n";
+        cout << "2. Inactive\n\n";
+        
+        do {
+            cout << "Select status (1-2): ";
+            cin >> statusChoice;
+            
+            if (statusChoice < 1 || statusChoice > 2) {
+                cout << "Invalid selection. Please choose from the list (1-2)." << endl;
+            }
+        } while (statusChoice < 1 || statusChoice > 2);
+        
+        status = (statusChoice == 1) ? "Active" : "Inactive";
+        cout << "Selected: " << status << endl;
+
+        // Populate data
+        coupon newCoupon;
+        newCoupon.couponCode = code;
+        newCoupon.couponDis = discount;
+        newCoupon.couponQty = quantity;
+        newCoupon.couponStat = status;
+
+        char choice;
+        cout << "\nDo you want to save this coupon? (Y/N): ";
+        cin >> choice;
+
+        if (toupper(choice) == 'Y') {
+            couponTable.saveCouponToFile(&newCoupon);  // Save to file
+            couponTable.insert(&newCoupon);  // Insert into hash table
+        } else {
+            cout << "Coupon not saved!" << endl;
+        }
+    }
+};
 
 // Hash table for appointments using quadratic probing - TEO
 class AppointHT {
@@ -1323,6 +1700,47 @@ class AppointHT {
 		friend void PatientsortByNetAmountDescending(AppointHT& appointmentTable, string patientEmail); //Allow Function PatientsortByNetAmountcending to get private value
 };
 
+void checkAppointDateInput(int& date) {
+    cout << "Enter appointment date (YYYYMMDD format): ";
+    cin >> date;
+    
+    int day, mth, year;
+    int maxDays;
+    
+    do {
+        year = date / 10000;
+        mth = (date / 100) % 100;
+        day = date % 100;
+  
+        if (year != 2025) {
+            cout << "Invalid selection. Please enter a date in 2025 (YYYYMMDD format): ";
+            cin >> date;
+            continue;
+        }
+  
+        if (mth < 1 || mth > 12) {
+            cout << "Invalid selection. Please enter a valid month (YYYYMMDD format): ";
+            cin >> date;
+            continue;
+        }
+
+        if (mth == 4 || mth == 6 || mth == 9 || mth == 11) {
+            maxDays = 30;
+        }
+        else if (mth == 2) {
+            maxDays = ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) ? 29 : 28;
+        }
+        else {
+            maxDays = 31;
+        }
+
+        if (day < 1 || day > maxDays) {
+            cout << "Invalid selection. Please enter a valid day (1-" << maxDays << ") for month " << mth << ": ";
+            cin >> date;
+        }
+    } while (day < 1 || day > maxDays || mth < 1 || mth > 12 || year != 2025);
+}
+
 // Class for Appointment - TEO
 class Appoint {
 	private:
@@ -1393,7 +1811,7 @@ class Appoint {
 				cout << "No services available. Please add services first." << endl;
 				return;
 			}
-			
+
 			svc** services = new svc*[serviceCount];
 			int index = 0;
 			for (int i = 0; i < serviceTable.getTableSize(); i++) {
@@ -1401,7 +1819,7 @@ class Appoint {
 					services[index++] = serviceTable.getEntry(i);
 				}
 			}
-			
+
 			// Sort services
 			for (int i = 0; i < serviceCount - 1; i++) {
 				int currentMin = i;
@@ -1416,32 +1834,30 @@ class Appoint {
 					services[currentMin] = temp;
 				}
 			}
-			
+
 			cout << "\nAvailable Services:\n";
 			for (int i = 0; i < serviceCount; i++) {
 				cout << i+1 << ". " << services[i]->svcName 
 					<< " (" << services[i]->svcDur << " min, RM " 
 					<< services[i]->svcPrice << ")" << endl;
 			}
-			
+
 			int selection;
-			cout << "\nSelect a service (1-" << serviceCount << "): ";
-			cin >> selection;
-			
-			if (selection >= 1 && selection <= serviceCount) {
-				service = services[selection-1]->svcName;
-				grossAmt = services[selection-1]->svcPrice;
-				cout << "Selected: " << service << " (RM " << grossAmt << ")" << endl;
-			} else {
-				cout << "Invalid selection. Please enter service manually: ";
-				cin.ignore();
-				getline(cin, service);
-				cout << "Enter Service Amount: ";
-				cin >> grossAmt;
-			}
-			
+			do {
+				cout << "\nSelect a service (1-" << serviceCount << "): ";
+				cin >> selection;
+				
+				if (selection < 1 || selection > serviceCount) {
+					cout << "Invalid selection. Please choose from the list (1-" << serviceCount << ")." << endl;
+				}
+			} while (selection < 1 || selection > serviceCount);
+
+			service = services[selection-1]->svcName;
+			grossAmt = services[selection-1]->svcPrice;
+			cout << "Selected: " << service << " (RM " << grossAmt << ")" << endl;
+
 			delete[] services;
-			
+
 			// Process counselor selection using StaffHT
 			int counselorCount = 0;
 			for (int i = 0; i < staffTable.getTableSize(); i++) {
@@ -1453,9 +1869,8 @@ class Appoint {
 			}
 			
 			if (counselorCount == 0) {
-				cin.ignore();
-				cout << "No counselors available. Please enter counselor manually: ";
-				getline(cin, counselor);
+				cout << "No counselors available. Cannot proceed without counselors." << endl;
+				// Return or handle the no-counselor situation appropriately
 			} else {
 				Staff** counselors = new Staff*[counselorCount];
 				int cIndex = 0;
@@ -1484,62 +1899,106 @@ class Appoint {
 						counselors[currentMin] = temp;
 					}
 				}
-				
+
 				cout << "\nAvailable Counselors:\n";
 				for (int i = 0; i < counselorCount; i++) {
 					cout << i+1 << ". " << counselors[i]->getFName() << " " 
 						<< counselors[i]->getLName() << endl;
 				}
-				
+
 				int counselorSelection;
-				cout << "\nSelect a counselor (1-" << counselorCount << "): ";
-				cin >> counselorSelection;
-				
-				if (counselorSelection >= 1 && counselorSelection <= counselorCount) {
-					counselor = counselors[counselorSelection-1]->getFName() + " " + 
-							counselors[counselorSelection-1]->getLName();
-					cout << "Selected: " << counselor << endl << endl;
-				} else {
-					cin.ignore();
-					cout << "Invalid selection. Please enter counselor manually: ";
-					getline(cin, counselor);
-				}
+				do {
+					cout << "\nSelect a counselor (1-" << counselorCount << "): ";
+					cin >> counselorSelection;
+					
+					if (counselorSelection < 1 || counselorSelection > counselorCount) {
+						cout << "Invalid selection. Please choose from the list (1-" << counselorCount << ")." << endl;
+					}
+				} while (counselorSelection < 1 || counselorSelection > counselorCount);
+
+				counselor = counselors[counselorSelection-1]->getFName() + " " + 
+						counselors[counselorSelection-1]->getLName();
+				cout << "Selected: " << counselor << endl << endl;
 				
 				delete[] counselors;
 			}
+
 			
 			cin.ignore();
 
 			int modeOp;
-			cout << "Enter Mode (Online/Offline): ";
 			cout << "Available Modes:\n";
 			cout << "1. Online\n";
 			cout << "2. Offline\n\n";
-			cout << "Select a mode (1-2): ";
-			cin >> modeOp;
 
-			switch (modeOp)
-			{
+			do {
+				cout << "Select a mode (1-2): ";
+				cin >> modeOp;
+				
+				if (modeOp < 1 || modeOp > 2) {
+					cout << "Invalid selection. Please choose from the list (1-2)." << endl;
+				}
+			} while (modeOp < 1 || modeOp > 2);
+
+			switch (modeOp) {
 				case 1: {
-					mode="Online";
+					mode = "Online";
 					cout << "Selected: Online\n\n";
 					break;
 				}
-
 				case 2: {
-					mode="Offline";
+					mode = "Offline";
 					cout << "Selected: Offline\n\n";
 					break;
 				}
 			}
-			cout << "Enter Date (YYYYMMDD): ";
-			cin >> date;
+
+			checkAppointDateInput(date);
+
 			cin.ignore();
+			int timeChoice;
+			cout << "\nAvailable Time Slots:\n";
+			cout << "1. 0800 (08:00 AM)\n";
+			cout << "2. 1000 (10:00 AM)\n";
+			cout << "3. 1300 (01:00 AM)\n";
+			cout << "4. 1500 (03:00 PM)\n";
+			cout << "5. 1700 (05:00 PM)\n";
+			cout << "6. 2000 (08:00 PM)\n";
 
-			cout << "Enter Time (HHMM): ";
-			getline(cin, time);
+			do {
+				cout << "\nSelect a time slot (1-6): ";
+				cin >> timeChoice;
+				
+				if (timeChoice < 1 || timeChoice > 6) {
+					cout << "Invalid selection. Please choose from the list (1-6)." << endl;
+				}
+			} while (timeChoice < 1 || timeChoice > 6);
 
-			cout << "Enter Patient Name: ";
+			switch (timeChoice) {
+				case 1:
+					time = "0800";
+					break;
+				case 2:
+					time = "1000";
+					break;
+				case 3:
+					time = "1300";
+					break;
+				case 4:
+					time = "1500";
+					break;
+				case 5:
+					time = "1700";
+					break;
+				case 6:
+					time = "2000";
+					break;
+			}
+
+			cout << "Selected time: " << time << endl;
+
+			cin.ignore();
+			cout << "\nEnter Patient Name: ";
 			getline(cin, ptName);
 
 			cout << "Enter Patient Phone: ";
@@ -1548,7 +2007,79 @@ class Appoint {
 
 			cout << "Enter Patient Email: ";
 			getline(cin, ptEmail);
+
+			string couponCode = "";
+			float discount = 0.0;
+			char hasCoupon;
+			CouponHT couponTable;
+			coupon* appliedCoupon = NULL; // Store the applied coupon for later use
 			
+			cout << "\nDo you have a coupon? (Y/N): ";
+			cin >> hasCoupon;
+
+			if (toupper(hasCoupon) == 'Y') {
+				couponTable.loadFromFile();
+				
+				bool validCoupon = false;
+				int attempts = 0;
+				
+				while (!validCoupon && attempts < 3) {
+					cout << "Enter Coupon Code: ";
+					cin >> couponCode;
+					
+					// Check if coupon exists and is valid
+					bool found = false;
+					for (int i = 0; i < couponTable.getTableSize(); i++) {
+						coupon* currentCoupon = couponTable.getEntry(i);
+						if (currentCoupon != NULL && currentCoupon->couponCode == couponCode) {
+							found = true;
+							
+							if (currentCoupon->couponStat == "Active" && currentCoupon->couponQty > 0) {
+								discount = currentCoupon->couponDis;
+								validCoupon = true;
+								appliedCoupon = currentCoupon; // Store the coupon for later use
+								
+								cout << "Coupon applied! " << discount * 100 << "% discount." << endl;
+								break;
+							} else if (currentCoupon->couponStat != "Active") {
+								cout << "This coupon is inactive." << endl;
+								break;
+							} else if (currentCoupon->couponQty <= 0) {
+								cout << "This coupon is out of stock." << endl;
+								break;
+							}
+						}
+					}
+					
+					if (!found) {
+						cout << "Invalid coupon code." << endl;
+					}
+					
+					if (!validCoupon) {
+						attempts++;
+						if (attempts < 3) {
+							char retry;
+							cout << "Try another coupon? (Y/N): ";
+							cin >> retry;
+							if (toupper(retry) != 'Y') {
+								break;
+							}
+						} else {
+							cout << "Maximum attempts reached." << endl;
+						}
+					}
+				}
+			}
+
+			// Calculate net amount with discount
+			double netAmt = grossAmt;
+			if (discount > 0) {
+				netAmt = grossAmt * (1 - discount);
+				cout << "\nOriginal Amount: RM " << fixed << setprecision(2) << grossAmt << endl;
+				cout << "Discount: " << discount * 100 << "%" << endl;
+				cout << "Net Amount: RM " << fixed << setprecision(2) << netAmt << endl;
+			}
+
 			// Fill data
 			appoint apt;
 			apt.appointID = id;
@@ -1561,15 +2092,21 @@ class Appoint {
 			apt.appointPtPhone = ptPhone;
 			apt.appointPtEmail = ptEmail;
 			apt.appointGrossAmt = grossAmt;
-			apt.appointNetAmt = grossAmt;
+			apt.appointNetAmt = netAmt; // Use the calculated net amount
 			apt.appointPayStat = "Unpaid";
 			apt.appointStat = "Pending";
-			
+
 			char choice;
 			cout << "\nDo you want to save this appointment? (Y/N): ";
 			cin >> choice;
 			
 			if (toupper(choice) == 'Y') {
+				// Only decrement coupon quantity when appointment is saved
+				if (appliedCoupon != NULL) {
+					appliedCoupon->couponQty--; // Decrement coupon quantity
+					couponTable.updateCouponFile(); // Update coupon file
+				}
+				
 				saveAppointToFile(apt);
 				appointmentTable.insert(&apt);
 				cout << "Appointment added successfully!" << endl;
@@ -1577,7 +2114,6 @@ class Appoint {
 				cout << "Appointment not saved!" << endl;
 			}
 		}
-
 
 		// Save appointment to file using Linked List - CHIN
 		void saveAppointToFile(appoint& apt) {
@@ -1651,18 +2187,18 @@ class Appoint {
 			
 			do {
 				cout << "\n--- Edit Appointment ---" << endl;
-				cout << "1. Edit Service         (Current: " << selectedApt->appointSvc << ")" << endl;
-				cout << "2. Edit Counselor       (Current: " << selectedApt->appointCouns << ")" << endl;
-				cout << "3. Edit Mode            (Current: " << selectedApt->appointMode << ")" << endl;
-				cout << "4. Edit Date            (Current: " << selectedApt->appointDate << ")" << endl;
-				cout << "5. Edit Time            (Current: " << selectedApt->appointTime << ")" << endl;
-				cout << "6. Edit Patient Name    (Current: " << selectedApt->appointPtName << ")" << endl;
-				cout << "7. Edit Patient Phone   (Current: " << selectedApt->appointPtPhone << ")" << endl;
-				cout << "8. Edit Patient Email   (Current: " << selectedApt->appointPtEmail << ")" << endl;
-				cout << "9. Edit Amount          (Current: " << selectedApt->appointNetAmt << ")" << endl;
+				cout << " 1. Edit Service        (Current: " << selectedApt->appointSvc << ")" << endl;
+				cout << " 2. Edit Counselor      (Current: " << selectedApt->appointCouns << ")" << endl;
+				cout << " 3. Edit Mode           (Current: " << selectedApt->appointMode << ")" << endl;
+				cout << " 4. Edit Date           (Current: " << selectedApt->appointDate << ")" << endl;
+				cout << " 5. Edit Time           (Current: " << selectedApt->appointTime << ")" << endl;
+				cout << " 6. Edit Patient Name   (Current: " << selectedApt->appointPtName << ")" << endl;
+				cout << " 7. Edit Patient Phone  (Current: " << selectedApt->appointPtPhone << ")" << endl;
+				cout << " 8. Edit Patient Email  (Current: " << selectedApt->appointPtEmail << ")" << endl;
+				cout << " 9. Edit Amount         (Current: " << selectedApt->appointNetAmt << ")" << endl;
 				cout << "10. Edit Payment Status (Current: " << selectedApt->appointPayStat << ")" << endl;
 				cout << "11. Edit Status         (Current: " << selectedApt->appointStat << ")" << endl;
-				cout << "0. Save and Return\n" << endl;
+				cout << " 0. Save and Return\n" << endl;
 				cout << "Select field to edit (0-11): ";
 				cin >> choice;
 				
@@ -2079,7 +2615,7 @@ class CatHT {
 				cout << "1. Edit Category ID   (Current: " << selectedCat->catID << ")" << endl;
 				cout << "2. Edit Category Name (Current: " << selectedCat->catName << ")" << endl;
 				cout << "0. Save and Return\n" << endl;
-				cout << "Select field to edit: ";
+				cout << "Select field to edit (0-2): ";
 				cin >> choice;
 				
 				cin.ignore();
@@ -3423,7 +3959,7 @@ class Tx {
 			int choice;
 			
 			do {
-				cout << "\n--- Edit Treatment Record ---" << endl;
+				cout << "\n--- Edit Treatment ---" << endl;
 				cout << "1. Edit Patient Name  (Current: " << selectedTx->ptName << ")" << endl;
 				cout << "2. Edit Patient Phone (Current: " << selectedTx->ptPhone << ")" << endl;
 				cout << "3. Edit Patient Email (Current: " << selectedTx->ptEmail << ")" << endl;
@@ -4294,86 +4830,7 @@ class SearchSort{
 				}
 				delete[] appointments; 
 		}
-		
-		// Searh Appointment by Counsellor (Binary Search)
-		void SearchbyCounsellor(AppointHT& appointmentTable) {
-			string targetCouns;
-			
-			cout << "\nEnter counsellor to search: ";
-			cin.ignore();
-			getline(cin, targetCouns);
-			
-			// Count non-null appointments
-			count = 0;
-			for ( i = 0; i < appointmentTable.getTableSize() ; i++) {
-				if (appointmentTable.getEntry(i) != NULL) {
-					count++;
-				}
-			}
-				
-			if (count == 0) {
-				cout << "No appointments available to search." << endl;
-				return;
-			}
-				
-			// Create dynamic array
-			appoint** appointments = new appoint*[count];
-			index = 0;
-			for ( i = 0; i < appointmentTable.getTableSize() ; i++) {
-				if (appointmentTable.getEntry(i) != NULL) {
-					appointments[index++] = appointmentTable.getEntry(i);
-				}
-			}  
-			
-			sortByCouns(appointments, count);
-			
-			first = 0;
-			last = count - 1;
-			found = 0;
-			
-			while (first <= last) {
-					mid = first + (last - first) / 2;
-					string currentCouns = appointments[mid]->appointCouns;
 	
-					if (currentCouns == targetCouns) {
-						// Display the found appointment
-						displayAppointment(appointments[mid]);
-						found = 1;
-	
-						// Check for duplicates on left side
-						int firstDup = mid - 1;
-						while (firstDup >= 0 && appointments[firstDup]->appointCouns == targetCouns) {
-							displayAppointment(appointments[firstDup]);
-							found++;
-							firstDup--;
-						}
-	
-						// Check for duplicates on right side
-						int lastDup = mid + 1;
-						while (lastDup < count && appointments[lastDup]->appointCouns == targetCouns) {
-							displayAppointment(appointments[lastDup]);
-							found++;
-							lastDup++;
-						}
-	
-						cout << "\nTotal matches found: " << found << endl;
-						delete[] appointments;
-						return;
-					}
-	
-					if (currentCouns < targetCouns) {
-						first = mid + 1;
-					} else {
-						last = mid - 1;
-					}
-				}
-	
-				if (!found) {
-					cout << "No appointments found for: " << targetCouns << endl;
-				}
-				delete[] appointments; 
-		}
-		
 		// Searh Appointment by Email (Binary Search)
 		void SearchbyEmail(AppointHT& appointmentTable) {
 			string targetEmail;
@@ -4532,85 +4989,6 @@ class SearchSort{
 			delete[] appointments; 
 		}
 		
-		// Search appointments by Mode (Binary Search)
-		void SearchbyMode(AppointHT& appointmentTable) {
-			string targetMode;
-			
-			cout << "Enter mode to search (Online or Offline): ";
-			cin.ignore();
-			getline(cin, targetMode);
-			
-			// Count non-null appointments
-			count = 0;
-			for (i = 0; i < appointmentTable.getTableSize(); i++) {
-				if (appointmentTable.getEntry(i) != NULL) {
-					count++;
-				}
-			}
-				
-			if (count == 0) {
-				cout << "No appointments available to search." << endl;
-				return;
-			}
-				
-			// Create dynamic array
-			appoint** appointments = new appoint*[count];
-			index = 0;
-			for (i = 0; i < appointmentTable.getTableSize(); i++) {
-				if (appointmentTable.getEntry(i) != NULL) {
-					appointments[index++] = appointmentTable.getEntry(i);
-				}
-			}  
-			
-			sortByMode(appointments, count);
-			
-			first = 0;
-			last = count - 1;
-			found = 0;
-			
-			while (first <= last) {
-				int mid = first + (last - first) / 2;
-				string currentMode = appointments[mid]->appointMode;
-		
-				if (currentMode == targetMode) {
-					// Display the found appointment
-					displayAppointment(appointments[mid]);
-					found++;
-		
-					// Check for duplicates on left side
-					int firstDup = mid - 1;
-					while (firstDup >= 0 && appointments[firstDup]->appointMode == targetMode) {
-						displayAppointment(appointments[firstDup]);
-						found++;
-						firstDup--;
-					}
-		
-					// Check for duplicates on right side
-					int lastDup = mid + 1;
-					while (lastDup < count && appointments[lastDup]->appointMode == targetMode) {
-						displayAppointment(appointments[lastDup]);
-						found++;
-						lastDup++;
-					}
-		
-					cout << "\nTotal matches found: " << found << endl;
-					delete[] appointments;
-					return;
-				}
-		
-				if (currentMode < targetMode) {
-					first = mid + 1;
-				} else {
-					last = mid - 1;
-				}
-			}
-		
-			if (!found) {
-				cout << "No appointments found for mode: " << targetMode << endl;
-			}
-			delete[] appointments; 
-		}
-		
 		// Search appointments by Patient's Phone (Binary Search)
 		void SearchbyPtPhone(AppointHT& appointmentTable) {
 			int targetPhone;
@@ -4689,86 +5067,7 @@ class SearchSort{
 			}
 			delete[] appointments; 
 		}
-		
-		// Search appointments by Payment Status (Binary Search)
-		void SearchbyPaymentState(AppointHT& appointmentTable) {
-			string targetPayStat;
-			
-			cout << "Enter payment status to search (Unpaid or Paid): ";
-			cin.ignore();
-			getline(cin, targetPayStat);
-			
-			// Count non-null appointments
-			count = 0;
-			for (i = 0; i < appointmentTable.getTableSize(); i++) {
-				if (appointmentTable.getEntry(i) != NULL) {
-					count++;
-				}
-			}
-				
-			if (count == 0) {
-				cout << "No appointments available to search." << endl;
-				return;
-			}
-				
-			// Create dynamic array
-			appoint** appointments = new appoint*[count];
-			index = 0;
-			for (i = 0; i < appointmentTable.getTableSize(); i++) {
-				if (appointmentTable.getEntry(i) != NULL) {
-					appointments[index++] = appointmentTable.getEntry(i);
-				}
-			}  
-			
-			sortByPaymentState(appointments, count);
-			
-			first = 0;
-			last = count - 1;
-			found = 0;
-			
-			while (first <= last) {
-				int mid = first + (last - first) / 2;
-				string currentPayStat = appointments[mid]->appointPayStat;
-		
-				if (currentPayStat == targetPayStat) {
-					// Display the found appointment
-					displayAppointment(appointments[mid]);
-					found++;
-		
-					// Check for duplicates on left side
-					int firstDup = mid - 1;
-					while (firstDup >= 0 && appointments[firstDup]->appointPayStat == targetPayStat) {
-						displayAppointment(appointments[firstDup]);
-						found++;
-						firstDup--;
-					}
-		
-					// Check for duplicates on right side
-					int lastDup = mid + 1;
-					while (lastDup < count && appointments[lastDup]->appointPayStat == targetPayStat) {
-						displayAppointment(appointments[lastDup]);
-						found++;
-						lastDup++;
-					}
-		
-					cout << "\nTotal matches found: " << found << endl;
-					delete[] appointments;
-					return;
-				}
-		
-				if (currentPayStat < targetPayStat) {
-					first = mid + 1;
-				} else {
-					last = mid - 1;
-				}
-			}
-		
-			if (!found) {
-				cout << "No appointments found for payment status: " << targetPayStat << endl;
-			}
-			delete[] appointments; 
-		}
-		
+
 		// Search appointments by Appointment Status (Binary Search)
 		void SearchbyStatus(AppointHT& appointmentTable) {
 			string targetStat;
@@ -4844,83 +5143,6 @@ class SearchSort{
 		
 			if (!found) {
 				cout << "No appointments found for status: " << targetStat << endl;
-			}
-			delete[] appointments; 
-		}
-		
-		// Search appointments by Appointment ID (Binary Search)
-		void SearchbyID(AppointHT& appointmentTable) {
-			string targetID;
-			
-			cout << "Enter appointment ID: ";
-			cin.ignore();
-			getline(cin, targetID);
-			
-			// Count non-null appointments
-			count = 0;
-			for (i = 0; i < appointmentTable.getTableSize(); i++) {
-				if (appointmentTable.getEntry(i) != NULL) {
-					count++;
-				}
-			}
-				
-			if (count == 0) {
-				cout << "No appointments available to search." << endl;
-				return;
-			}
-				
-			// Create dynamic array
-			appoint** appointments = new appoint*[count];
-			index = 0;
-			for (i = 0; i < appointmentTable.getTableSize(); i++) {
-				if (appointmentTable.getEntry(i) != NULL) {
-					appointments[index++] = appointmentTable.getEntry(i);
-				}
-			}  
-			
-			first = 0;
-			last = count - 1;
-			found = 0;
-			
-			while (first <= last) {
-				int mid = first + (last - first) / 2;
-				string currentID = appointments[mid]->appointID;
-		
-				if (currentID == targetID) {
-					// Display the found appointment
-					displayAppointment(appointments[mid]);
-					found++;
-		
-					// Check for duplicates on left side
-					int firstDup = mid - 1;
-					while (firstDup >= 0 && appointments[firstDup]->appointStat == targetID) {
-						displayAppointment(appointments[firstDup]);
-						found++;
-						firstDup--;
-					}
-		
-					// Check for duplicates on right side
-					int lastDup = mid + 1;
-					while (lastDup < count && appointments[lastDup]->appointID == targetID) {
-						displayAppointment(appointments[lastDup]);
-						found++;
-						lastDup++;
-					}
-		
-					cout << "\nTotal matches found: " << found << endl;
-					delete[] appointments;
-					return;
-				}
-		
-				if (currentID < targetID) {
-					first = mid + 1;
-				} else {
-					last = mid - 1;
-				}
-			}
-		
-			if (!found) {
-				cout << "No appointments found for status: " << targetID << endl;
 			}
 			delete[] appointments; 
 		}
@@ -5082,7 +5304,7 @@ class SearchSort{
 		    delete[] patientAppointments;
 		}
 
-			// Search Treatments by Appointment ID (Binary Search)
+		// Search Treatments by Appointment ID (Binary Search)
 		void SearchTxByAppointID(TxHT& treatmentTable) {
 		    string targetID;
 		    
@@ -5581,211 +5803,7 @@ class SearchSort{
 		    delete[] results;
 		}
 		
-		// Sort and Display services by Duration in Ascending order (Selection Sort)
-		void sortByDurationAscending(SvcHT& serviceTable) {
-		    // Count non-null services
-		    count = 0;
-		    for (i = 0; i < serviceTable.getTableSize(); i++) {
-		        if (serviceTable.getEntry(i) != NULL) {
-		            count++;
-		        }
-		    }
-		    if (count == 0) {
-		        cout << "No services to display." << endl;
-		        return;
-		    }
-		
-		    // Create dynamic array
-		    svc** services = new svc*[count];
-		    index = 0;
-		    for (i = 0; i < serviceTable.getTableSize(); i++) {
-		        if (serviceTable.getEntry(i) != NULL) {
-		            services[index++] = serviceTable.getEntry(i);
-		        }
-		    }
-		
-		    // Sort services by duration (Ascending)
-		    for (i = 0; i < count - 1; i++) {
-		        int currentDuration = i;
-		        for (j = i + 1; j < count; j++) {
-		            if (services[j]->svcDur < services[currentDuration]->svcDur) {
-		                currentDuration = j;
-		            }
-		        }
-		        if (currentDuration != i) {
-		            svc* temp = services[i];
-		            services[i] = services[currentDuration];
-		            services[currentDuration] = temp;
-		        }
-		    }
-		
-		    // Display the sorted services
-		    cout << "\nServices sorted by duration (ascending):" << endl;
-		    for (i = 0; i < count; i++) {
-		        cout << "\n--- Service " << i+1 << " ---" << endl;
-		        cout << "Service Name : " << services[i]->svcName << endl;
-		        cout << "Duration     : " << services[i]->svcDur << " minutes" << endl;
-		        cout << "Price        : RM " << services[i]->svcPrice << endl;
-		    }
-		
-		    // Clean up
-		    delete[] services;
-		}
-		
-		// Sort and Display services by Duration in Descending order (Selection Sort)
-		void sortByDurationDescending(SvcHT& serviceTable) {
-		    // Count non-null services
-		    count = 0;
-		    for (i = 0; i < serviceTable.getTableSize(); i++) {
-		        if (serviceTable.getEntry(i) != NULL) {
-		            count++;
-		        }
-		    }
-		    if (count == 0) {
-		        cout << "No services to display." << endl;
-		        return;
-		    }
-		
-		    // Create dynamic array
-		    svc** services = new svc*[count];
-		    index = 0;
-		    for (i = 0; i < serviceTable.getTableSize(); i++) {
-		        if (serviceTable.getEntry(i) != NULL) {
-		            services[index++] = serviceTable.getEntry(i);
-		        }
-		    }
-		
-		    // Sort services by duration (Descending)
-		    for (i = 0; i < count - 1; i++) {
-		        int currentDuration = i;
-		        for (j = i + 1; j < count; j++) {
-		            if (services[j]->svcDur > services[currentDuration]->svcDur) {
-		                currentDuration = j;
-		            }
-		        }
-		        if (currentDuration != i) {
-		            svc* temp = services[i];
-		            services[i] = services[currentDuration];
-		            services[currentDuration] = temp;
-		        }
-		    }
-		
-		    // Display the sorted services
-		    cout << "\nServices sorted by duration (descending):" << endl;
-		    for (i = 0; i < count; i++) {
-		        cout << "\n--- Service " << i+1 << " ---" << endl;
-		        cout << "Service Name : " << services[i]->svcName << endl;
-		        cout << "Duration     : " << services[i]->svcDur << " minutes" << endl;
-		        cout << "Price        : RM " << services[i]->svcPrice << endl;
-		    }
-		
-		    // Clean up
-		    delete[] services;
-		}
-		
-		// Sort and Display services by Price in Ascending order (Selection Sort)
-		void sortByPriceAscending(SvcHT& serviceTable) {
-		    // Count non-null services
-		    count = 0;
-		    for (i = 0; i < serviceTable.getTableSize(); i++) {
-		        if (serviceTable.getEntry(i) != NULL) {
-		            count++;
-		        }
-		    }
-		    if (count == 0) {
-		        cout << "No services to display." << endl;
-		        return;
-		    }
-		
-		    // Create dynamic array
-		    svc** services = new svc*[count];
-		    index = 0;
-		    for (i = 0; i < serviceTable.getTableSize(); i++) {
-		        if (serviceTable.getEntry(i) != NULL) {
-		            services[index++] = serviceTable.getEntry(i);
-		        }
-		    }
-		
-		    // Sort services by price (Ascending)
-		    for (i = 0; i < count - 1; i++) {
-		        int minPriceIndex = i;
-		        for (j = i + 1; j < count; j++) {
-		            if (services[j]->svcPrice < services[minPriceIndex]->svcPrice) {
-		                minPriceIndex = j;
-		            }
-		        }
-		        if (minPriceIndex != i) {
-		            svc* temp = services[i];
-		            services[i] = services[minPriceIndex];
-		            services[minPriceIndex] = temp;
-		        }
-		    }
-		
-		    // Display the sorted services
-		    cout << "\nServices sorted by price (ascending):" << endl;
-		    for (i = 0; i < count; i++) {
-		        cout << "\n--- Service " << i+1 << " ---" << endl;
-		        cout << "Service Name : " << services[i]->svcName << endl;
-		        cout << "Duration     : " << services[i]->svcDur << " minutes" << endl;
-		        cout << "Price        : RM " << services[i]->svcPrice << endl;
-		    }
-		
-		    // Clean up
-		    delete[] services;
-		}
-		
-		// Sort and Display services by Price in Descending order (Selection Sort)
-		void sortByPriceDescending(SvcHT& serviceTable) {
-		    // Count non-null services
-		    count = 0;
-		    for (i = 0; i < serviceTable.getTableSize(); i++) {
-		        if (serviceTable.getEntry(i) != NULL) {
-		            count++;
-		        }
-		    }
-		    if (count == 0) {
-		        cout << "No services to display." << endl;
-		        return;
-		    }
-		
-		    // Create dynamic array
-		    svc** services = new svc*[count];
-		    index = 0;
-		    for (i = 0; i < serviceTable.getTableSize(); i++) {
-		        if (serviceTable.getEntry(i) != NULL) {
-		            services[index++] = serviceTable.getEntry(i);
-		        }
-		    }
-		
-		    // Sort services by price (Descending)
-		    for (i = 0; i < count - 1; i++) {
-		        int minPriceIndex = i;
-		        for (j = i + 1; j < count; j++) {
-		            if (services[j]->svcPrice > services[minPriceIndex]->svcPrice) {
-		                minPriceIndex = j;
-		            }
-		        }
-		        if (minPriceIndex != i) {
-		            svc* temp = services[i];
-		            services[i] = services[minPriceIndex];
-		            services[minPriceIndex] = temp;
-		        }
-		    }
-		
-		    // Display the sorted services
-		    cout << "\nServices sorted by price (descending):" << endl;
-		    for (i = 0; i < count; i++) {
-		        cout << "\n--- Service " << i+1 << " ---" << endl;
-		        cout << "Service Name : " << services[i]->svcName << endl;
-		        cout << "Duration     : " << services[i]->svcDur << " minutes" << endl;
-		        cout << "Price        : RM " << services[i]->svcPrice << endl;
-		    }
-		
-		    // Clean up
-		    delete[] services;
-		}
-
-				// Search Results by Name (Binary Search)
+		// Search Results by Name (Binary Search)
 		void SearchResultsByName(resultHT& resultTable) {
 		    string targetName;
 		    
@@ -7262,6 +7280,145 @@ class SearchSort{
 			delete[] patientResults;
 		}
 
+		// Search appointments by Appointment ID (Binary Search)
+		void SearchbyID(AppointHT& appointmentTable) {
+			string targetID;
+			
+			cout << "\nEnter appointment ID to search: ";
+			cin.ignore();
+			getline(cin, targetID);
+			
+			// Count non-null appointments
+			count = 0;
+			for (i = 0; i < appointmentTable.getTableSize(); i++) {
+				if (appointmentTable.getEntry(i) != NULL) {
+				count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No appointments available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			appoint** appointments = new appoint*[count];
+			index = 0;
+			for (i = 0; i < appointmentTable.getTableSize(); i++) {
+				if (appointmentTable.getEntry(i) != NULL) {
+				appointments[index++] = appointmentTable.getEntry(i);
+				}
+			}  
+			
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				int mid = first + (last - first) / 2;
+				string currentID = appointments[mid]->appointID;
+			
+				if (currentID == targetID) {
+				// Display the found appointment
+				displayAppointment(appointments[mid]);
+				found++;
+			
+				// Check for duplicates on left side
+				int firstDup = mid - 1;
+				while (firstDup >= 0 && appointments[firstDup]->appointStat == targetID) {
+				displayAppointment(appointments[firstDup]);
+				found++;
+				firstDup--;
+				}
+			
+				// Check for duplicates on right side
+				int lastDup = mid + 1;
+				while (lastDup < count && appointments[lastDup]->appointID == targetID) {
+				displayAppointment(appointments[lastDup]);
+				found++;
+				lastDup++;
+				}
+			
+				cout << "\nTotal matches found: " << found << endl;
+				delete[] appointments;
+				return;
+				}
+			
+				if (currentID < targetID) {
+				first = mid + 1;
+				} else {
+				last = mid - 1;
+				}
+			}
+			
+			if (!found) {
+				cout << "No appointments found for status: " << targetID << endl;
+			}
+			delete[] appointments; 
+		}
+
+		// Search appointments by Appointment ID for a specific patient (Binary Search)
+		void PatientSearchByID(AppointHT& appointmentTable, string patientEmail) {
+			string targetID;
+			
+			cout << "\nEnter appointment ID to search: ";
+			cin.ignore();
+			getline(cin, targetID);
+			
+			// Count non-null appointments that belong to the patient
+			int count = 0;
+			for (int i = 0; i < appointmentTable.getTableSize(); i++) {
+				if (appointmentTable.getEntry(i) != NULL && 
+				appointmentTable.getEntry(i)->appointPtEmail == patientEmail) {
+				count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "You don't have any appointments." << endl;
+				return;
+			}
+				
+			// Create dynamic array of patient's appointments only
+			appoint** patientAppointments = new appoint*[count];
+			int index = 0;
+			for (int i = 0; i < appointmentTable.getTableSize(); i++) {
+				if (appointmentTable.getEntry(i) != NULL && 
+				appointmentTable.getEntry(i)->appointPtEmail == patientEmail) {
+				patientAppointments[index++] = appointmentTable.getEntry(i);
+				}
+			}
+			
+			// Binary search
+			int first = 0;
+			int last = count - 1;
+			bool found = false;
+			
+			while (first <= last) {
+				int mid = first + (last - first) / 2;
+				string currentID = patientAppointments[mid]->appointID;
+
+				if (currentID == targetID) {
+				// Display the found appointment
+				displayAppointment(patientAppointments[mid]);
+				found = true;
+				break;
+				}
+
+				if (currentID < targetID) {
+				first = mid + 1;
+				} else {
+				last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No appointment found with ID: " << targetID << endl;
+			}
+			
+			delete[] patientAppointments;
+		}
+
 	};
 
 
@@ -7269,18 +7426,19 @@ class SearchSort{
     void displaysortedAppointment(appoint* apt) {
         if (!apt) return;
         cout << "\n--- Appointment Found ---\n";
-        cout << "ID             : " << apt->appointID << "\n";
-        cout << "Service        : " << apt->appointSvc << "\n";
-		cout << "Counselor      : " << apt->appointCouns << "\n";
-		cout << "Mode           : " << apt->appointMode << "\n";
-        cout << "Date           : " << apt->appointDate << "\n";
-        cout << "Time           : " << apt->appointTime << "\n";
-		cout << "Patient        : " << apt->appointPtName << "\n";
-		cout << "Phone          : " << apt->appointPtPhone << "\n";
-		cout << "Email          : " << apt->appointPtEmail << "\n";
-		cout << "Net Amount     : " << apt->appointNetAmt << "\n";
-		cout << "Payment Status : " << apt->appointPayStat << "\n";
-        cout << "Status         : " << apt->appointStat << "\n";
+        cout << "ID: " << apt->appointID << "\n";
+        cout << "Service: " << apt->appointSvc << "\n";
+		cout << "Counselor: " << apt->appointCouns << "\n";
+		cout << "Mode: " << apt->appointMode << "\n";
+        cout << "Date: " << apt->appointDate << "\n";
+        cout << "Time: " << apt->appointTime << "\n";
+		cout << "Patient: " << apt->appointPtName << "\n";
+		cout << "Phone: " << apt->appointPtPhone << "\n";
+		cout << "Email: " << apt->appointPtEmail << "\n";
+		// cout << "Gross Amount: " << apt->appointGrossAmt << "\n";
+		cout << "Net Amount: " << apt->appointNetAmt << "\n";
+		cout << "Payment Status: " << apt->appointPayStat << "\n";
+        cout << "Status: " << apt->appointStat << "\n";
 	}
 	
 	// Sort and Display appointments by Date to Ascending (Selection Sort)
@@ -7289,8 +7447,8 @@ class SearchSort{
         int count = 0;
         int i, j;
         int index;
-        for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
+        for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
                 count++;
             }
         }
@@ -7302,9 +7460,9 @@ class SearchSort{
         // Create dynamic array
         appoint** apps = new appoint*[count];
         index = 0;
-        for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
-                apps[index++] = appointmentTable.getTableElement(i);
+        for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
+                apps[index++] = appointmentTable.tbl[i];
             }
         }
 		
@@ -7324,7 +7482,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\nAppointments Sorted by date (ascending):" << endl;
+        cout << "\nAppointments sorted by date (ascending):" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -7339,8 +7497,8 @@ class SearchSort{
         int count = 0;
         int i, j;
         int index;
-        for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
+        for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
                 count++;
             }
         }
@@ -7352,9 +7510,9 @@ class SearchSort{
         // Create dynamic array
         appoint** apps = new appoint*[count];
         index = 0;
-        for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
-                apps[index++] = appointmentTable.getTableElement(i);
+        for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
+                apps[index++] = appointmentTable.tbl[i];
             }
         }
 	
@@ -7388,8 +7546,8 @@ class SearchSort{
         int count = 0;
         int i, j;
         int index;
-		for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
+		for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
                 count++;
             }
         }
@@ -7401,9 +7559,9 @@ class SearchSort{
         // Create dynamic array
         appoint** apps = new appoint*[count];
         index = 0;
-        for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
-                apps[index++] = appointmentTable.getTableElement(i);
+        for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
+                apps[index++] = appointmentTable.tbl[i];
             }
         }
 		
@@ -7426,7 +7584,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\nAppointments sorted by date (ascending): " << endl;
+        cout << "\nAppointments sorted by date (ascending):" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -7441,8 +7599,8 @@ class SearchSort{
         int count = 0;
         int i, j;
         int index;
-		for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
+		for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
                 count++;
             }
         }
@@ -7454,9 +7612,9 @@ class SearchSort{
         // Create dynamic array
         appoint** apps = new appoint*[count];
         index = 0;
-        for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
-                apps[index++] = appointmentTable.getTableElement(i);
+        for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
+                apps[index++] = appointmentTable.tbl[i];
             }
         }
 		
@@ -7479,7 +7637,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\nAppointments sorted by date (ascending) ---" << endl;
+        cout << "\nAppointments sorted by date (ascending):" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -7494,8 +7652,8 @@ class SearchSort{
         int count = 0;
         int i, j;
         int index;
-        for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
+        for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
                 count++;
             }
         }
@@ -7507,9 +7665,9 @@ class SearchSort{
         // Create dynamic array
         appoint** apps = new appoint*[count];
         index = 0;
-        for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
-                apps[index++] = appointmentTable.getTableElement(i);
+        for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
+                apps[index++] = appointmentTable.tbl[i];
             }
         }
 		
@@ -7544,8 +7702,8 @@ class SearchSort{
         int count = 0;
         int i, j;
         int index;
-        for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
+        for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
                 count++;
             }
         }
@@ -7557,9 +7715,9 @@ class SearchSort{
         // Create dynamic array
         appoint** apps = new appoint*[count];
         index = 0;
-        for (i = 0; i < appointmentTable.getTableSize(); i++) {
-            if (appointmentTable.getTableElement(i) != NULL) {
-                apps[index++] = appointmentTable.getTableElement(i);
+        for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+            if (appointmentTable.tbl[i] != NULL) {
+                apps[index++] = appointmentTable.tbl[i];
             }
         }
 		
@@ -7579,7 +7737,7 @@ class SearchSort{
         }
 
         // Display the sorted appointments
-        cout << "\nAppointments sorted by net amount (descending): " << endl;
+        cout << "\nAppointments sorted by Net Amount (descending):" << endl;
         for (i = 0; i < count; i++) {
             displaysortedAppointment(apps[i]);
         }
@@ -7595,9 +7753,9 @@ class SearchSort{
         int index;
 		// Count patient's appointments
 	    count = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
 	            count++;
 	        }
 	    }
@@ -7610,10 +7768,10 @@ class SearchSort{
 	    // Create dynamic array of patient's appointments only
 	    appoint** apps = new appoint*[count];
 	    index = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
-	            apps[index++] = appointmentTable.getTableElement(i);
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
+	            apps[index++] = appointmentTable.tbl[i];
 	        }
 	    }
 	    
@@ -7633,7 +7791,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\nAppointments sorted by date (oldest to newest):" << endl;
+	    cout << "\nYour appointments sorted by date (oldest to newest):" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7649,9 +7807,9 @@ class SearchSort{
         int index;
 		// Count patient's appointments
 	    count = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
 	            count++;
 	        }
 	    }
@@ -7664,10 +7822,10 @@ class SearchSort{
 	    // Create dynamic array of patient's appointments only
 	    appoint** apps = new appoint*[count];
 	    index = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
-	            apps[index++] = appointmentTable.getTableElement(i);
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
+	            apps[index++] = appointmentTable.tbl[i];
 	        }
 	    }
 	
@@ -7687,7 +7845,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\nAppointments sorted by date (oldest first):" << endl;
+	    cout << "\nYour appointments sorted by date (newest to oldest):" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7703,9 +7861,9 @@ class SearchSort{
         int index;
 		// Count patient's appointments
 	    count = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
 	            count++;
 	        }
 	    }
@@ -7718,10 +7876,10 @@ class SearchSort{
 	    // Create dynamic array of patient's appointments only
 	    appoint** apps = new appoint*[count];
 	    index = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
-	            apps[index++] = appointmentTable.getTableElement(i);
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
+	            apps[index++] = appointmentTable.tbl[i];
 	        }
 	    }
 	    
@@ -7744,7 +7902,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\nAppointments sorted by time (earliest first):" << endl;
+	    cout << "\nYour appointments sorted by time (earliest first):" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7760,9 +7918,9 @@ class SearchSort{
         int index;
 		// Count patient's appointments
 	    count = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
 	            count++;
 	        }
 	    }
@@ -7775,10 +7933,10 @@ class SearchSort{
 	    // Create dynamic array of patient's appointments only
 	    appoint** apps = new appoint*[count];
 	    index = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
-	            apps[index++] = appointmentTable.getTableElement(i);
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
+	            apps[index++] = appointmentTable.tbl[i];
 	        }
 	    }
 	    
@@ -7801,7 +7959,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\nAppointments sorted by time (latest first):" << endl;
+	    cout << "\nYour appointments sorted by time (latest first):" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7817,9 +7975,9 @@ class SearchSort{
         int index;
 		// Count patient's appointments
 	    count = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
 	            count++;
 	        }
 	    }
@@ -7832,10 +7990,10 @@ class SearchSort{
 	    // Create dynamic array of patient's appointments only
 	    appoint** apps = new appoint*[count];
 	    index = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
-	            apps[index++] = appointmentTable.getTableElement(i);
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
+	            apps[index++] = appointmentTable.tbl[i];
 	        }
 	    }
 	    
@@ -7855,7 +8013,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\nAppointments sorted by cost (lowest to highest):" << endl;
+	    cout << "\nYour appointments sorted by cost (lowest to highest):" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7871,9 +8029,9 @@ class SearchSort{
         int index;
 		// Count patient's appointments
 	    count = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
 	            count++;
 	        }
 	    }
@@ -7886,10 +8044,10 @@ class SearchSort{
 	    // Create dynamic array of patient's appointments only
 	    appoint** apps = new appoint*[count];
 	    index = 0;
-	    for (i = 0; i < appointmentTable.getTableSize(); i++) {
-	        if (appointmentTable.getTableElement(i) != NULL && 
-	            appointmentTable.getTableElement(i)->appointPtEmail == patientEmail) {
-	            apps[index++] = appointmentTable.getTableElement(i);
+	    for (i = 0; i < appointmentTable.TBL_SIZE; i++) {
+	        if (appointmentTable.tbl[i] != NULL && 
+	            appointmentTable.tbl[i]->appointPtEmail == patientEmail) {
+	            apps[index++] = appointmentTable.tbl[i];
 	        }
 	    }
 	    
@@ -7909,7 +8067,7 @@ class SearchSort{
 	    }
 	
 	    // Display the sorted appointments
-	    cout << "\nAppointments sorted by cost (Highest to Lowest): " << endl;
+	    cout << "\nYour appointments sorted by cost (highest to lowest):" << endl;
 	    for (i = 0; i < count; i++) {
 	        displaysortedAppointment(apps[i]);
 	    }
@@ -7917,7 +8075,7 @@ class SearchSort{
 	    // Clean up
 	    delete[] apps;
 	}
-
+	
 int main() {
     AppointHT appointmentTable;
     Appoint appointment;
@@ -7935,6 +8093,7 @@ int main() {
     Tx treatment;
     UserManager userManager;
     SearchSort ss;
+	CouponHT couponTable;
 
     // Load existing data from files
     appointmentTable.loadFromFile();
@@ -7945,6 +8104,7 @@ int main() {
     testTable.loadQuestionsFromFile();
     resultTable.loadResultsFromFile();
     treatmentTable.loadFromFile();
+	couponTable.loadFromFile();
     
     test testManager(testTable, resultTable);
 
@@ -8049,8 +8209,6 @@ int main() {
                                 currentStatus = foundPatient->getStatus();
                                 isLoggedIn = true;
                                 loginSuccessful = true;
-                                
-                                cout << "Login successful!\n";
                             } else {
                                 cout << "Incorrect password. Please try again.\n";
                             }
@@ -8095,8 +8253,6 @@ int main() {
                                 currentStatus = foundStaff->getStatus();
                                 isLoggedIn = true;
                                 loginSuccessful = true;
-                                
-                                cout << "Login successful!"<< endl;
                             } else {
                                 cout << "Incorrect password. Please try again.\n";
                             }
@@ -8109,7 +8265,19 @@ int main() {
                 }
             }
         }
-        
+
+		// After successful login, check user status
+		if (loginSuccessful) {
+			// Verify user status
+			if (currentStatus == "Inactive") {
+				cout << "Your account is currently inactive. Login denied. Please contact us for assistance.\n\n";
+				loginSuccessful = false;
+				continue;  // Return to login loop
+			} else {
+				cout << "Login successful!"<< endl;
+			}
+		}
+
         // Display appropriate menu based on user role
         int choice;
         bool loggedOut = false;
@@ -8119,49 +8287,49 @@ int main() {
             
             // Main menu options based on role
             if (currentRole == 0) { // Patient
-                cout << "1 . View Services\n";
-                cout << "2 . Manage Appointments\n";
-                cout << "3 . View Treatments\n";
-                cout << "4 . Manage Tests\n";
-                cout << "5 . Edit My Profile\n"; 
-				cout << "0 . Logout\n";
+                cout << " 1. View Services\n";
+                cout << " 2. Manage Appointments\n";
+                cout << " 3. View Treatments\n";
+                cout << " 4. Manage Tests\n";
+                cout << " 5. Edit My Profile\n"; 
+				cout << " 0. Logout\n";
 	            cout << "-1. Exit Program\n\n";
 	            
 	            cout << "Enter your choice (-1-5): ";
 	            cin >> choice;
             } else if (currentRole == 1) { // Counsellor
-                cout << "1 . View Services\n";
-                cout << "2 . Manage Appointments\n";
-                cout << "3 . Manage Treatments\n";
-                cout << "4 . Manage Tests\n";
-		        cout << "5 . View Patients\n"; 
-		        cout << "6 . Edit My Profile\n"; 
-				cout << "0 . Logout\n";
+                cout << " 1. View Services\n";
+                cout << " 2. Manage Appointments\n";
+                cout << " 3. Manage Treatments\n";
+                cout << " 4. Manage Tests\n";
+		        cout << " 5. View Patients\n"; 
+		        cout << " 6. Edit My Profile\n"; 
+				cout << " 0. Logout\n";
 	            cout << "-1. Exit Program\n\n";
 	            
 	            cout << "Enter your choice (-1-6): ";
 	            cin >> choice;
             } else if (currentRole == 2) { // Staff
-                cout << "1 . Manage Services\n";
-                cout << "2 . Manage Appointments\n";
-                cout << "3 . Manage Treatments\n";
-                cout << "4 . Manage Tests\n";
-                cout << "5 . Manage Users\n";
-		        cout << "6 . Edit My Profile\n";
-				cout << "0 . Logout\n";
+                cout << " 1. Manage Services\n";
+                cout << " 2. Manage Appointments\n";
+                cout << " 3. Manage Treatments\n";
+                cout << " 4. Manage Tests\n";
+                cout << " 5. Manage Users\n";
+		        cout << " 6. Edit My Profile\n";
+				cout << " 0. Logout\n";
 	            cout << "-1. Exit Program\n\n";
 	            
 	            cout << "Enter your choice (-1-6): ";
 	            cin >> choice;
             } else if (currentRole == 3) { // Admin
-                cout << "1 . Manage Categories\n";
-                cout << "2 . Manage Services\n";
-                cout << "3 . Manage Appointments\n";
-                cout << "4 . Manage Treatments\n";
-                cout << "5 . Manage Tests\n";
-                cout << "6 . Manage Users\n";
-		        cout << "7 . Edit My Profile\n";
-				cout << "0 . Logout\n";
+                cout << " 1. Manage Categories\n";
+                cout << " 2. Manage Services\n";
+                cout << " 3. Manage Appointments\n";
+                cout << " 4. Manage Treatments\n";
+                cout << " 5. Manage Tests\n";
+                cout << " 6. Manage Users\n";
+		        cout << " 7. Edit My Profile\n";
+				cout << " 0. Logout\n";
 	            cout << "-1. Exit Program\n\n";
 	            
 	            cout << "Enter your choice (-1-7): ";
@@ -8277,20 +8445,26 @@ int main() {
 							}
 							case 3: {
                             	cout << "\n--- Search Appointments ---\n";
-                        		cout << "1. Search Appointments by Counsellor Name\n";
-                        		cout << "2. Search Appointments by Service\n";
+                        		cout << "1. Search Appointments by ID\n";
+                        		cout << "2. Search Appointments by Counsellor Name\n";
+                        		cout << "3. Search Appointments by Service\n";
                         		cout << "0. Back to Main Menu\n\n";
                         
-		                        cout << "Enter your choice (0-2): ";
+		                        cout << "Enter your choice (0-3): ";
 		                        cin >> subChoice2;
 		                        
 		                        switch(subChoice2) {
-		                        	case 1: {
+									case 1: {
+										ss.PatientSearchByID(appointmentTable, currentEmail);
+										break;
+									}
+
+		                        	case 2: {
 		                        		ss.PatientSearchByCounsellor(appointmentTable, currentEmail);
 										break;
 									}
 									
-									case 2: {
+									case 3: {
 										ss.PatientSearchByService(appointmentTable, currentEmail);
 										break;
 									}
@@ -8568,38 +8742,44 @@ int main() {
 							}
 							case 3: {
                             	cout << "\n--- Search Appointments ---\n";
-                        		cout << "1. Search Appointments by Service\n";
-                        		cout << "2. Search Appointments by Patient Name\n";
-                        		cout << "3. Search Appointments by Patient Phone\n";
-                        		cout << "4. Search Appointments by Patient Email\n";
-                        		cout << "5. Search Appointments by Status\n";
+                        		cout << "1. Search Appointments by ID\n";
+                        		cout << "2. Search Appointments by Service\n";
+                        		cout << "3. Search Appointments by Patient Name\n";
+                        		cout << "4. Search Appointments by Patient Phone\n";
+                        		cout << "5. Search Appointments by Patient Email\n";
+                        		cout << "6. Search Appointments by Status\n";
                         		cout << "0. Back to Main Menu\n\n";
                         
-		                        cout << "Enter your choice (0-5): ";
+		                        cout << "Enter your choice (0-6): ";
 		                        cin >> subChoice2;
 
 								switch(subChoice2) {
 									case 1: {
-										ss.SearchbyService(appointmentTable);
+		                        		ss.SearchbyID(appointmentTable);
 										break;
 									}
 
 									case 2: {
-										ss.SearchbyPatientName(appointmentTable);
+										ss.SearchbyService(appointmentTable);
 										break;
 									}
 
 									case 3: {
-										ss.SearchbyPtPhone(appointmentTable);
+										ss.SearchbyPatientName(appointmentTable);
 										break;
 									}
 
 									case 4: {
-										ss.SearchbyEmail(appointmentTable);
+										ss.SearchbyPtPhone(appointmentTable);
 										break;
 									}
 
 									case 5: {
+										ss.SearchbyEmail(appointmentTable);
+										break;
+									}
+
+									case 6: {
 										ss.SearchbyStatus(appointmentTable);
 										break;
 									}
@@ -9088,39 +9268,45 @@ int main() {
 								break;
 							}
 							case 3: {
-                            	cout << "\n--- Search Appointments ---\n";
-                        		cout << "1. Search Appointments by Service\n";
-                        		cout << "2. Search Appointments by Patient Name\n";
-                        		cout << "3. Search Appointments by Patient Phone\n";
-                        		cout << "4. Search Appointments by Patient Email\n";
-                        		cout << "5. Search Appointments by Status\n";
+								cout << "\n--- Search Appointments ---\n";
+                        		cout << "1. Search Appointments by ID\n";
+                        		cout << "2. Search Appointments by Service\n";
+                        		cout << "3. Search Appointments by Patient Name\n";
+                        		cout << "4. Search Appointments by Patient Phone\n";
+                        		cout << "5. Search Appointments by Patient Email\n";
+                        		cout << "6. Search Appointments by Status\n";
                         		cout << "0. Back to Main Menu\n\n";
                         
-		                        cout << "Enter your choice (0-5): ";
+		                        cout << "Enter your choice (0-6): ";
 		                        cin >> subChoice2;
 
 								switch(subChoice2) {
 									case 1: {
-										ss.SearchbyService(appointmentTable);
+		                        		ss.SearchbyID(appointmentTable);
 										break;
 									}
 
 									case 2: {
-										ss.SearchbyPatientName(appointmentTable);
+										ss.SearchbyService(appointmentTable);
 										break;
 									}
 
 									case 3: {
-										ss.SearchbyPtPhone(appointmentTable);
+										ss.SearchbyPatientName(appointmentTable);
 										break;
 									}
 
 									case 4: {
-										ss.SearchbyEmail(appointmentTable);
+										ss.SearchbyPtPhone(appointmentTable);
 										break;
 									}
 
 									case 5: {
+										ss.SearchbyEmail(appointmentTable);
+										break;
+									}
+
+									case 6: {
 										ss.SearchbyStatus(appointmentTable);
 										break;
 									}
@@ -9131,7 +9317,7 @@ int main() {
 									default:
 										cout << "Invalid choice, please try again.\n";
 								}
-
+		                        
 								break;
 							}
 							case 4: {
@@ -9754,50 +9940,56 @@ int main() {
 									}
 									case 3: {
 										cout << "\n--- Search Appointments ---\n";
-										cout << "1. Search Appointments by Service\n";
-										cout << "2. Search Appointments by Patient Name\n";
-										cout << "3. Search Appointments by Patient Phone\n";
-										cout << "4. Search Appointments by Patient Email\n";
-										cout << "5. Search Appointments by Status\n";
-										cout << "0. Back to Main Menu\n\n";
-								
-										cout << "Enter your choice (0-5): ";
-										cin >> subChoice2;
+                        		cout << "1. Search Appointments by ID\n";
+                        		cout << "2. Search Appointments by Service\n";
+                        		cout << "3. Search Appointments by Patient Name\n";
+                        		cout << "4. Search Appointments by Patient Phone\n";
+                        		cout << "5. Search Appointments by Patient Email\n";
+                        		cout << "6. Search Appointments by Status\n";
+                        		cout << "0. Back to Main Menu\n\n";
+                        
+		                        cout << "Enter your choice (0-6): ";
+		                        cin >> subChoice2;
 
-										switch(subChoice2) {
-											case 1: {
-												ss.SearchbyService(appointmentTable);
-												break;
-											}
+								switch(subChoice2) {
+									case 1: {
+		                        		ss.SearchbyID(appointmentTable);
+										break;
+									}
 
-											case 2: {
-												ss.SearchbyPatientName(appointmentTable);
-												break;
-											}
+									case 2: {
+										ss.SearchbyService(appointmentTable);
+										break;
+									}
 
-											case 3: {
-												ss.SearchbyPtPhone(appointmentTable);
-												break;
-											}
+									case 3: {
+										ss.SearchbyPatientName(appointmentTable);
+										break;
+									}
 
-											case 4: {
-												ss.SearchbyEmail(appointmentTable);
-												break;
-											}
+									case 4: {
+										ss.SearchbyPtPhone(appointmentTable);
+										break;
+									}
 
-											case 5: {
-												ss.SearchbyStatus(appointmentTable);
-												break;
-											}
+									case 5: {
+										ss.SearchbyEmail(appointmentTable);
+										break;
+									}
 
-											case 0:
-												break;
-												
-											default:
-												cout << "Invalid choice, please try again.\n";
-										}
-												
-												break;
+									case 6: {
+										ss.SearchbyStatus(appointmentTable);
+										break;
+									}
+
+									case 0:
+										break;
+										
+									default:
+										cout << "Invalid choice, please try again.\n";
+								}
+		                        
+								break;
 											}
 											case 4: {
 												cout << "--- Sort Appointments ---\n\n";
