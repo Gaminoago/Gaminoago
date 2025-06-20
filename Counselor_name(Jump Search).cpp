@@ -90,6 +90,26 @@ void maskPwd(string& password) {
     cout << endl;
 }
 
+// Function copied from TPD4124 project, TEO & FOOK
+bool isValidEmail(const string& email) {
+    // Find the position of '@' in the email
+    size_t atPos = email.find('@');
+    // Find the position of '.' after '@'
+    size_t dotPos = email.find('.', atPos);
+    // Check if both '@' and '.' are found and '.' comes after '@'
+    return atPos != string::npos && dotPos != string::npos && dotPos > atPos;
+}
+
+bool isValidPhone(int phone) {
+    string phoneStr = to_string(phone);
+        
+	if (phoneStr.length() >= 9 && phoneStr.length() <= 10) {
+        return true;
+    }
+        
+    return false;
+}
+
 // Base class for User - TEO
 class User {
 	/* [Error] 'std::string User::fName' is private */
@@ -423,6 +443,11 @@ class StaffHT {
 		    cout << "\nEnter email to search: ";
 		    cin.ignore();
 		    getline(cin, targetEmail);
+
+			if (!isValidEmail(targetEmail)) {
+				cout << "Invalid email format. Please try again.\n" << endl;
+				return;
+			}
 		    
 		    // Count non-null staff
 		    int count = 0;
@@ -547,12 +572,34 @@ class StaffManager {
 	        getline(cin, fName);
 	        cout << "Enter Last Name: ";
 	        getline(cin, lName);
-	        cout << "Enter Phone Number: ";
-	        cin >> phone;
-	        cin.ignore(); // Clear newline after phone
-	        cout << "Enter Email: ";
-	        getline(cin, email);
-	        cout << "Enter NRIC: ";
+	        cout << "Enter Phone Number: +60";
+			bool validPhone = false;
+
+			while (!validPhone) {
+				if (cin >> phone) {
+					if (isValidPhone(phone)) {
+						validPhone = true;
+					} else {
+						cout << "Invalid phone number. Please enter 9-10 digits: +60";
+					}
+				}
+			}
+
+			cin.ignore();
+
+			bool validEmail = false;
+			while (!validEmail) {
+				cout << "Enter Email: ";
+				cin >> email;
+				if (isValidEmail(email)) {
+					validEmail = true;
+				} else {
+					cout << "Invalid email format. Please try again.\n";
+				}
+			}
+
+			cin.ignore();
+	        cout << "\nEnter NRIC: ";
 	        getline(cin, nric);
 	        cout << "Enter Password: ";
 			maskPwd(password);
@@ -747,12 +794,7 @@ public:
     svc* getEntry(int index) const { return tbl[index]; }
 
 	void searchServiceByName() {
-		string name;
-		cout << "\nEnter service name to search: ";
-		cin.ignore();
-		getline(cin, name);
-		
-		// Convert services to array for binary search
+		// Convert services to array for selection
 		svc* serviceArray[TBL_SIZE];
 		int count = 0;
 		
@@ -760,6 +802,11 @@ public:
 			if (tbl[i] != NULL) {
 				serviceArray[count++] = tbl[i];
 			}
+		}
+		
+		if (count == 0) {
+			cout << "No services available to search." << endl;
+			return;
 		}
 		
 		// Sort array by name
@@ -772,6 +819,25 @@ public:
 				}
 			}
 		}
+		
+		// Display available services
+		cout << "\n--- Available Services ---\n";
+		for (int i = 0; i < count; i++) {
+			cout << i+1 << ". " << serviceArray[i]->svcName << endl;
+		}
+		
+		// Get user selection
+		int selection;
+		do {
+			cout << "\nSelect a service (1-" << count << "): ";
+			cin >> selection;
+			
+			if (selection < 1 || selection > count) {
+				cout << "Invalid selection. Please choose from the list (1-" << count << ")." << endl;
+			}
+		} while (selection < 1 || selection > count);
+		
+		string name = serviceArray[selection-1]->svcName;
 		
 		// Binary search
 		int left = 0, right = count - 1;
@@ -2889,7 +2955,12 @@ class PtHT {
 		    cout << "Enter email to search: ";
 		    cin.ignore();
 		    getline(cin, targetEmail);
-		    
+
+			if (!isValidEmail(targetEmail)) {
+				cout << "Invalid email format. Please try again.\n" << endl;
+				return;
+			}
+			
 		    // Count non-null patients
 		    int count = 0;
 		    for (int i = 0; i < TBL_SIZE; i++) {
@@ -3009,14 +3080,33 @@ class PtManager {
 			cin >> fName;
 			cout << "Enter Last Name: ";
 			cin >> lName;
-			cout << "Enter Phone Number: ";
-			cin >> phone;
-			
-			if (email.empty()) {
-				cout << "Enter Email: ";
-				cin >> email;
+			cout << "Enter Phone Number: +60";
+			bool validPhone = false;
+
+			while (!validPhone) {
+				if (cin >> phone) {
+					if (isValidPhone(phone)) {
+						validPhone = true;
+					} else {
+						cout << "Invalid phone number. Please enter 9-10 digits: +60";
+					}
+				}
 			}
 			
+			// ChatGPT
+			if (email.empty()) {
+				bool validEmail = false;
+				while (!validEmail) {
+					cout << "Enter Email: ";
+					cin >> email;
+					if (isValidEmail(email)) {
+						validEmail = true;
+					} else {
+						cout << "Invalid email format. Please try again.\n";
+					}
+				}
+			}
+
 			cout << "Enter Password: ";
 			maskPwd(password);
 			
@@ -4490,6 +4580,11 @@ void UserManager::searchUsersByEmail(PtHT& patientTable, StaffHT& staffTable) {
     cout << "\nEnter email to search: ";
     cin.ignore();
     getline(cin, targetEmail);
+
+	if (!isValidEmail(targetEmail)) {
+		cout << "Invalid email format. Please try again.\n" << endl;
+		return;
+	}
     
     // Search patients
     Pt* foundPatient = NULL;
@@ -4911,15 +5006,64 @@ class SearchSort{
 		}
 		
 		// Search appointments by Service (Binary Search)
-		void SearchbyService(AppointHT& appointmentTable) {
-			string targetSvc;
+		void SearchbyService(AppointHT& appointmentTable, SvcHT& serviceHT) {
+			int serviceCount = 0;
+			for (int i = 0; i < serviceHT.getTableSize(); i++) {
+				if (serviceHT.getEntry(i) != NULL) {
+					serviceCount++;
+				}
+			}
 			
-			cout << "\nEnter service to search: ";
-			cin.ignore();
-			getline(cin, targetSvc);
+			if (serviceCount == 0) {
+				cout << "No services available. Please add services first." << endl;
+				return;
+			}
+
+			// Create and populate services array
+			svc** services = new svc*[serviceCount];
+			int index = 0;
+			for (int i = 0; i < serviceHT.getTableSize(); i++) {
+				if (serviceHT.getEntry(i) != NULL) {
+					services[index++] = serviceHT.getEntry(i);
+				}
+			}
+
+			// Sort services by name
+			for (int i = 0; i < serviceCount - 1; i++) {
+				int currentMin = i;
+				for (int j = i + 1; j < serviceCount; j++) {
+					if (services[j]->svcName < services[currentMin]->svcName) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					svc* temp = services[i];
+					services[i] = services[currentMin];
+					services[currentMin] = temp;
+				}
+			}
+
+			// Display available services
+			cout << "\n--- Available Services ---\n";
+			for (int i = 0; i < serviceCount; i++) {
+				cout << i+1 << ". " << services[i]->svcName << endl;
+			}
+
+			// Get user selection
+			int selection;
+			do {
+				cout << "\nSelect a service (1-" << serviceCount << "): ";
+				cin >> selection;
+				
+				if (selection < 1 || selection > serviceCount) {
+					cout << "Invalid selection. Please choose from the list (1-" << serviceCount << ")." << endl;
+				}
+			} while (selection < 1 || selection > serviceCount);
+
+			string targetSvc = services[selection-1]->svcName;
 			
 			// Count non-null appointments
-			count = 0;
+			int count = 0;
 			for (i = 0; i < appointmentTable.getTableSize(); i++) {
 				if (appointmentTable.getEntry(i) != NULL) {
 					count++;
@@ -5072,9 +5216,33 @@ class SearchSort{
 		void SearchbyStatus(AppointHT& appointmentTable) {
 			string targetStat;
 			
-			cout << "Enter appointment status to search (Pending, Approved, Rejected, or Cancelled): ";
-			cin.ignore();
-			getline(cin, targetStat);
+			int choice;
+			
+			cout << "\n--- Search Appointments by Status ---\n";
+			cout << "1. Pending\n";
+			cout << "2. Approved\n";
+			cout << "3. Rejected\n";
+			cout << "4. Cancelled\n";
+			cout << "\nEnter your choice (1-4): ";
+			cin >> choice;
+			
+			switch(choice) {
+				case 1: 
+					targetStat = "Pending"; 
+					break;
+				case 2: 
+					targetStat = "Approved"; 
+					break;
+				case 3: 
+					targetStat = "Rejected"; 
+					break;
+				case 4: 
+					targetStat = "Cancelled"; 
+					break;
+				default:
+					cout << "Invalid choice. Returning to menu.\n";
+					return;
+			}
 			
 			// Count non-null appointments
 			count = 0;
@@ -5232,13 +5400,65 @@ class SearchSort{
 	}
 
 		// Patient search appointments by Service (Binary Search)
-		void PatientSearchByService(AppointHT& appointmentTable, string patientEmail) {
-		    string targetService;
-		    cout << "\nEnter service type to search: ";
-		    cin.ignore();
-		    getline(cin, targetService);
-		    
-		    count = 0;
+		void PatientSearchByService(AppointHT& appointmentTable, SvcHT& serviceHT, string patientEmail) {
+			// Count services
+			int serviceCount = 0;
+			for (int i = 0; i < serviceHT.getTableSize(); i++) {
+				if (serviceHT.getEntry(i) != NULL) {
+					serviceCount++;
+				}
+			}
+			
+			if (serviceCount == 0) {
+				cout << "No services available in the system." << endl;
+				return;
+			}
+
+			// Create and populate services array
+			svc** services = new svc*[serviceCount];
+			int serviceIndex = 0;
+			for (int i = 0; i < serviceHT.getTableSize(); i++) {
+				if (serviceHT.getEntry(i) != NULL) {
+					services[serviceIndex++] = serviceHT.getEntry(i);
+				}
+			}
+
+			// Sort services by name
+			for (int i = 0; i < serviceCount - 1; i++) {
+				int currentMin = i;
+				for (int j = i + 1; j < serviceCount; j++) {
+					if (services[j]->svcName < services[currentMin]->svcName) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					svc* temp = services[i];
+					services[i] = services[currentMin];
+					services[currentMin] = temp;
+				}
+			}
+
+			// Display available services
+			cout << "\n--- Available Services ---\n";
+			for (int i = 0; i < serviceCount; i++) {
+				cout << i+1 << ". " << services[i]->svcName << endl;
+			}
+
+			// Get user selection
+			int selection;
+			do {
+				cout << "\nSelect a service (1-" << serviceCount << "): ";
+				cin >> selection;
+				
+				if (selection < 1 || selection > serviceCount) {
+					cout << "Invalid selection. Please choose from the list (1-" << serviceCount << ")." << endl;
+				}
+			} while (selection < 1 || selection > serviceCount);
+
+			string targetService = services[selection-1]->svcName;
+			
+			// Count patient's appointments
+			int count = 0;
 		    for (i = 0; i < appointmentTable.getTableSize(); i++) {
 		        if (appointmentTable.getEntry(i) != NULL && 
 		            appointmentTable.getEntry(i)->appointPtEmail == patientEmail) {
@@ -6428,9 +6648,18 @@ class SearchSort{
 		// Search Patients by Phone (Binary Search)
 		void SearchbyPhone(PtHT& patientTable) {
 			int targetPhone;
-			cout << "\nEnter phone number to search: ";
-			cin >> targetPhone;
-			cin.ignore();
+			cout << "\nEnter phone number to search: +60";
+			bool validPhone = false;
+
+			while (!validPhone) {
+				if (cin >> targetPhone) {
+					if (isValidPhone(targetPhone)) {
+						validPhone = true;
+					} else {
+						cout << "Invalid phone number. Please enter 9-10 digits: +60";
+					}
+				}
+			}
 			
 			// Count non-null patients
 			count = 0;
@@ -6518,9 +6747,25 @@ class SearchSort{
 		// Search Patients by Status (Binary Search)
 		void SearchbyStatus(PtHT& patientTable) {
 			string targetStatus;
-			cout << "\nEnter status to search (Active/Inactive): ";
-			cin.ignore();
-			getline(cin, targetStatus);
+			
+			int statusChoice;
+			cout << "\n--- Search by Status ---\n";
+			cout << "1. Active\n";
+			cout << "2. Inactive\n";
+			cout << "\nEnter your choice (1-2): ";
+			cin >> statusChoice;
+
+			switch(statusChoice) {
+				case 1:
+					targetStatus = "Active";
+					break;
+				case 2:
+					targetStatus = "Inactive";
+					break;
+				default:
+					cout << "Invalid choice. Returning to menu.\n";
+					return;
+			}
 			
 			// Count non-null patients
 			count = 0;
@@ -6909,9 +7154,18 @@ class SearchSort{
 		// Search Staff by Phone (Binary Search)
 		void SearchStaffByPhone(StaffHT& staffTable) {
 			int targetPhone;
-			cout << "\nEnter phone number to search: ";
-			cin >> targetPhone;
-			cin.ignore();
+			cout << "\nEnter phone number to search: +60";
+			bool validPhone = false;
+
+			while (!validPhone) {
+				if (cin >> targetPhone) {
+					if (isValidPhone(targetPhone)) {
+						validPhone = true;
+					} else {
+						cout << "Invalid phone number. Please enter 9-10 digits: +60";
+					}
+				}
+			}
 			
 			// Count non-null staff
 			count = 0;
@@ -7089,9 +7343,25 @@ class SearchSort{
 		// Search Staff by Status (Binary Search)
 		void SearchStaffByStatus(StaffHT& staffTable) {
 			string targetStatus;
-			cout << "\nEnter status to search (Active/Inactive): ";
-			cin.ignore();
-			getline(cin, targetStatus);
+			
+			int statusChoice;
+			cout << "\n--- Search by Status ---\n";
+			cout << "1. Active\n";
+			cout << "2. Inactive\n";
+			cout << "\nEnter your choice (1-2): ";
+			cin >> statusChoice;
+
+			switch(statusChoice) {
+				case 1:
+					targetStatus = "Active";
+					break;
+				case 2:
+					targetStatus = "Inactive";
+					break;
+				default:
+					cout << "Invalid choice. Returning to menu.\n";
+					return;
+			}
 			
 			// Count non-null staff
 			count = 0;
@@ -8075,6 +8345,27 @@ class SearchSort{
 	    // Clean up
 	    delete[] apps;
 	}
+
+// Function copied from TPD4124 project, TEO & FOOK
+bool verifyCaptcha() {
+    // Generate a random simple math problem
+    srand(time(0));
+    int num1 = rand() % 10;
+    int num2 = rand() % 10;
+    int correctAnswer = num1 + num2;
+    int userAnswer;
+    
+    cout << "Please solve this math problem: " << num1 << " + " << num2 << " = ";
+    cin >> userAnswer;
+    
+    if (userAnswer == correctAnswer) {
+        cout << "Verification successful!\n\n";
+        return true;
+    } else {
+        cout << "Incorrect answer. Please try again.\n\n";
+        return false;
+    }
+}
 	
 int main() {
     AppointHT appointmentTable;
@@ -8130,6 +8421,16 @@ int main() {
             cout << "Welcome to Counselling System\n\n";
             cout << "Please enter your email: ";
             cin >> email;
+
+			if (!isValidEmail(email)) {
+				cout << "Invalid email format. Please try again.\n" << endl;
+				continue;
+			}
+
+			// Add CAPTCHA verification
+			if (!verifyCaptcha()) {
+				continue;  // Return to login loop if CAPTCHA fails
+			}
 
             // Check if user exists
             bool userFound = false;
@@ -8465,7 +8766,7 @@ int main() {
 									}
 									
 									case 3: {
-										ss.PatientSearchByService(appointmentTable, currentEmail);
+										ss.PatientSearchByService(appointmentTable, serviceTable, currentEmail);
 										break;
 									}
 									
@@ -8760,7 +9061,7 @@ int main() {
 									}
 
 									case 2: {
-										ss.SearchbyService(appointmentTable);
+										ss.SearchbyService(appointmentTable, serviceTable);
 										break;
 									}
 
@@ -9287,7 +9588,7 @@ int main() {
 									}
 
 									case 2: {
-										ss.SearchbyService(appointmentTable);
+										ss.SearchbyService(appointmentTable, serviceTable);
 										break;
 									}
 
@@ -9958,7 +10259,7 @@ int main() {
 									}
 
 									case 2: {
-										ss.SearchbyService(appointmentTable);
+										ss.SearchbyService(appointmentTable, serviceTable);
 										break;
 									}
 
