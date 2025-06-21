@@ -1,82 +1,94 @@
 #include<iostream>
 #include<string> 
 #include<fstream>
-#include<conio.h> // For maskPwd function only
+#include<conio.h> // _getch()
 #include<iomanip> // setw
 using namespace std;
 
-// Structure represent appointment - HANNAH
+// HANNAH
 struct appoint {
-	string appointID; 		// Appointment's ID
+	string appointID; 		// Appointment ID
 	string appointSvc; 		// Service (svc.txt)
-	string appointCouns; 	// Counsellor's Name (staff.txt)
+	string appointCouns; 	// Counsellor Name (staff.txt)
 	string appointMode; 	// Mode (Online or Offline)
 	int appointDate; 		// Date (YYYYMMDD)
-	string appointTime; 	// Time (HHMM)
-	string appointPtName; 	// Patient's Name (pt.txt)
-	int appointPtPhone; 	// Patient's Phone  (pt.txt)
-	string appointPtEmail; 	// Patient's Email  (pt.txt)
+	string appointTime; 	// Time
+	string appointPtName; 	// Patient Name
+	int appointPtPhone; 	// Patient Phone
+	string appointPtEmail; 	// Patient Email
 	double appointGrossAmt; // Gross Amount (svc.txt)
 	double appointNetAmt; 	// Net Amount
-	string appointPayStat; 	// Payment's Status (Unpaid or Paid)
-	string appointStat; 	// Appointment's Status (Pending, Approved, Rejected or Cancelled)
+	string appointPayStat; 	// Payment Status (Unpaid or Paid)
+	string appointStat; 	// Appointment Status (Pending, Approved, Rejected or Cancelled)
 };
 
-// Structure represent category - HANNAH
+// HANNAH
 struct cat {
-	string catID; 	// Category's ID
-	string catName; // Category's Name
+	string catID; 	// Category ID
+	string catName; // Category Name
 };
 
-// Structure represent service - HANNAH
+// HANNAH
 struct svc {
-	string svcName;  // Service's Name
+	string svcName;  // Service Name
 	int svcDur; 	 // Service Duration
 	double svcPrice; // Service Price 
 };
 
-// Structure to store the result of the test
+// HANNAH
 struct result { 
-    string name;
-    int phone;
-	string email;
-    int score;
-    string situation;
+    string name;	  // Take Test User Name
+    int phone;		  // Take Test User Phone
+	string email;	  // Take Test User Email
+    int score;		  // Test Score
+    string situation; // Test Situation (Low Stress, Moderate Stress, High Stress or Very High Stress)
 };
 
-// Structure to store each question
+// HANNAH
 struct qn {  
-    string questionText;
-    string options[4];  // Never, Sometimes, Often, Always
-    int points[4];      // 0, 1, 2, 3
+    string questionText; // Question
+    string options[4];   // Question Options (Never, Sometimes, Often and Always)
+    int points[4];       // Question Points (0, 1, 2 and 3)
 };
 
+// HANNAH
 struct tx {
     string appointID;    // Appointment ID
     string ptName;       // Patient Name
     int ptPhone;     	 // Patient Phone
-	string ptEmail;
-    string summary;      // Treatment summary
-    string intervention; // Intervention measures
-    string response;     // Patient response
-    string progress;     // Progress
-    string homework;     // Homework assigned
-    string nextSession;  // Next session details
+	string ptEmail;		 // Patient Email
+    string summary;      // Treatment Summary
+    string intervention; // Intervention Measures
+    string response;     // Patient Response
+    string progress;     // Treatment Progress
+    string homework;     // Homework Assigned
+    string nextSession;  // Next Session (Yes, Maybe or No)
 };
 
+// HANNAH
 struct coupon {
-	string couponCode;
-	float couponDis;
-	int couponQty;
-	string couponStat;
+	string couponCode; // Coupon Code
+	float couponDis;   // Coupon Discount Percentage (0.5=50%)
+	int couponQty;	   // Coupon Quantity
+	string couponStat; // Coupon Status (Active or Inactive)
 };
 
-// Function copied from TPD4124 project, TEO & FOOK
+// HANNAH
+struct ticket {
+	string name; 	// Create Ticket User Name
+	int phone;		// Create Ticket User Phone
+	string email;	// Create Ticket User Email
+	int date;		// Create Ticket Date
+	string content; // Ticket Content
+	string status;	// Ticket Status (Created, In Progress, Resolved or Closed)
+};
+
+// Function copied from TPD4124 project - TEO & FOOK
 void maskPwd(string& password) {
     char ch;
 
     while ((ch = _getch()) != 13) { // 13 is Enter key
-        if (ch == 8) { // 8 is backspace key
+        if (ch == 8) { 				// 8 is backspace key
             if (!password.empty()) {
                 password.erase(password.size() - 1);
                 cout << "\b \b";
@@ -90,16 +102,15 @@ void maskPwd(string& password) {
     cout << endl;
 }
 
-// Function copied from TPD4124 project, TEO & FOOK
+// Function copied from TPD4124 project - TEO & FOOK
 bool isValidEmail(const string& email) {
-    // Find the position of '@' in the email
     size_t atPos = email.find('@');
-    // Find the position of '.' after '@'
     size_t dotPos = email.find('.', atPos);
-    // Check if both '@' and '.' are found and '.' comes after '@'
+	
     return atPos != string::npos && dotPos != string::npos && dotPos > atPos;
 }
 
+// Function copied from TPD4124 project - TEO & FOOK
 bool isValidPhone(int phone) {
     string phoneStr = to_string(phone);
         
@@ -110,10 +121,71 @@ bool isValidPhone(int phone) {
     return false;
 }
 
+// Function copied from TPD4124 project, TEO & FOOK
+bool verifyCaptcha() {
+    srand(time(0));
+    int num1 = rand() % 10;
+    int num2 = rand() % 10;
+    int correctAnswer = num1 + num2;
+    int userAnswer;
+    
+    cout << "Please solve this math problem: " << num1 << " + " << num2 << " = ";
+    cin >> userAnswer;
+    
+    if (userAnswer == correctAnswer) {
+        cout << "Verification successful!\n\n";
+        return true;
+    } else {
+        cout << "Incorrect answer. Please try again.\n\n";
+        return false;
+    }
+}
+
+// FOOK
+void checkAppointDateInput(int& date) {
+    cout << "Enter Date (YYYYMMDD format): ";
+    cin >> date;
+    
+    int day, mth, year;
+    int maxDays;
+    
+    do {
+        year = date / 10000;
+        mth = (date / 100) % 100;
+        day = date % 100;
+  
+        if (year != 2025) {
+            cout << "Invalid selection. Please enter a date in 2025 (YYYYMMDD format): ";
+            cin >> date;
+            continue;
+        }
+  
+        if (mth < 1 || mth > 12) {
+            cout << "Invalid selection. Please enter a valid month (YYYYMMDD format): ";
+            cin >> date;
+            continue;
+        }
+
+        if (mth == 4 || mth == 6 || mth == 9 || mth == 11) {
+            maxDays = 30;
+        }
+        else if (mth == 2) {
+            maxDays = ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) ? 29 : 28;
+        }
+        else {
+            maxDays = 31;
+        }
+
+        if (day < 1 || day > maxDays) {
+            cout << "Invalid selection. Please enter a valid day (1-" << maxDays << ") for month " << mth << ": ";
+            cin >> date;
+        }
+    } while (day < 1 || day > maxDays || mth < 1 || mth > 12 || year != 2025);
+}
+
 // Base class for User - TEO
 class User {
-	/* [Error] 'std::string User::fName' is private */
-	protected: 			 // Solution from ChatGPT, change from private to protected 
+	private: 			 
 		string fName; 	 // First name 
 		string lName; 	 // Last name
 		int phone; 	 	 // Phone
@@ -136,34 +208,26 @@ class User {
 		// Destructor
 		~User() {
 		}
-		
-		// Display user info
-		void dispInfo() {
-			cout << "Status: " << status << endl;
-			cout << "Name: " << fName << " " << lName << endl;
-			cout << "Phone: " << phone << endl;
-			cout << "Email: " << email << endl;
-		}	
-		
-		// [Error] 'std::string User::fName' is protected
-		// Suggestion by ChatGPT: either change protected to public / using set & get functions
-	    string getFName() const { 
+
+		/* 	[Error] 'std::string User::fName' is protected
+			Suggestion by ChatGPT: Either change protected to public or using set & get functions */
+	    string getFName() { 
 			return fName; 
 		}
 		
-	    void setFName(const string& fName) { 
+	    void setFName(string& fName) { 
 			this->fName = fName; 
 		}
 	
-	    string getLName() const { 
+	    string getLName() { 
 			return lName; 
 		}
 	    
-		void setLName(const string& lName) { 
+		void setLName(string& lName) { 
 			this->lName = lName; 
 		}
 	
-	    int getPhone() const { 
+	    int getPhone() { 
 			return phone; 
 		}
 	    
@@ -171,32 +235,32 @@ class User {
 			this->phone = phone; 
 		}
 	
-	    string getEmail() const { 
+	    string getEmail() { 
 			return email; 
 		}
 	    
-		void setEmail(const string& email) { 
+		void setEmail(string& email) { 
 			this->email = email; 
 		}
 	
-	    string getPassword() const { 
+	    string getPassword() { 
 			return password; 
 		}
 	    
-		void setPassword(const string& password) { 
+		void setPassword( string& password) { 
 			this->password = password; 
 		}
 	
-	    string getStatus() const { 
+	    string getStatus() { 
 			return status; 
 		}
 	    
-		void setStatus(const string& status) { 
+		void setStatus(string& status) { 
 			this->status = status; 
 		}
 };
 
-// Derived class for Staff - TEO 
+// Derived class for Staff - TEO
 class Staff: public User {
 	private:
 		string nric;
@@ -205,7 +269,7 @@ class Staff: public User {
 	public:
 	    // Constructor
 	    Staff(string fName, string lName, int phone, string email, string password, string status, string nric, string role)
-	        : User(fName, lName, phone, email, password, status) {
+	        : User(fName, lName, phone, email, password, status) { // This line is generated by ChatGPT, initialiser list that calls the parent class constructor
 	        this->nric = nric;
 	        this->role = role;
 	    }
@@ -214,11 +278,21 @@ class Staff: public User {
 		~Staff() {
 		} 
 		
-		string getNric() const { return nric; }
-    	void setNric(string nric) { this->nric = nric; }
+		string getNric() { 
+			return nric; 
+		}
 
-    	string getRole() const { return role; }
-    	void setRole(string role) { this->role = role; }	 
+    	void setNric(string nric) { 
+			this->nric = nric; 
+		}
+
+    	string getRole() { 
+			return role; 
+		}
+
+    	void setRole(string role) { 
+			this->role = role; 
+		}	 
 };
 
 // Derived class for Patient - TEO
@@ -229,22 +303,13 @@ class Pt: public User {
 	public:
 		// Constructor
 		Pt(string fName, string lName, int phone, string email, string password, string status, int age)
-		    : User(fName, lName, phone, email, password, status) {  // Ê¹ï¿½ï¿½ User ï¿½Ä´ï¿½ï¿½Î¹ï¿½ï¿½ìº¯ï¿½ï¿½
+		    : User(fName, lName, phone, email, password, status) { 
 		    this->age = age;
 		}
 
 		// Destructor
 		~Pt() {
 		}
-		
-		void dispPatientInfo() {
-        cout << "First Name: " << getFName() << endl;
-        cout << "Last Name: " << getLName() << endl;
-        cout << "Phone: " << getPhone() << endl;
-        cout << "Email: " << getEmail() << endl;
-        cout << "Age: " << age << endl;
-        cout << "Status: " << getStatus() << endl;
-    	}
 		
 		int getAge() const { 
 			return age; 
@@ -255,13 +320,13 @@ class Pt: public User {
 		}
 };
 
-
+// Hash table for staffs using quadratic probing, TDS4223 lecture class - TEO
 class StaffHT {
 	private:
 	    const int TBL_SIZE = 100;
 	    Staff** tbl;
 	
-	    // Hash function for Staff ID (using phone number for simplicity)
+	    // Hash function for generate index to be saved in
 	    int hashFn(int phone) {
 	        return phone % TBL_SIZE;
 	    }
@@ -270,14 +335,14 @@ class StaffHT {
 	    // Constructor
 	    StaffHT() {
 	        tbl = new Staff*[TBL_SIZE];
-	        for (int i = 0; i < TBL_SIZE; i++) {
+	        for (int i = 0; i < TBL_SIZE; i++) { // This for loop is suggested and generated by ChatGPT
 	            tbl[i] = NULL;
 	        }
 	    }
 	
 	    // Destructor
 	    ~StaffHT() {
-	        for (int i = 0; i < TBL_SIZE; i++) {
+	        for (int i = 0; i < TBL_SIZE; i++) { // This for loop is suggested and generated by ChatGPT
 	            if (tbl[i] != NULL) {
 	                delete tbl[i];
 	            }
@@ -285,20 +350,19 @@ class StaffHT {
 	        delete[] tbl;
 	    }
 
-		// Getter for table element
+		// Getter for table element, function generated by ChatGPT
 		Staff* getTableElement(int index) {
 			if (index >= 0 && index < TBL_SIZE)
 				return tbl[index];
 			return NULL;
 		}
 		
-		// Setter for table element
+		// Setter for table element, function generated by ChatGPT
 		void setTableElement(int index, Staff* value) {
 			if (index >= 0 && index < TBL_SIZE)
 				tbl[index] = value;
 		}
 
-		
 		// Getter for TBL_SIZE
 		int getTblSize() {
 			return TBL_SIZE;
@@ -335,34 +399,36 @@ class StaffHT {
 	    void loadFromFile() {
 		    ifstream inFile("staff.txt");
 		    if (inFile.is_open()) {
-		        bool isLoaded = false;  // Track if staff data is successfully loaded
+		        bool isLoaded = false;
 		        while (!inFile.eof()) {
 		            string fName, lName, email, password, status, role, nric;
 		            int phone;
 		
-		            // Read Staff data
-		            if (!getline(inFile, fName) || fName.empty()) break;  // Read first name, stop if empty or EOF
-		            getline(inFile, lName);  // Read last name
-		            inFile >> phone;         // Read phone
-		            inFile.ignore();         // Skip newline after phone
-		            getline(inFile, email);  // Read email
-		            getline(inFile, nric);   // Read NRIC
-		            getline(inFile, password); // Read password
-		            getline(inFile, role);     // Read role
-		            getline(inFile, status);   // Read status
+		            if (!getline(inFile, fName) || fName.empty()) {
+						break;  // Read first name, stop if empty or EOF
+					} 
+
+		            getline(inFile, lName); 	// Read last name
+		            inFile >> phone;        	// Read phone
+		            inFile.ignore();        	// Skip newline after phone, this line is generated by ChatGPT
+		            getline(inFile, email);  	// Read email
+		            getline(inFile, nric);   	// Read NRIC
+		            getline(inFile, password); 	// Read password
+		            getline(inFile, role);     	// Read role
+		            getline(inFile, status);   	// Read status
 		
 		            // Create Staff object and insert into hash table
 		            Staff* staff = new Staff(fName, lName, phone, email, password, status, nric, role);
 		            insert(staff);
 		
-		            // Skip any extra empty line (if present)
+		            // Skip empty line (use to seperate record)
 		            string temp;
 		            getline(inFile, temp);
 		
-		            isLoaded = true;  // Generate by ChatGPT: mark as loaded
+		            isLoaded = true;
 		        }
 		        inFile.close();
-		        if (isLoaded) {
+		        if (!isLoaded) {
 		            // cout << "Staff loaded successfully!" << endl;
 		        } else {
 		            cout << "No staff found." << endl;
@@ -394,7 +460,7 @@ class StaffHT {
 	    
 	    // Sort staff by Email (Selection Sort)
 		void sortByEmail() {
-		    // First, collect all non-NULL staff into an array
+		    // Collect all non-NULL staff into an array
 		    Staff** staffs = new Staff*[TBL_SIZE];
 		    int size = 0;
 		    
@@ -557,10 +623,16 @@ class StaffHT {
 		// Make UserManager a friend so it can access private members
     	friend class UserManager;
 			
-		int getTableSize() const { return TBL_SIZE; }
-		Staff* getEntry(int index) const { return tbl[index]; }
+		int getTableSize() { 
+			return TBL_SIZE; 
+		}
+		
+		Staff* getEntry(int index) { 
+			return tbl[index]; 
+		}
 };
 
+// TEO
 class StaffManager {
 	public:
 	    void addStaff(StaffHT& staffTable) {
@@ -568,7 +640,7 @@ class StaffManager {
 	        int phone;
 	
 	        cout << "\nEnter First Name: ";
-	        cin.ignore(); // Clear any leftover newline
+	        cin.ignore(); 
 	        getline(cin, fName);
 	        cout << "Enter Last Name: ";
 	        getline(cin, lName);
@@ -656,8 +728,8 @@ class StaffManager {
 	        cin >> choice;
 	
 	        if (toupper(choice) == 'Y') {
-	            saveStaffToFile(newStaff);  // Save to file
-	            staffTable.insert(newStaff);  // Insert into hash table
+	            saveStaffToFile(newStaff);
+	            staffTable.insert(newStaff); 
 	        } else {
 	            delete newStaff; // Clean up if not saving
 				cout << "Staff not saved!" << endl;
@@ -666,7 +738,7 @@ class StaffManager {
 	
 	    void saveStaffToFile(Staff* staff) {
 	        ofstream outFile;
-	        outFile.open("staff.txt", ios::app); // Append mode
+	        outFile.open("staff.txt", ios::app);
 	
 	        if (outFile.is_open()) {
 	            outFile << staff->getFName() << endl;
@@ -686,311 +758,447 @@ class StaffManager {
 	    }
 };
 
-// Hash table for services using quadratic probing - TEO
+// HANNAH
 class SvcHT {
-private:
-    const int TBL_SIZE = 100;
-    svc** tbl;
+	private:
+		const int TBL_SIZE = 100;
+		svc** tbl;
 
-    // Hash function for service name - HANNAH
-    int hashFn(string name) {
-        int sum = 0;
-        for (int i = 0; i < name.length(); i++) {
-            sum += (int)name[i]; // Sum ASCII values
-        }
-        return sum % TBL_SIZE; // Hashing to table size
-    }
+		// Hash function for service name
+		int hashFn(string name) {
+			int sum = 0;
+			// for loop is generated by ChatGPT
+			for (int i = 0; i < name.length(); i++) {
+				sum += (int)name[i]; // Sum ASCII values
+			}
+			return sum % TBL_SIZE;   // Hashing to table size
+		}
 
-public:
-    // Constructor
-    SvcHT() {
-        tbl = new svc*[TBL_SIZE]; // Dynamic array for the hash table
-        for (int i = 0; i < TBL_SIZE; i++) {
-            tbl[i] = NULL; // Initialise each slot as NULL
-        }
-    }
-
-    // Destructor
-    ~SvcHT() {
-        for (int i = 0; i < TBL_SIZE; i++) {
-            if (tbl[i] != NULL) {
-                delete tbl[i];
-            }
-        }
-        delete[] tbl;
-    }
-
-    // Insert service into the hash table using quadratic probing
-    void insert(svc* service) {
-        int hash = hashFn(service->svcName);
-        int i = 0;
-
-        // Quadratic probing
-        while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
-            i++;
-            if (i >= TBL_SIZE) {
-                cout << "Hash table is full!" << endl;
-                return;
-            }
-        }
-
-        // Found an empty slot
-        tbl[(hash + i * i) % TBL_SIZE] = new svc;
-        *tbl[(hash + i * i) % TBL_SIZE] = *service;
-    }
-
-    // Read services from file and insert into hash table
-    void loadFromFile() {
-        ifstream inFile("svc.txt");
-        svc* service;
-
-        if (inFile.is_open()) {
-            while (!inFile.eof()) {
-                service = new svc;
-
-                getline(inFile, service->svcName); // Service name
-                if (service->svcName.empty() || inFile.eof()) {
-                    delete service;
-                    break;
-                }
-
-                inFile >> service->svcDur; // Service duration
-                inFile >> service->svcPrice; // Service price
-                inFile.ignore(); // Ignore the newline after price
-                
-                // Skip empty line
-		        string temp;
-		        getline(inFile, temp);
-
-                insert(service);
-            }
-            inFile.close();
-            // cout << "Services loaded successfully!" << endl;
-        } else {
-            cout << "Unable to open svc.txt for reading." << endl;
-        }
-    }
-
-    // Display all services in the hash table
-    void dispAllSvc() {
-        int count = 0;
-        for (int i = 0; i < TBL_SIZE; i++) {
-            if (tbl[i] != NULL) {
-                cout << "\n--- Service " << ++count << " ---" << endl;
-                cout << "Service Name : " << tbl[i]->svcName << endl;
-                cout << "Duration     : " << tbl[i]->svcDur << " minutes" << endl;
-                cout << "Price        : RM " << tbl[i]->svcPrice << endl;
-            }
-        }
-        if (count == 0) {
-            cout << "No services found." << endl;
-        }
-    }
-
-	friend class Appoint;
-
-	/*error*/
-    int getTableSize() const { return TBL_SIZE; }
-    svc* getEntry(int index) const { return tbl[index]; }
-
-	void searchServiceByName() {
-		// Convert services to array for selection
-		svc* serviceArray[TBL_SIZE];
-		int count = 0;
-		
-		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != NULL) {
-				serviceArray[count++] = tbl[i];
+	public:
+		// Constructor
+		SvcHT() {
+			tbl = new svc*[TBL_SIZE]; 
+			for (int i = 0; i < TBL_SIZE; i++) {
+				tbl[i] = NULL; 
 			}
 		}
-		
-		if (count == 0) {
-			cout << "No services available to search." << endl;
-			return;
-		}
-		
-		// Sort array by name
-		for (int i = 0; i < count - 1; i++) {
-			for (int j = 0; j < count - i - 1; j++) {
-				if (serviceArray[j]->svcName > serviceArray[j + 1]->svcName) {
-					svc* temp = serviceArray[j];
-					serviceArray[j] = serviceArray[j + 1];
-					serviceArray[j + 1] = temp;
+
+		// Destructor
+		~SvcHT() {
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					delete tbl[i];
 				}
 			}
+			delete[] tbl;
 		}
-		
-		// Display available services
-		cout << "\n--- Available Services ---\n";
-		for (int i = 0; i < count; i++) {
-			cout << i+1 << ". " << serviceArray[i]->svcName << endl;
+
+		// Insert service into the hash table using quadratic probing
+		void insert(svc* service) {
+			int hash = hashFn(service->svcName);
+			int i = 0;
+
+			// Quadratic probing
+			while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
+				i++;
+				if (i >= TBL_SIZE) {
+					cout << "Hash table is full!" << endl;
+					return;
+				}
+			}
+
+			// Found an empty slot
+			tbl[(hash + i * i) % TBL_SIZE] = new svc;
+			*tbl[(hash + i * i) % TBL_SIZE] = *service;
 		}
-		
-		// Get user selection
-		int selection;
-		do {
-			cout << "\nSelect a service (1-" << count << "): ";
-			cin >> selection;
-			
-			if (selection < 1 || selection > count) {
-				cout << "Invalid selection. Please choose from the list (1-" << count << ")." << endl;
-			}
-		} while (selection < 1 || selection > count);
-		
-		string name = serviceArray[selection-1]->svcName;
-		
-		// Binary search
-		int left = 0, right = count - 1;
-		bool found = false;
-		
-		while (left <= right) {
-			int mid = left + (right - left) / 2;
-			
-			if (serviceArray[mid]->svcName == name) {
-				cout << "\n--- Service Found ---" << endl;
-				cout << "Name     : " << serviceArray[mid]->svcName << endl;
-				cout << "Duration : " << serviceArray[mid]->svcDur << endl;
-				cout << "Price    : " << serviceArray[mid]->svcPrice << endl;
-				found = true;
-				break;
-			}
-			
-			if (serviceArray[mid]->svcName < name) {
-				left = mid + 1;
+
+		// Read services from file and insert into hash table
+		void loadFromFile() {
+			ifstream inFile("svc.txt");
+			svc* service;
+
+			if (inFile.is_open()) {
+				while (!inFile.eof()) {
+					service = new svc;
+
+					getline(inFile, service->svcName);
+					if (service->svcName.empty() || inFile.eof()) {
+						delete service;
+						break;
+					}
+
+					inFile >> service->svcDur; 
+					inFile >> service->svcPrice; 
+					inFile.ignore(); 
+					
+					string temp;
+					getline(inFile, temp);
+
+					insert(service);
+				}
+				inFile.close();
+				// cout << "Services loaded successfully!" << endl;
 			} else {
-				right = mid - 1;
+				cout << "Unable to open svc.txt for reading." << endl;
 			}
 		}
-		
-		if (!found) {
-			cout << "Service not found." << endl;
-		}
-	}
 
-	void editService() {
-		// Create an array of services
-		svc* serviceArray[TBL_SIZE];
-		int count = 0;
-		
-		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != NULL) {
-				serviceArray[count++] = tbl[i];
+		// Display all services in the hash table
+		void dispAllSvc() {
+			int count = 0;
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					cout << "\n--- Service " << ++count << " ---" << endl;
+					cout << "Service Name : " << tbl[i]->svcName << endl;
+					cout << "Duration     : " << tbl[i]->svcDur << " minutes" << endl;
+					cout << "Price        : RM " << tbl[i]->svcPrice << endl;
+				}
+			}
+			if (count == 0) {
+				cout << "No services found." << endl;
 			}
 		}
-		
-		if (count == 0) {
-			cout << "No services available to edit." << endl;
-			return;
-		}
-		
-		// Display all services with numbers
-		cout << "\n--- Available Services ---\n";
-		for (int i = 0; i < count; i++) {
-			cout << (i+1) << ". " << serviceArray[i]->svcName << endl;
-		}
-		
-		// Let user select a service
-		int serviceChoice;
-		cout << "\nEnter the number of the service to edit (1-" << count << "): ";
-		cin >> serviceChoice;
-		
-		if (serviceChoice < 1 || serviceChoice > count) {
-			cout << "Invalid selection." << endl;
-			return;
-		}
-		
-		svc* selectedService = serviceArray[serviceChoice-1];
-		int choice;
-		
-		do {
-			cout << "\n--- Edit Service ---" << endl;
-			cout << "1. Edit Service Name (Current: " << selectedService->svcName << ")" << endl;
-			cout << "2. Edit Price        (Current: " << selectedService->svcPrice << ")" << endl;
-			cout << "3. Edit Duration     (Current: " << selectedService->svcDur << ")" << endl;
-			cout << "0. Save and Return\n" << endl;
-			cout << "Select field to edit (0-3): ";
-			cin >> choice;
-			
-			cin.ignore();
-			
-			switch(choice) {
-				case 1: {
-					string newName;
-					cout << "Enter new Service Name: ";
-					getline(cin, newName);
-					selectedService->svcName = newName;
-					break;
-				}
-				case 2: {
-					double newPrice;
-					cout << "Enter new Price: ";
-					cin >> newPrice;
-					selectedService->svcPrice = newPrice;
-					break;
-				}
-				case 3: {
-					int newDuration;
-					cout << "Enter new Duration: ";
-					cin >> newDuration;
-					selectedService->svcDur = newDuration;
-					break;
-				}
-				case 0:
-					cout << selectedService->svcName << "service updated successfully!" << endl;
-					break;
-				default:
-					cout << "Invalid choice, please try again." << endl;
-			}
-		} while (choice != 0);
-	}
 
-	void deleteService() {
-		// Create an array of services
-		svc* serviceArray[TBL_SIZE];
-		int count = 0;
-		
-		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != NULL) {
-				serviceArray[count++] = tbl[i];
+		int getTableSize() { 
+			return TBL_SIZE; 
+		}
+
+		svc* getEntry(int index) { 
+			return tbl[index]; 
+		}
+
+		void searchServiceByName() {
+			// Convert services to array for selection
+			svc* serviceArray[TBL_SIZE];
+			int count = 0;
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					serviceArray[count++] = tbl[i];
+				}
 			}
-		}
-		
-		if (count == 0) {
-			cout << "No services available to delete." << endl;
-			return;
-		}
-		
-		// Display all services with numbers
-		cout << "\n--- Available Services ---\n";
-		for (int i = 0; i < count; i++) {
-			cout << (i+1) << ". " << serviceArray[i]->svcName << endl;
-		}
-		
-		// Let user select a service
-		int choice;
-		cout << "\nEnter the number of the service to delete (1-" << count << "): ";
-		cin >> choice;
-		
-		if (choice < 1 || choice > count) {
-			cout << "Invalid selection." << endl;
-			return;
-		}
-		
-		svc* selectedService = serviceArray[choice-1];
-		
-		// Find and delete the selected service in the hash table
-		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] == selectedService) {
-				delete tbl[i];
-				tbl[i] = NULL;
-				cout << "Service deleted successfully." << endl;
+			
+			if (count == 0) {
+				cout << "No services available to search." << endl;
 				return;
 			}
+			
+			// Sort array by name
+			for (int i = 0; i < count - 1; i++) {
+				int minIndex = i; // Assume current position has the alphabetically first name
+				
+				// Find the service with the "smallest" name in unsorted portion
+				for (int j = i + 1; j < count; j++) {
+					if (serviceArray[j]->svcName < serviceArray[minIndex]->svcName) {
+						minIndex = j;
+					}
+				}
+				
+				// Swap if needed
+				if (minIndex != i) {
+					svc* temp = serviceArray[i];
+					serviceArray[i] = serviceArray[minIndex];
+					serviceArray[minIndex] = temp;
+				}
+			}
+			
+			// Display available services
+			cout << "\n--- Available Services ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << i+1 << ". " << serviceArray[i]->svcName << endl;
+			}
+			
+			// Get user selection
+			int selection;
+			do {
+				cout << "\nSelect a service (1-" << count << "): ";
+				cin >> selection;
+				
+				if (selection < 1 || selection > count) {
+					cout << "Invalid selection. Please choose from the list (1-" << count << ")." << endl;
+				}
+			} while (selection < 1 || selection > count);
+			
+			string name = serviceArray[selection-1]->svcName;
+			
+			// Binary search
+			int left = 0, right = count - 1;
+			bool found = false;
+			
+			while (left <= right) {
+				int mid = left + (right - left) / 2;
+				
+				if (serviceArray[mid]->svcName == name) {
+					cout << "\n--- Service Found ---" << endl;
+					cout << "Name     : " << serviceArray[mid]->svcName << endl;
+					cout << "Duration : " << serviceArray[mid]->svcDur << endl;
+					cout << "Price    : " << serviceArray[mid]->svcPrice << endl;
+					found = true;
+					break;
+				}
+				
+				if (serviceArray[mid]->svcName < name) {
+					left = mid + 1;
+				} else {
+					right = mid - 1;
+				}
+			}
+			
+			if (!found) {
+				cout << "Service not found." << endl;
+			}
 		}
-	}
 
+		void editService() {
+			// Create an array of services
+			svc* serviceArray[TBL_SIZE];
+			int count = 0;
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					serviceArray[count++] = tbl[i];
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No services available to edit." << endl;
+				return;
+			}
+			
+			// Display all services with numbers
+			cout << "\n--- Available Services ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << (i+1) << ". " << serviceArray[i]->svcName << endl;
+			}
+			
+			// Let user select a service
+			int serviceChoice;
+			cout << "\nEnter the number of the service to edit (1-" << count << "): ";
+			cin >> serviceChoice;
+			
+			if (serviceChoice < 1 || serviceChoice > count) {
+				cout << "Invalid selection." << endl;
+				return;
+			}
+			
+			svc* selectedService = serviceArray[serviceChoice-1];
+			int choice;
+			
+			do {
+				cout << "\n--- Edit Service ---" << endl;
+				cout << "1. Edit Service Name (Current: " << selectedService->svcName << ")" << endl;
+				cout << "2. Edit Price        (Current: " << selectedService->svcPrice << ")" << endl;
+				cout << "3. Edit Duration     (Current: " << selectedService->svcDur << ")" << endl;
+				cout << "0. Save and Return\n" << endl;
+				cout << "Select field to edit (0-3): ";
+				cin >> choice;
+				
+				cin.ignore();
+				
+				switch(choice) {
+					case 1: {
+						string newName;
+						cout << "Enter new Service Name: ";
+						getline(cin, newName);
+						selectedService->svcName = newName;
+						break;
+					}
+					case 2: {
+						double newPrice;
+						cout << "Enter new Price: ";
+						cin >> newPrice;
+						selectedService->svcPrice = newPrice;
+						break;
+					}
+					case 3: {
+						int newDuration;
+						cout << "Enter new Duration: ";
+						cin >> newDuration;
+						selectedService->svcDur = newDuration;
+						break;
+					}
+					case 0:
+						cout << selectedService->svcName << "service updated successfully!" << endl;
+						break;
+					default:
+						cout << "Invalid choice, please try again." << endl;
+				}
+			} while (choice != 0);
+		}
 
-	void sortServicesByPriceLowToHigh() {
+		void deleteService() {
+			// Create an array of services
+			svc* serviceArray[TBL_SIZE];
+			int count = 0;
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					serviceArray[count++] = tbl[i];
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No services available to delete." << endl;
+				return;
+			}
+			
+			// Display all services with numbers
+			cout << "\n--- Available Services ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << (i+1) << ". " << serviceArray[i]->svcName << endl;
+			}
+			
+			// Let user select a service
+			int choice;
+			cout << "\nEnter the number of the service to delete (1-" << count << "): ";
+			cin >> choice;
+			
+			if (choice < 1 || choice > count) {
+				cout << "Invalid selection." << endl;
+				return;
+			}
+			
+			svc* selectedService = serviceArray[choice-1];
+			
+			// Find and delete the selected service in the hash tableï¼Œthis for loop generated from ChatGPT
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] == selectedService) {
+					delete tbl[i];
+					tbl[i] = NULL;
+					cout << "Service deleted successfully." << endl;
+					return;
+				}
+			}
+		}
+
+		void sortServicesByPriceLowToHigh() {
+		// Create an array of services
+		svc* serviceArray[TBL_SIZE];
+		int count = 0;
+		
+		// Collect non-NULL services
+		for (int i = 0; i < TBL_SIZE; i++) {
+			if (tbl[i] != NULL) {
+				serviceArray[count++] = tbl[i];
+			}
+		}
+		
+		// Selection Sort (ascending order by price)
+		for (int i = 0; i < count - 1; i++) {
+			int minIndex = i; // Assume current position is the minimum
+			
+			// Find the minimum price in the remaining unsorted array
+			for (int j = i + 1; j < count; j++) {
+				if (serviceArray[j]->svcPrice < serviceArray[minIndex]->svcPrice) {
+					minIndex = j;
+				}
+			}
+			
+			// Swap if a smaller price is found
+			if (minIndex != i) {
+				svc* temp = serviceArray[i];
+				serviceArray[i] = serviceArray[minIndex];
+				serviceArray[minIndex] = temp;
+			}
+		}
+			
+			// Display sorted services
+			cout << "\n--- Services Sorted by Price (Low to High) ---\n\n";
+			cout << left << setw(20) << "Name" << setw(10) << "Price" << setw(10) << "Duration" << endl;
+			cout << string(50, '-') << endl;
+			
+			for (int i = 0; i < count; i++) {
+				cout << left << setw(20) << serviceArray[i]->svcName 
+					<< setw(10) << serviceArray[i]->svcPrice 
+					<< setw(10) << serviceArray[i]->svcDur << endl;
+			}
+		}
+
+		void sortServicesByPriceHighToLow() {
+			// Create an array of services
+			svc* serviceArray[TBL_SIZE];
+			int count = 0;
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					serviceArray[count++] = tbl[i];
+				}
+			}
+			
+			// Selection Sort (descending order by price)
+			for (int i = 0; i < count - 1; i++) {
+				int maxIndex = i; // Assume current position is the minimum
+			
+				// Find the minimum price in the remaining unsorted array
+				for (int j = i + 1; j < count; j++) {
+					if (serviceArray[j]->svcPrice > serviceArray[maxIndex]->svcPrice) {
+						maxIndex = j;
+					}
+				}
+			
+				// Swap if a smaller price is found
+				if (maxIndex != i) {
+					svc* temp = serviceArray[i];
+					serviceArray[i] = serviceArray[maxIndex];
+					serviceArray[maxIndex] = temp;
+				}
+			}
+			
+			// Display sorted services
+			cout << "\n--- Services Sorted by Price (High to Low) ---\n\n";
+			cout << left << setw(20) << "Name" << setw(10) << "Price" << setw(10) << "Duration" << endl;
+			cout << string(50, '-') << endl;
+			
+			for (int i = 0; i < count; i++) {
+				cout << left << setw(20) << serviceArray[i]->svcName 
+					<< setw(10) << serviceArray[i]->svcPrice 
+					<< setw(10) << serviceArray[i]->svcDur << endl;
+			}
+		}
+
+		void sortServicesByDurationShortToLong() {
+			// Create an array of services
+			svc* serviceArray[TBL_SIZE];
+			int count = 0;
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					serviceArray[count++] = tbl[i];
+				}
+			}
+			
+			// Selection Sort (ascending order by duration)
+			for (int i = 0; i < count - 1; i++) {
+				int minIndex = i; // Assume current position is the minimum
+			
+				// Find the minimum price in the remaining unsorted array
+				for (int j = i + 1; j < count; j++) {
+					if (serviceArray[j]->svcDur < serviceArray[minIndex]->svcDur) {
+						minIndex = j;
+					}
+				}
+			
+				// Swap if a smaller price is found
+				if (minIndex != i) {
+					svc* temp = serviceArray[i];
+					serviceArray[i] = serviceArray[minIndex];
+					serviceArray[minIndex] = temp;
+				}
+			}
+			
+			// Display sorted services
+			cout << "\n--- Services Sorted by Duration (Short to Long) ---\n\n";
+			cout << left << setw(20) << "Name" << setw(10) << "Price" << setw(10) << "Duration" << endl;
+			cout << string(50, '-') << endl;
+			
+			for (int i = 0; i < count; i++) {
+				cout << left << setw(20) << serviceArray[i]->svcName 
+					<< setw(10) << serviceArray[i]->svcPrice 
+					<< setw(10) << serviceArray[i]->svcDur << endl;
+			}
+		}
+
+		void sortServicesByDurationLongToShort() {
 		// Create an array of services
 		svc* serviceArray[TBL_SIZE];
 		int count = 0;
@@ -1001,116 +1209,22 @@ public:
 			}
 		}
 		
-		// Bubble sort by price (low to high)
+		// Selection Sort (descending order by duration - longest to shortest)
 		for (int i = 0; i < count - 1; i++) {
-			for (int j = 0; j < count - i - 1; j++) {
-				if (serviceArray[j]->svcPrice > serviceArray[j + 1]->svcPrice) {
-					svc* temp = serviceArray[j];
-					serviceArray[j] = serviceArray[j + 1];
-					serviceArray[j + 1] = temp;
+			int maxIndex = i; // Track position of maximum duration
+			
+			// Find the service with maximum duration in unsorted portion
+			for (int j = i + 1; j < count; j++) {
+				if (serviceArray[j]->svcDur > serviceArray[maxIndex]->svcDur) {
+					maxIndex = j;
 				}
 			}
-		}
-		
-		// Display sorted services
-		cout << "\n--- Services Sorted by Price (Low to High) ---\n\n";
-		cout << left << setw(20) << "Name" << setw(10) << "Price" << setw(10) << "Duration" << endl;
-		cout << string(50, '-') << endl;
-		
-		for (int i = 0; i < count; i++) {
-			cout << left << setw(20) << serviceArray[i]->svcName 
-				<< setw(10) << serviceArray[i]->svcPrice 
-				<< setw(10) << serviceArray[i]->svcDur << endl;
-		}
-	}
-
-	void sortServicesByPriceHighToLow() {
-		// Create an array of services
-		svc* serviceArray[TBL_SIZE];
-		int count = 0;
-		
-		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != NULL) {
-				serviceArray[count++] = tbl[i];
-			}
-		}
-		
-		// Bubble sort by price (high to low)
-		for (int i = 0; i < count - 1; i++) {
-			for (int j = 0; j < count - i - 1; j++) {
-				if (serviceArray[j]->svcPrice < serviceArray[j + 1]->svcPrice) {
-					svc* temp = serviceArray[j];
-					serviceArray[j] = serviceArray[j + 1];
-					serviceArray[j + 1] = temp;
-				}
-			}
-		}
-		
-		// Display sorted services
-		cout << "\n--- Services Sorted by Price (High to Low) ---\n\n";
-		cout << left << setw(20) << "Name" << setw(10) << "Price" << setw(10) << "Duration" << endl;
-		cout << string(50, '-') << endl;
-		
-		for (int i = 0; i < count; i++) {
-			cout << left << setw(20) << serviceArray[i]->svcName 
-				<< setw(10) << serviceArray[i]->svcPrice 
-				<< setw(10) << serviceArray[i]->svcDur << endl;
-		}
-	}
-
-	void sortServicesByDurationShortToLong() {
-		// Create an array of services
-		svc* serviceArray[TBL_SIZE];
-		int count = 0;
-		
-		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != NULL) {
-				serviceArray[count++] = tbl[i];
-			}
-		}
-		
-		// Bubble sort by duration (short to long)
-		for (int i = 0; i < count - 1; i++) {
-			for (int j = 0; j < count - i - 1; j++) {
-				if (serviceArray[j]->svcDur > serviceArray[j + 1]->svcDur) {
-					svc* temp = serviceArray[j];
-					serviceArray[j] = serviceArray[j + 1];
-					serviceArray[j + 1] = temp;
-				}
-			}
-		}
-		
-		// Display sorted services
-		cout << "\n--- Services Sorted by Duration (Short to Long) ---\n\n";
-		cout << left << setw(20) << "Name" << setw(10) << "Price" << setw(10) << "Duration" << endl;
-		cout << string(50, '-') << endl;
-		
-		for (int i = 0; i < count; i++) {
-			cout << left << setw(20) << serviceArray[i]->svcName 
-				<< setw(10) << serviceArray[i]->svcPrice 
-				<< setw(10) << serviceArray[i]->svcDur << endl;
-		}
-	}
-
-	void sortServicesByDurationLongToShort() {
-		// Create an array of services
-		svc* serviceArray[TBL_SIZE];
-		int count = 0;
-		
-		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != NULL) {
-				serviceArray[count++] = tbl[i];
-			}
-		}
-		
-		// Bubble sort by duration (long to short)
-		for (int i = 0; i < count - 1; i++) {
-			for (int j = 0; j < count - i - 1; j++) {
-				if (serviceArray[j]->svcDur < serviceArray[j + 1]->svcDur) {
-					svc* temp = serviceArray[j];
-					serviceArray[j] = serviceArray[j + 1];
-					serviceArray[j + 1] = temp;
-				}
+			
+			// Swap if a longer duration is found
+			if (maxIndex != i) {
+				svc* temp = serviceArray[i];
+				serviceArray[i] = serviceArray[maxIndex];
+				serviceArray[maxIndex] = temp;
 			}
 		}
 		
@@ -1125,27 +1239,25 @@ public:
 				<< setw(10) << serviceArray[i]->svcDur << endl;
 		}
 	}
-
-
 };
 
+// HANNAH
 class Svc {
 	public:
-	    // Function to add a new service - HANNAH
+	    // Function to add a new service
 	    void addSvc(SvcHT& serviceTable) {
 	        string name;
 	        int duration;
 	        double price;
 	
 	        cout << "\nEnter Service Name: ";
-	        cin.ignore(); // To handle the newline left by the previous input
+	        cin.ignore();
 	        getline(cin, name);
 	        cout << "Enter Service Duration (in minutes): ";
 	        cin >> duration;
 	        cout << "Enter Service Price: ";
 	        cin >> price;
 	
-	        // Populate data - HANNAH
 	        svc newService;
 	        newService.svcName = name;
 	        newService.svcDur = duration;
@@ -1155,19 +1267,18 @@ class Svc {
 	        cout << "\nDo you want to save this service? (Y/N): ";
 	        cin >> choice;
 	
-	        // Ask user if they want to save the service
 	        if (toupper(choice) == 'Y') {
-	            saveSvcToFile(newService);  // Save to file
-	            serviceTable.insert(&newService);  // Insert into hash table
+	            saveSvcToFile(newService);  
+	            serviceTable.insert(&newService);  
 	        } else {
 				cout << "Service not saved!" << endl;
 			}
 	    }
 	
-	    // Save service to file - HANNAH
+	    // Save service to file
 	    void saveSvcToFile(svc& service) {
 	        ofstream outFile;
-	        outFile.open("svc.txt", ios::app);  // Append mode
+	        outFile.open("svc.txt", ios::app); 
 	
 	        if (outFile.is_open()) {
 	            outFile << service.svcName << endl;
@@ -1182,415 +1293,770 @@ class Svc {
 	    }
 };
 
-// Coupon Hash Table class
+// HANNAH
 class CouponHT {
-private:
-    const int TBL_SIZE = 100;
-    coupon** tbl;  // Pointer to an array of coupon pointers
-    
-    // Hash function for coupon code
-    int hashFn(const string& code) {
-        int sum = 0;
-        for (int i = 0; i < code.length(); i++) {
-            sum += (int)code[i]; // Sum ASCII values
-        }
-        return sum % TBL_SIZE; // Hashing to table size
-    }
-
-public:
-    // Constructor
-    CouponHT() {
-        tbl = new coupon*[TBL_SIZE]; // Dynamic array for the hash table
-        for (int i = 0; i < TBL_SIZE; i++) {
-            tbl[i] = NULL; // Initialize each slot as NULL
-        }
-    }
-    
-    // Destructor
-    ~CouponHT() {
-        for (int i = 0; i < TBL_SIZE; i++) {
-            if (tbl[i] != NULL) {
-                delete tbl[i]; // Free the memory for non-NULL entries
-            }
-        }
-        delete[] tbl; // Free the dynamic array
-    }
-
-	// Add to CouponHT class
-	int getTableSize() const {
-		return TBL_SIZE;
-	}
-
-	coupon* getEntry(int index) const {
-		if (index >= 0 && index < TBL_SIZE)
-			return tbl[index];
-		return NULL;
-	}
-    
-    // Insert coupon into the hash table using quadratic probing
-    void insert(coupon* cp) {
-        int hash = hashFn(cp->couponCode);
-        int i = 0;
-        
-        // Quadratic probing
-        while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
-            i++;
-            if (i >= TBL_SIZE) {
-                cout << "Hash table is full!" << endl;
-                return;
-            }
-        }
-        
-        // Found an empty slot, create a new coupon object and copy data
-        tbl[(hash + i * i) % TBL_SIZE] = new coupon;
-        *tbl[(hash + i * i) % TBL_SIZE] = *cp;  // Copy data into the new slot
-    }
-    
-    // Load coupons from file (coupon.txt)
-	void loadFromFile() {
-		ifstream inFile("coupon.txt");
+	private:
+		const int TBL_SIZE = 100;
+		coupon** tbl; 
 		
-		if (!inFile.is_open()) {
-			cout << "Unable to open coupon.txt for reading." << endl;
+		// Hash function for coupon code
+		int hashFn(const string& code) {
+			int sum = 0;
+			for (int i = 0; i < code.length(); i++) {
+				sum += (int)code[i]; 	// Sum ASCII values
+			}
+			return sum % TBL_SIZE; 		// Hashing to table size
+		}
+
+	public:
+		// Constructor
+		CouponHT() {
+			tbl = new coupon*[TBL_SIZE]; 
+			for (int i = 0; i < TBL_SIZE; i++) {
+				tbl[i] = NULL; 
+			}
+		}
+		
+		// Destructor
+		~CouponHT() {
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					delete tbl[i]; 
+				}
+			}
+			delete[] tbl; // Free the dynamic array
+		}
+
+		// Add to CouponHT class
+		int getTableSize() const {
+			return TBL_SIZE;
+		}
+
+		coupon* getEntry(int index) const {
+			if (index >= 0 && index < TBL_SIZE)
+				return tbl[index];
+			return NULL;
+		}
+		
+		// Insert coupon into the hash table using quadratic probing
+		void insert(coupon* cp) {
+			int hash = hashFn(cp->couponCode);
+			int i = 0;
+			
+			// Quadratic probing
+			while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
+				i++;
+				if (i >= TBL_SIZE) {
+					cout << "Hash table is full!" << endl;
+					return;
+				}
+			}
+			
+			// Found an empty slot, create a new coupon object and copy data
+			tbl[(hash + i * i) % TBL_SIZE] = new coupon;
+			*tbl[(hash + i * i) % TBL_SIZE] = *cp; 
+		}
+		
+		// Load coupons from file (coupon.txt)
+		void loadFromFile() {
+			ifstream inFile("coupon.txt");
+			
+			if (!inFile.is_open()) {
+				cout << "Unable to open coupon.txt for reading." << endl;
+				return;
+			}
+			
+			// Clear existing entries
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					delete tbl[i];
+					tbl[i] = NULL;
+				}
+			}
+			
+			string code, status, line;
+			float discount;
+			int qty;
+			
+			while (getline(inFile, code)) {
+				// Skip empty lines
+				if (code.empty()) {
+					continue;
+				}
+				
+				// Read discount
+				if (!(inFile >> discount)) {
+					break;
+				}
+				inFile.ignore(); // Skip newline
+				
+				// Read quantity
+				if (!(inFile >> qty)) {
+					break;
+				}
+				inFile.ignore(); // Skip newline
+				
+				// Read status
+				if (!getline(inFile, status)) {
+					break;
+				}
+				
+				// Skip empty line if present
+				getline(inFile, line);
+				
+				// Create and insert coupon
+				coupon* cp = new coupon();
+				cp->couponCode = code;
+				cp->couponDis = discount;
+				cp->couponQty = qty;
+				cp->couponStat = status;
+				
+				// cout << cp->couponCode << ", Discount: " << cp->couponDis << ", Qty: " << cp->couponQty << ", Status: '" << cp->couponStat << "'" << endl;
+				
+				insert(cp);
+			}
+			
+			inFile.close();
+		}
+
+		// Display all coupons in hash table
+		void displayAllCoupons() {
+			int count = 0;
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					cout << "\n--- Coupon " << ++count << " ---" << endl;
+					cout << "Coupon Code     : " << tbl[i]->couponCode << endl;
+					cout << "Discount        : " << tbl[i]->couponDis * 100 << "%" << endl;
+					cout << "Quantity Left   : " << tbl[i]->couponQty << endl;
+					cout << "Status          : " << tbl[i]->couponStat << endl;
+				}
+			}
+			if (count == 0) {
+				cout << "No coupons found." << endl;
+			}
+		}
+		
+		// Save new coupon to coupon.txt
+		void saveCouponToFile(coupon* cp) {
+			ofstream outFile;
+			outFile.open("coupon.txt", ios::app); 
+			
+			if (outFile.is_open()) {
+				outFile << cp->couponCode << endl;
+				outFile << cp->couponDis << endl;
+				outFile << cp->couponQty << endl;
+				outFile << cp->couponStat << endl << endl;
+				cout << "Coupon saved successfully!" << endl;
+				outFile.close();
+			} else {
+				cout << "Unable to open coupon.txt for saving." << endl;
+			}
+		}
+		
+		// Edit an existing coupon
+		void editCoupon() {
+			// Create an array of coupons
+			coupon* couponArray[TBL_SIZE];
+			int count = 0;
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					couponArray[count++] = tbl[i];
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No coupons available to edit." << endl;
+				return;
+			}
+			
+			// Display all coupons with numbers
+			cout << "\n--- Available Coupons ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << (i+1) << ". " << couponArray[i]->couponCode << " (" 
+					<< couponArray[i]->couponDis * 100 << "%, " 
+					<< couponArray[i]->couponQty << " left, " 
+					<< couponArray[i]->couponStat << ")" << endl;
+			}
+			
+			// Let user select a coupon
+			int couponChoice;
+			cout << "\nEnter the number of the coupon to edit (1-" << count << "): ";
+			cin >> couponChoice;
+			
+			if (couponChoice < 1 || couponChoice > count) {
+				cout << "Invalid selection." << endl;
+				return;
+			}
+			
+			coupon* selectedCoupon = couponArray[couponChoice-1];
+			int choice;
+			
+			do {
+				cout << "\n--- Edit Coupon ---" << endl;
+				cout << "1. Edit Coupon Code     (Current: " << selectedCoupon->couponCode << ")" << endl;
+				cout << "2. Edit Discount        (Current: " << selectedCoupon->couponDis * 100 << "%)" << endl;
+				cout << "3. Edit Quantity        (Current: " << selectedCoupon->couponQty << ")" << endl;
+				cout << "4. Edit Status          (Current: " << selectedCoupon->couponStat << ")" << endl;
+				cout << "0. Save and Return\n" << endl;
+				cout << "Select field to edit (0-4): ";
+				cin >> choice;
+				
+				cin.ignore();
+				
+				switch(choice) {
+					case 1: {
+						string newCode;
+						cout << "Enter new Coupon Code: ";
+						getline(cin, newCode);
+						selectedCoupon->couponCode = newCode;
+						break;
+					}
+					case 2: {
+						float newDiscount;
+						cout << "Enter new Discount (as decimal, e.g., 0.5 for 50%): ";
+						cin >> newDiscount;
+						selectedCoupon->couponDis = newDiscount;
+						break;
+					}
+					case 3: {
+						int newQuantity;
+						cout << "Enter new Quantity: ";
+						cin >> newQuantity;
+						selectedCoupon->couponQty = newQuantity;
+						break;
+					}
+					case 4: {
+						int statusChoice;
+						cout << "\n--- Available Status ---\n";
+						cout << "1. Active\n";
+						cout << "2. Inactive\n\n";
+						
+						do {
+							cout << "Select status (1-2): ";
+							cin >> statusChoice;
+							
+							if (statusChoice < 1 || statusChoice > 2) {
+								cout << "Invalid selection. Please choose from the list (1-2)." << endl;
+							}
+						} while (statusChoice < 1 || statusChoice > 2);
+						
+						selectedCoupon->couponStat = (statusChoice == 1) ? "Active" : "Inactive";
+						cout << "Selected: " << selectedCoupon->couponStat << endl;
+						break;
+					}
+					case 0:
+						updateCouponFile();
+						cout << selectedCoupon->couponCode << " coupon updated successfully!" << endl;
+						break;
+					default:
+						cout << "Invalid choice, please try again." << endl;
+				}
+			} while (choice != 0);
+		}
+		
+		// Delete a coupon
+		void deleteCoupon() {
+			// Create an array of coupons
+			coupon* couponArray[TBL_SIZE];
+			int count = 0;
+			int tableIndices[TBL_SIZE]; // To track original indices
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					couponArray[count] = tbl[i];
+					tableIndices[count] = i;
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No coupons available to delete." << endl;
+				return;
+			}
+			
+			// Display all coupons with numbers
+			cout << "\n--- Available Coupons ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << (i+1) << ". " << couponArray[i]->couponCode << " (" 
+					<< couponArray[i]->couponDis * 100 << "%, " 
+					<< couponArray[i]->couponQty << " left, " 
+					<< couponArray[i]->couponStat << ")" << endl;
+			}
+			
+			// Let user select a coupon
+			int couponChoice;
+			cout << "\nEnter the number of the coupon to delete (1-" << count << "): ";
+			cin >> couponChoice;
+			
+			if (couponChoice < 1 || couponChoice > count) {
+				cout << "Invalid selection." << endl;
+				return;
+			}
+			
+			int selectedIndex = tableIndices[couponChoice-1];
+			coupon* selectedCoupon = tbl[selectedIndex];
+			
+			char confirm;
+			cout << "\nAre you sure you want to delete coupon " 
+				<< selectedCoupon->couponCode << "? (Y/N): ";
+			cin >> confirm;
+			
+			if (toupper(confirm) == 'Y') {
+				// Delete the coupon from the hash table
+				delete tbl[selectedIndex];
+				
+				// Set the entry to NULL
+				tbl[selectedIndex] = NULL;
+				
+				// Update the file
+				updateCouponFile();
+				cout << "Coupon deleted successfully!" << endl;
+			} else {
+				cout << "Deletion cancelled." << endl;
+			}
+		}
+		
+		// Update coupon.txt file after edits or deletions
+		void updateCouponFile() {
+			ofstream outFile("coupon.txt");
+			
+			if (outFile.is_open()) {
+				for (int i = 0; i < TBL_SIZE; i++) {
+					if (tbl[i] != NULL) {
+						outFile << tbl[i]->couponCode << endl;
+						outFile << tbl[i]->couponDis << endl;
+						outFile << tbl[i]->couponQty << endl;
+						outFile << tbl[i]->couponStat << endl << endl;
+					}
+				}
+				outFile.close();
+			} else {
+				cout << "Unable to open coupon.txt for updating." << endl;
+			}
+		}
+
+		void sortCouponsByDiscountLowToHigh() {
+			// Create an array of coupons
+			coupon* couponArray[TBL_SIZE];
+			int count = 0;
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					couponArray[count++] = tbl[i];
+				}
+			}
+			
+			// Selection sort by discount (low to high)
+			for (int i = 0; i < count - 1; i++) {
+				int minIndex = i;
+				
+				// Find the coupon with minimum discount in unsorted portion
+				for (int j = i + 1; j < count; j++) {
+					if (couponArray[j]->couponDis < couponArray[minIndex]->couponDis) {
+						minIndex = j;
+					}
+				}
+				
+				// Swap if a smaller discount is found
+				if (minIndex != i) {
+					coupon* temp = couponArray[i];
+					couponArray[i] = couponArray[minIndex];
+					couponArray[minIndex] = temp;
+				}
+			}
+			
+			// Display sorted coupons
+			cout << "\n--- Coupons Sorted by Discount (Least to Most) ---\n\n";
+			cout << left << setw(15) << "Code" << setw(15) << "Discount (%)" << setw(10) << "Stock" << setw(10) << "Status" << endl;
+			cout << string(50, '-') << endl;
+			
+			for (int i = 0; i < count; i++) {
+				cout << left << setw(15) << couponArray[i]->couponCode 
+					<< setw(15) << (couponArray[i]->couponDis * 100)
+					<< setw(10) << couponArray[i]->couponQty 
+					<< setw(10) << couponArray[i]->couponStat << endl;
+			}
+		}
+
+		void sortCouponsByDiscountHighToLow() {
+			// Create an array of coupons
+			coupon* couponArray[TBL_SIZE];
+			int count = 0;
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					couponArray[count++] = tbl[i];
+				}
+			}
+			
+			// Selection sort by discount (high to low)
+			for (int i = 0; i < count - 1; i++) {
+				int maxIndex = i; 
+				
+				// Find the coupon with maximum discount in unsorted portion
+				for (int j = i + 1; j < count; j++) {
+					if (couponArray[j]->couponDis > couponArray[maxIndex]->couponDis) {
+						maxIndex = j;
+					}
+				}
+				
+				// Swap if a higher discount is found
+				if (maxIndex != i) {
+					coupon* temp = couponArray[i];
+					couponArray[i] = couponArray[maxIndex];
+					couponArray[maxIndex] = temp;
+				}
+			}
+			
+			// Display sorted coupons
+			cout << "\n--- Coupons Sorted by Discount (Most to Least) ---\n\n";
+			cout << left << setw(15) << "Code" << setw(15) << "Discount (%)" << setw(10) << "Stock" << setw(10) << "Status" << endl;
+			cout << string(50, '-') << endl;
+			
+			for (int i = 0; i < count; i++) {
+				cout << left << setw(15) << couponArray[i]->couponCode 
+					<< setw(15) << (couponArray[i]->couponDis * 100)
+					<< setw(10) << couponArray[i]->couponQty 
+					<< setw(10) << couponArray[i]->couponStat << endl;
+			}
+		}
+
+		void sortCouponsByStockLowToHigh() {
+			// Create an array of coupons
+			coupon* couponArray[TBL_SIZE];
+			int count = 0;
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					couponArray[count++] = tbl[i];
+				}
+			}
+			
+			// Selection sort by stock quantity (low to high)
+			for (int i = 0; i < count - 1; i++) {
+				int minIndex = i; 
+				
+				// Find the coupon with minimum stock in unsorted portion
+				for (int j = i + 1; j < count; j++) {
+					if (couponArray[j]->couponQty < couponArray[minIndex]->couponQty) {
+						minIndex = j;
+					}
+				}
+				
+				// Swap if a smaller stock quantity is found
+				if (minIndex != i) {
+					coupon* temp = couponArray[i];
+					couponArray[i] = couponArray[minIndex];
+					couponArray[minIndex] = temp;
+				}
+			}
+			
+			// Display sorted coupons
+			cout << "\n--- Coupons Sorted by Stock (Least to Most) ---\n\n";
+			cout << left << setw(15) << "Code" << setw(15) << "Discount (%)" << setw(10) << "Stock" << setw(10) << "Status" << endl;
+			cout << string(50, '-') << endl;
+			
+			for (int i = 0; i < count; i++) {
+				cout << left << setw(15) << couponArray[i]->couponCode 
+					<< setw(15) << (couponArray[i]->couponDis * 100)
+					<< setw(10) << couponArray[i]->couponQty 
+					<< setw(10) << couponArray[i]->couponStat << endl;
+			}
+		}
+
+		void sortCouponsByStockHighToLow() {
+			// Create an array of coupons
+			coupon* couponArray[TBL_SIZE];
+			int count = 0;
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					couponArray[count++] = tbl[i];
+				}
+			}
+			
+			// Selection sort by stock quantity (high to low)
+			for (int i = 0; i < count - 1; i++) {
+				int maxIndex = i; 
+				
+				// Find the coupon with maximum stock in unsorted portion
+				for (int j = i + 1; j < count; j++) {
+					if (couponArray[j]->couponQty > couponArray[maxIndex]->couponQty) {
+						maxIndex = j;
+					}
+				}
+				
+				// Swap if a larger stock quantity is found
+				if (maxIndex != i) {
+					coupon* temp = couponArray[i];
+					couponArray[i] = couponArray[maxIndex];
+					couponArray[maxIndex] = temp;
+				}
+			}
+			
+			// Display sorted coupons
+			cout << "\n--- Coupons Sorted by Stock (Most to Least) ---\n\n";
+			cout << left << setw(15) << "Code" << setw(15) << "Discount (%)" << setw(10) << "Stock" << setw(10) << "Status" << endl;
+			cout << string(50, '-') << endl;
+			
+			for (int i = 0; i < count; i++) {
+				cout << left << setw(15) << couponArray[i]->couponCode 
+					<< setw(15) << (couponArray[i]->couponDis * 100)
+					<< setw(10) << couponArray[i]->couponQty 
+					<< setw(10) << couponArray[i]->couponStat << endl;
+			}
+		}
+
+		void searchCouponByCode() {
+			// Convert coupons to array for selection
+			coupon* couponArray[TBL_SIZE];
+			int count = 0;
+			
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					couponArray[count++] = tbl[i];
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No coupons available to search." << endl;
+				return;
+			}
+			
+			// Sort array by code
+			for (int i = 0; i < count - 1; i++) {
+			int minIndex = i; // Track position of minimum code
+			
+			// Find the coupon with minimum code in unsorted portion
+			for (int j = i + 1; j < count; j++) {
+				if (couponArray[j]->couponCode < couponArray[minIndex]->couponCode) {
+					minIndex = j;
+				}
+			}
+			
+			// Swap if a smaller code is found
+			if (minIndex != i) {
+				coupon* temp = couponArray[i];
+				couponArray[i] = couponArray[minIndex];
+				couponArray[minIndex] = temp;
+			}
+		}
+			
+			// Display available coupons
+			cout << "\n--- Available Coupons ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << i+1 << ". " << couponArray[i]->couponCode << endl;
+			}
+			
+			// Get user selection
+			int selection;
+			do {
+				cout << "\nSelect a coupon (1-" << count << "): ";
+				cin >> selection;
+				
+				if (selection < 1 || selection > count) {
+					cout << "Invalid selection. Please choose from the list (1-" << count << ")." << endl;
+				}
+			} while (selection < 1 || selection > count);
+			
+			string code = couponArray[selection-1]->couponCode;
+			
+			// Binary search
+			int left = 0, right = count - 1;
+			bool found = false;
+			
+			while (left <= right) {
+				int mid = left + (right - left) / 2;
+				
+				if (couponArray[mid]->couponCode == code) {
+					cout << "\n--- Coupon Found ---" << endl;
+					cout << "Code     : " << couponArray[mid]->couponCode << endl;
+					cout << "Discount : " << couponArray[mid]->couponDis * 100 << "%" << endl;
+					cout << "Stock    : " << couponArray[mid]->couponQty << endl;
+					cout << "Status   : " << couponArray[mid]->couponStat << endl;
+					found = true;
+					break;
+				}
+				
+				if (couponArray[mid]->couponCode < code) {
+					left = mid + 1;
+				} else {
+					right = mid - 1;
+				}
+			}
+			
+			if (!found) {
+				cout << "Coupon not found." << endl;
+			}
+		}
+
+		void searchCouponByStatus() {
+		// Convert coupons to array for selection
+		coupon* couponArray[TBL_SIZE];
+		int count = 0;
+		
+		for (int i = 0; i < TBL_SIZE; i++) {
+			if (tbl[i] != NULL) {
+				couponArray[count++] = tbl[i];
+			}
+		}
+		
+		if (count == 0) {
+			cout << "No coupons available to search." << endl;
 			return;
 		}
 		
-		// Clear existing entries
-		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != NULL) {
-				delete tbl[i];
-				tbl[i] = NULL;
+		// Sort array by status
+		for (int i = 0; i < count - 1; i++) {
+			int minIndex = i; // Track position of minimum status value
+			
+			// Find the coupon with minimum status in unsorted portion
+			for (int j = i + 1; j < count; j++) {
+				if (couponArray[j]->couponStat < couponArray[minIndex]->couponStat) {
+					minIndex = j;
+				}
+			}
+			
+			// Swap if a smaller status is found
+			if (minIndex != i) {
+				coupon* temp = couponArray[i];
+				couponArray[i] = couponArray[minIndex];
+				couponArray[minIndex] = temp;
 			}
 		}
 		
-		string code, status, line;
-		float discount;
-		int qty;
+		// Show status selection menu
+		cout << "\n--- Search Coupons by Status ---\n";
+		cout << "1. Active\n";
+		cout << "2. Inactive\n";
 		
-		while (getline(inFile, code)) {
-			// Skip empty lines
-			if (code.empty()) {
-				continue;
-			}
+		// Get user selection
+		int selection;
+		do {
+			cout << "\nSelect a status (1-2): ";
+			cin >> selection;
 			
-			// Read discount
-			if (!(inFile >> discount)) {
+			if (selection < 1 || selection > 2) {
+				cout << "Invalid selection. Please choose from the list (1-2)." << endl;
+			}
+		} while (selection < 1 || selection > 2);
+		
+		string status = (selection == 1) ? "Active" : "Inactive";
+		
+		// Binary search
+		int left = 0, right = count - 1;
+		bool found = false;
+		
+		// First find any matching status
+		int foundIndex = -1;
+		while (left <= right) {
+			int mid = left + (right - left) / 2;
+			
+			if (couponArray[mid]->couponStat == status) {
+				foundIndex = mid;
+				found = true;
 				break;
 			}
-			inFile.ignore(); // Skip newline
 			
-			// Read quantity
-			if (!(inFile >> qty)) {
-				break;
+			if (couponArray[mid]->couponStat < status) {
+				left = mid + 1;
+			} else {
+				right = mid - 1;
 			}
-			inFile.ignore(); // Skip newline
-			
-			// Read status
-			if (!getline(inFile, status)) {
-				break;
-			}
-			
-			// Skip empty line if present
-			getline(inFile, line);
-			
-			// Create and insert coupon
-			coupon* cp = new coupon();
-			cp->couponCode = code;
-			cp->couponDis = discount;
-			cp->couponQty = qty;
-			cp->couponStat = status;
-			
-			// cout << cp->couponCode << ", Discount: " << cp->couponDis << ", Qty: " << cp->couponQty << ", Status: '" << cp->couponStat << "'" << endl;
-			
-			insert(cp);
 		}
 		
-		inFile.close();
+		if (!found) {
+			cout << "No " << status << " coupons found." << endl;
+			return;
+		}
+		
+		// Find all coupons with the same status
+		cout << "\n--- " << status << " Coupons ---\n\n";
+		cout << left << setw(15) << "Code" << setw(15) << "Discount (%)" << setw(10) << "Stock" << endl;
+		cout << string(40, '-') << endl;
+		
+		// Go left from foundIndex to find all matching coupons
+		int startIndex = foundIndex;
+		while (startIndex >= 0 && couponArray[startIndex]->couponStat == status) {
+			startIndex--;
+		}
+		startIndex++;
+		
+		// Go right from startIndex to display all matching coupons
+		int i = startIndex;
+		while (i < count && couponArray[i]->couponStat == status) {
+			cout << left << setw(15) << couponArray[i]->couponCode 
+				<< setw(15) << (couponArray[i]->couponDis * 100)
+				<< setw(10) << couponArray[i]->couponQty << endl;
+			i++;
+		}
 	}
-
-    // Display all coupons in hash table
-    void displayAllCoupons() {
-        int count = 0;
-        for (int i = 0; i < TBL_SIZE; i++) {
-            if (tbl[i] != NULL) {
-                cout << "\n--- Coupon " << ++count << " ---" << endl;
-                cout << "Coupon Code     : " << tbl[i]->couponCode << endl;
-                cout << "Discount        : " << tbl[i]->couponDis * 100 << "%" << endl;
-                cout << "Quantity Left   : " << tbl[i]->couponQty << endl;
-                cout << "Status          : " << tbl[i]->couponStat << endl;
-            }
-        }
-        if (count == 0) {
-            cout << "No coupons found." << endl;
-        }
-    }
-    
-    // Save new coupon to coupon.txt
-    void saveCouponToFile(coupon* cp) {
-        ofstream outFile;
-        outFile.open("coupon.txt", ios::app); // Append mode
-        
-        if (outFile.is_open()) {
-            outFile << cp->couponCode << endl;
-            outFile << cp->couponDis << endl;
-            outFile << cp->couponQty << endl;
-            outFile << cp->couponStat << endl << endl;
-            cout << "Coupon saved successfully!" << endl;
-            outFile.close();
-        } else {
-            cout << "Unable to open coupon.txt for saving." << endl;
-        }
-    }
-    
-    // Edit an existing coupon
-    void editCoupon() {
-        // Create an array of coupons
-        coupon* couponArray[TBL_SIZE];
-        int count = 0;
-        
-        for (int i = 0; i < TBL_SIZE; i++) {
-            if (tbl[i] != NULL) {
-                couponArray[count++] = tbl[i];
-            }
-        }
-        
-        if (count == 0) {
-            cout << "No coupons available to edit." << endl;
-            return;
-        }
-        
-        // Display all coupons with numbers
-        cout << "\n--- Available Coupons ---\n";
-        for (int i = 0; i < count; i++) {
-            cout << (i+1) << ". " << couponArray[i]->couponCode << " (" 
-                 << couponArray[i]->couponDis * 100 << "%, " 
-                 << couponArray[i]->couponQty << " left, " 
-                 << couponArray[i]->couponStat << ")" << endl;
-        }
-        
-        // Let user select a coupon
-        int couponChoice;
-        cout << "\nEnter the number of the coupon to edit (1-" << count << "): ";
-        cin >> couponChoice;
-        
-        if (couponChoice < 1 || couponChoice > count) {
-            cout << "Invalid selection." << endl;
-            return;
-        }
-        
-        coupon* selectedCoupon = couponArray[couponChoice-1];
-        int choice;
-        
-        do {
-            cout << "\n--- Edit Coupon ---" << endl;
-            cout << "1. Edit Coupon Code     (Current: " << selectedCoupon->couponCode << ")" << endl;
-            cout << "2. Edit Discount        (Current: " << selectedCoupon->couponDis * 100 << "%)" << endl;
-            cout << "3. Edit Quantity        (Current: " << selectedCoupon->couponQty << ")" << endl;
-            cout << "4. Edit Status          (Current: " << selectedCoupon->couponStat << ")" << endl;
-            cout << "0. Save and Return\n" << endl;
-            cout << "Select field to edit (0-4): ";
-            cin >> choice;
-            
-            cin.ignore();
-            
-            switch(choice) {
-                case 1: {
-                    string newCode;
-                    cout << "Enter new Coupon Code: ";
-                    getline(cin, newCode);
-                    selectedCoupon->couponCode = newCode;
-                    break;
-                }
-                case 2: {
-                    float newDiscount;
-                    cout << "Enter new Discount (as decimal, e.g., 0.5 for 50%): ";
-                    cin >> newDiscount;
-                    selectedCoupon->couponDis = newDiscount;
-                    break;
-                }
-                case 3: {
-                    int newQuantity;
-                    cout << "Enter new Quantity: ";
-                    cin >> newQuantity;
-                    selectedCoupon->couponQty = newQuantity;
-                    break;
-                }
-                case 4: {
-                    int statusChoice;
-                    cout << "\n--- Available Status ---\n";
-                    cout << "1. Active\n";
-                    cout << "2. Inactive\n\n";
-                    
-                    do {
-                        cout << "Select status (1-2): ";
-                        cin >> statusChoice;
-                        
-                        if (statusChoice < 1 || statusChoice > 2) {
-                            cout << "Invalid selection. Please choose from the list (1-2)." << endl;
-                        }
-                    } while (statusChoice < 1 || statusChoice > 2);
-                    
-                    selectedCoupon->couponStat = (statusChoice == 1) ? "Active" : "Inactive";
-                    cout << "Selected: " << selectedCoupon->couponStat << endl;
-                    break;
-                }
-                case 0:
-                    // Update the file
-                    updateCouponFile();
-                    cout << selectedCoupon->couponCode << " coupon updated successfully!" << endl;
-                    break;
-                default:
-                    cout << "Invalid choice, please try again." << endl;
-            }
-        } while (choice != 0);
-    }
-    
-    // Delete a coupon
-    void deleteCoupon() {
-        // Create an array of coupons
-        coupon* couponArray[TBL_SIZE];
-        int count = 0;
-        int tableIndices[TBL_SIZE]; // To track original indices
-        
-        for (int i = 0; i < TBL_SIZE; i++) {
-            if (tbl[i] != NULL) {
-                couponArray[count] = tbl[i];
-                tableIndices[count] = i;
-                count++;
-            }
-        }
-        
-        if (count == 0) {
-            cout << "No coupons available to delete." << endl;
-            return;
-        }
-        
-        // Display all coupons with numbers
-        cout << "\n--- Available Coupons ---\n";
-        for (int i = 0; i < count; i++) {
-            cout << (i+1) << ". " << couponArray[i]->couponCode << " (" 
-                 << couponArray[i]->couponDis * 100 << "%, " 
-                 << couponArray[i]->couponQty << " left, " 
-                 << couponArray[i]->couponStat << ")" << endl;
-        }
-        
-        // Let user select a coupon
-        int couponChoice;
-        cout << "\nEnter the number of the coupon to delete (1-" << count << "): ";
-        cin >> couponChoice;
-        
-        if (couponChoice < 1 || couponChoice > count) {
-            cout << "Invalid selection." << endl;
-            return;
-        }
-        
-        int selectedIndex = tableIndices[couponChoice-1];
-        coupon* selectedCoupon = tbl[selectedIndex];
-        
-        char confirm;
-        cout << "\nAre you sure you want to delete coupon " 
-             << selectedCoupon->couponCode << "? (Y/N): ";
-        cin >> confirm;
-        
-        if (toupper(confirm) == 'Y') {
-            // Delete the coupon from the hash table
-            delete tbl[selectedIndex];
-            
-            // Set the entry to NULL
-            tbl[selectedIndex] = NULL;
-            
-            // Update the file
-            updateCouponFile();
-            cout << "Coupon deleted successfully!" << endl;
-        } else {
-            cout << "Deletion cancelled." << endl;
-        }
-    }
-    
-    // Update coupon.txt file after edits or deletions
-    void updateCouponFile() {
-        ofstream outFile("coupon.txt");
-        
-        if (outFile.is_open()) {
-            for (int i = 0; i < TBL_SIZE; i++) {
-                if (tbl[i] != NULL) {
-                    outFile << tbl[i]->couponCode << endl;
-                    outFile << tbl[i]->couponDis << endl;
-                    outFile << tbl[i]->couponQty << endl;
-                    outFile << tbl[i]->couponStat << endl << endl;
-                }
-            }
-            outFile.close();
-        } else {
-            cout << "Unable to open coupon.txt for updating." << endl;
-        }
-    }
 };
 
-// Class for managing Coupons
+// HANNAH
 class Coupon {
-public:
-    // Function to add a new coupon
-    void addCoupon(CouponHT& couponTable) {
-        string code, status;
-        float discount;
-        int quantity;
+	public:
+		// Function to add a new coupon
+		void addCoupon(CouponHT& couponTable) {
+			string code, status;
+			float discount;
+			int quantity;
 
-        cout << "\nEnter Coupon Code: ";
-        cin.ignore(); // To clear any leftover newline character from previous input
-        getline(cin, code);
-        
-        cout << "Enter Discount (as decimal, e.g., 0.5 for 50%): ";
-        cin >> discount;
-        
-        cout << "Enter Quantity: ";
-        cin >> quantity;
-        
-        // Status selection
-        int statusChoice;
-        cout << "\n--- Available Status ---\n";
-        cout << "1. Active\n";
-        cout << "2. Inactive\n\n";
-        
-        do {
-            cout << "Select status (1-2): ";
-            cin >> statusChoice;
-            
-            if (statusChoice < 1 || statusChoice > 2) {
-                cout << "Invalid selection. Please choose from the list (1-2)." << endl;
-            }
-        } while (statusChoice < 1 || statusChoice > 2);
-        
-        status = (statusChoice == 1) ? "Active" : "Inactive";
-        cout << "Selected: " << status << endl;
+			cout << "\nEnter Coupon Code: ";
+			cin.ignore(); 
+			getline(cin, code);
+			
+			cout << "Enter Discount (as decimal, e.g., 0.5 for 50%): ";
+			cin >> discount;
+			
+			cout << "Enter Quantity: ";
+			cin >> quantity;
+			
+			// Status selection
+			int statusChoice;
+			cout << "\n--- Available Status ---\n";
+			cout << "1. Active\n";
+			cout << "2. Inactive\n\n";
+			
+			do {
+				cout << "Select status (1-2): ";
+				cin >> statusChoice;
+				
+				if (statusChoice < 1 || statusChoice > 2) {
+					cout << "Invalid selection. Please choose from the list (1-2)." << endl;
+				}
+			} while (statusChoice < 1 || statusChoice > 2);
+			
+			status = (statusChoice == 1) ? "Active" : "Inactive";
+			cout << "Selected: " << status << endl;
 
-        // Populate data
-        coupon newCoupon;
-        newCoupon.couponCode = code;
-        newCoupon.couponDis = discount;
-        newCoupon.couponQty = quantity;
-        newCoupon.couponStat = status;
+			// Populate data
+			coupon newCoupon;
+			newCoupon.couponCode = code;
+			newCoupon.couponDis = discount;
+			newCoupon.couponQty = quantity;
+			newCoupon.couponStat = status;
 
-        char choice;
-        cout << "\nDo you want to save this coupon? (Y/N): ";
-        cin >> choice;
+			char choice;
+			cout << "\nDo you want to save this coupon? (Y/N): ";
+			cin >> choice;
 
-        if (toupper(choice) == 'Y') {
-            couponTable.saveCouponToFile(&newCoupon);  // Save to file
-            couponTable.insert(&newCoupon);  // Insert into hash table
-        } else {
-            cout << "Coupon not saved!" << endl;
-        }
-    }
+			if (toupper(choice) == 'Y') {
+				couponTable.saveCouponToFile(&newCoupon);  
+				couponTable.insert(&newCoupon); 
+			} else {
+				cout << "Coupon not saved!" << endl;
+			}
+		}
 };
 
-// Hash table for appointments using quadratic probing - TEO
+// TEO
 class AppointHT {
 	private:
 		const int TBL_SIZE= 100;
 		appoint** tbl;
 		
-		// Hash function for appointment ID - HANNAH
 	    int hashFn(string id) {
 	        int sum = 0;
 	        
@@ -1598,7 +2064,7 @@ class AppointHT {
 	            sum += (int)id[i];   // Sum ASCII values
 	        }
 	        
-	        return sum % TBL_SIZE; // HANNAH
+	        return sum % TBL_SIZE; 
 	    }
 	    
 	public:
@@ -1638,7 +2104,6 @@ class AppointHT {
 	        int hash = hashFn(apt->appointID);
 	        int i = 0;
 	        
-	        // Quadratic probing: h+02, h+12, h+22, h+32...
 	        while (tbl[(hash + i*i) % TBL_SIZE] != NULL) {
 	            i++;
 	            if (i >= TBL_SIZE) {
@@ -1650,10 +2115,9 @@ class AppointHT {
 	        // Found empty slot
 	        tbl[(hash + i*i) % TBL_SIZE] = new appoint;
 	        *tbl[(hash + i*i) % TBL_SIZE] = *apt;
-	        // cout << "Appointment " << apt->appointID << " inserted at index " << (hash + i*i) % TBL_SIZE << endl;
 	    }
 	    
-	    // Read appointments from file and insert into hash table - HANNAH 
+	    // Read appointments from file and insert into hash table 
 		void loadFromFile() {
 		    ifstream inFile("appoint.txt");
 		    appoint* apt;
@@ -1684,20 +2148,18 @@ class AppointHT {
 		            getline(inFile, apt->appointPayStat);
 		            getline(inFile, apt->appointStat);
 		            
-		            // Skip empty line
 		            string temp;
 		            getline(inFile, temp);
 		            
 		            insert(apt);
 		        }
 		        inFile.close();
-		        // cout << "Appointments loaded successfully!" << endl;
 		    } else {
 		        cout << "Unable to open appoint.txt for reading." << endl;
 		    }
 		}
 		
-		// Display all appointments in hash table - CHIN
+		// Display all appointments in hash table
 		void displayAllAppoint() {
 		    int count = 0;
 		    for (int i = 0; i < TBL_SIZE; i++) {
@@ -1744,73 +2206,36 @@ class AppointHT {
 			}
 		}
 
-		int getTableSize() const { return TBL_SIZE; }
-		appoint* getEntry(int index) const { return tbl[index]; }
+		int getTableSize() { 
+			return TBL_SIZE; 
+		}
 
-		
+		appoint* getEntry(int index) { 
+			return tbl[index]; 
+		}
+
 		int getHash(string id) {
 			return hashFn(id);
 		}
 
-		friend void sortByDateAscending(AppointHT& appointmentTable);  //Allow Function sortByDateAscending to get private value
-		friend void sortByDateDescending(AppointHT& appointmentTable); //Allow Function sortByDateDesscending to get private value
-		friend void sortByTimeAscending(AppointHT& appointmentTable); //Allow Function sortByTimeAscending to get private value
-		friend void sortByTimeDescending(AppointHT& appointmentTable); //Allow Function sortByTimeDescending to get private value
-		friend void sortByNetAmountAscending(AppointHT& appointmentTable); //Allow Function sortByNetAmountAscending to get private value
-		friend void sortByNetAmountDescending(AppointHT& appointmentTable); //Allow Function sortByNetAmountcending to get private value
-		friend void PatientsortByDateAscending(AppointHT& appointmentTable, string patientEmail);  //Allow Function PatientsortByDateAscending to get private value
-		friend void PatientsortByDateDescending(AppointHT& appointmentTable, string patientEmail); //Allow Function PatientsortByDateDesscending to get private value
-		friend void PatientsortByTimeAscending(AppointHT& appointmentTable, string patientEmail); //Allow Function PatientortByTimeAscending to get private value
-		friend void PatientsortByTimeDescending(AppointHT& appointmentTable, string patientEmail); //Allow Function PatientsortByTimeDescending to get private value
-		friend void PatientsortByNetAmountAscending(AppointHT& appointmentTable, string patientEmail); //Allow Function PatientsortByNetAmountAscending to get private value
-		friend void PatientsortByNetAmountDescending(AppointHT& appointmentTable, string patientEmail); //Allow Function PatientsortByNetAmountcending to get private value
+		friend void sortByDateAscending(AppointHT& appointmentTable);  //Allow function to get private value
+		friend void sortByDateDescending(AppointHT& appointmentTable); 
+		friend void sortByTimeAscending(AppointHT& appointmentTable); 
+		friend void sortByTimeDescending(AppointHT& appointmentTable); 
+		friend void sortByNetAmountAscending(AppointHT& appointmentTable); 
+		friend void sortByNetAmountDescending(AppointHT& appointmentTable); 
+		friend void PatientsortByDateAscending(AppointHT& appointmentTable, string patientEmail);  
+		friend void PatientsortByDateDescending(AppointHT& appointmentTable, string patientEmail); 
+		friend void PatientsortByTimeAscending(AppointHT& appointmentTable, string patientEmail); 
+		friend void PatientsortByTimeDescending(AppointHT& appointmentTable, string patientEmail); 
+		friend void PatientsortByNetAmountAscending(AppointHT& appointmentTable, string patientEmail); 
+		friend void PatientsortByNetAmountDescending(AppointHT& appointmentTable, string patientEmail); 
 };
 
-void checkAppointDateInput(int& date) {
-    cout << "Enter appointment date (YYYYMMDD format): ";
-    cin >> date;
-    
-    int day, mth, year;
-    int maxDays;
-    
-    do {
-        year = date / 10000;
-        mth = (date / 100) % 100;
-        day = date % 100;
-  
-        if (year != 2025) {
-            cout << "Invalid selection. Please enter a date in 2025 (YYYYMMDD format): ";
-            cin >> date;
-            continue;
-        }
-  
-        if (mth < 1 || mth > 12) {
-            cout << "Invalid selection. Please enter a valid month (YYYYMMDD format): ";
-            cin >> date;
-            continue;
-        }
-
-        if (mth == 4 || mth == 6 || mth == 9 || mth == 11) {
-            maxDays = 30;
-        }
-        else if (mth == 2) {
-            maxDays = ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) ? 29 : 28;
-        }
-        else {
-            maxDays = 31;
-        }
-
-        if (day < 1 || day > maxDays) {
-            cout << "Invalid selection. Please enter a valid day (1-" << maxDays << ") for month " << mth << ": ";
-            cin >> date;
-        }
-    } while (day < 1 || day > maxDays || mth < 1 || mth > 12 || year != 2025);
-}
-
-// Class for Appointment - TEO
+// TEO
 class Appoint {
 	private:
-		appoint data; // Using existing appoint struct
+		appoint data;
 		
 	public:
 		// Constructor
@@ -1834,8 +2259,6 @@ class Appoint {
 	    ~Appoint() {
 		}
 		
-		/* 	Combine both addAppoint and AddNewAppoint into one function 
-			addAppoint - FOOK & HANNAH */
 		void addAppoint(AppointHT& appointmentTable, SvcHT& serviceTable, StaffHT& staffTable) {
 		    string id, service, counselor, mode, time, ptName, ptEmail;
 		    int date, ptPhone;
@@ -2181,10 +2604,10 @@ class Appoint {
 			}
 		}
 
-		// Save appointment to file using Linked List - CHIN
+		// Save appointment to file using Linked List
 		void saveAppointToFile(appoint& apt) {
 		    ofstream outFile;
-		    outFile.open("appoint.txt", ios::app);  // Append mode
+		    outFile.open("appoint.txt", ios::app);  
 		
 		    if (outFile.is_open()) {
 		        outFile << apt.appointID << endl;
@@ -2207,7 +2630,6 @@ class Appoint {
 		    }
 		}
 
-		
 		// Edit appointment - modeled after editPatient
 		void editAppointment(AppointHT& appointmentTable) {
 			// Create an array of appointments
@@ -2522,15 +2944,15 @@ class Appoint {
 
 };
 
-/* [Error] request for member 'TBL_SIZE' in 'serviceTable', which is of non-class type 'int'
-[Error] request for member 'tbl' in 'serviceTable', which is of non-class type 'int'
+/* 	[Error] request for member 'TBL_SIZE' in 'serviceTable', which is of non-class type 'int'
+	[Error] request for member 'tbl' in 'serviceTable', which is of non-class type 'int'
 */
 
-// Hash table for categories using quadratic probing
+// HANNAH
 class CatHT {
 	private:
 	    const int TBL_SIZE = 100;
-	    cat** tbl;  // Pointer to an array of cat pointers
+	    cat** tbl;  
 	
 	    // Hash function for category ID
 	    int hashFn(string id) {
@@ -2554,10 +2976,10 @@ class CatHT {
 	    ~CatHT() {
 	        for (int i = 0; i < TBL_SIZE; i++) {
 	            if (tbl[i] != NULL) {
-	                delete tbl[i]; // Free the memory for non-NULL entries
+	                delete tbl[i]; 
 	            }
 	        }
-	        delete[] tbl; // Free the dynamic array
+	        delete[] tbl; 
 	    }
 	
 	    // Insert category into the hash table using quadratic probing
@@ -2576,7 +2998,7 @@ class CatHT {
 	
 	        // Found an empty slot, create a new cat object and copy data
 	        tbl[(hash + i * i) % TBL_SIZE] = new cat;
-	        *tbl[(hash + i * i) % TBL_SIZE] = *category;  // Copy data into the new slot
+	        *tbl[(hash + i * i) % TBL_SIZE] = *category;  
 	    }
 	
 	    // Load categories from file (cat.txt)
@@ -2588,21 +3010,18 @@ class CatHT {
 		        while (!inFile.eof()) {
 		            category = new cat;
 		
-		            // Read Category ID
 		            getline(inFile, category->catID);
 		            if (category->catID.empty() || inFile.eof()) {
 		                delete category; // Clean up if we have an empty line or EOF
 		                break;
 		            }
 		
-		            // Read Category Name
 		            getline(inFile, category->catName);
 		
-		            // Skip empty line
 		            string temp;
 		            getline(inFile, temp);
 		
-		            insert(category); // Insert the category into the hash table
+		            insert(category); 
 		        }
 		        inFile.close();
 		        // cout << "Categories loaded successfully!" << endl;
@@ -2709,40 +3128,40 @@ class CatHT {
 				}
 			} while (choice != 0);
 		}
-
 };
 
-// Class for Category
+// HANNAH
 class Cat {
-public:
-    // Function to add a new category
-    void addCat(CatHT& categoryTable) {
-        string id, name;
+	public:
+		// Function to add a new category
+		void addCat(CatHT& categoryTable) {
+			string id, name;
 
-        cout << "\nEnter Category ID: ";
-        cin.ignore(); // To clear any leftover newline character from previous input
-        getline(cin, id);
-        cout << "Enter Category Name: ";
-        getline(cin, name);
+			cout << "\nEnter Category ID: ";
+			cin.ignore(); 
+			getline(cin, id);
+			cout << "Enter Category Name: ";
+			getline(cin, name);
 
-        // Populate data
-        cat newCategory;
-        newCategory.catID = id;
-        newCategory.catName = name;
+			// Populate data
+			cat newCategory;
+			newCategory.catID = id;
+			newCategory.catName = name;
 
-        char choice;
-        cout << "\nDo you want to save this category? (Y/N): ";
-        cin >> choice;
+			char choice;
+			cout << "\nDo you want to save this category? (Y/N): ";
+			cin >> choice;
 
-        if (toupper(choice) == 'Y') {
-            categoryTable.saveCatToFile(&newCategory);  // Save to file
-            categoryTable.insert(&newCategory);  // Insert into hash table
-        } else {
-			cout << "Category not saved!" << endl;
+			if (toupper(choice) == 'Y') {
+				categoryTable.saveCatToFile(&newCategory); 
+				categoryTable.insert(&newCategory);  
+			} else {
+				cout << "Category not saved!" << endl;
+			}
 		}
-    }
 };
 
+// TEO
 class PtHT {
 	private:
 	    const int TBL_SIZE = 100;
@@ -2754,9 +3173,9 @@ class PtHT {
 	
 	public:
 	    PtHT() {
-	        tbl = new Pt*[TBL_SIZE]; // Dynamic array for the hash table
+	        tbl = new Pt*[TBL_SIZE]; 
 	        for (int i = 0; i < TBL_SIZE; i++) {
-	            tbl[i] = NULL; // Initialize each slot as NULL
+	            tbl[i] = NULL; 
 	        }
 	    }
 	
@@ -2782,7 +3201,6 @@ class PtHT {
 				tbl[index] = value;
 		}
 
-		
 		// Getter for TBL_SIZE
 		int getTblSize() {
 			return TBL_SIZE;
@@ -2802,7 +3220,7 @@ class PtHT {
 	        }
 			
 			// Found an empty slot, create a new Pt object and copy data
-	        tbl[(hash + i * i) % TBL_SIZE] = new Pt(patient->getFName(), patient->getLName(), patient->getPhone(), patient->getEmail(), patient->getPassword(), patient->getStatus(), patient->getAge()); // Create new patient object and copy data
+	        tbl[(hash + i * i) % TBL_SIZE] = new Pt(patient->getFName(), patient->getLName(), patient->getPhone(), patient->getEmail(), patient->getPassword(), patient->getStatus(), patient->getAge()); 
 	    }
 		
 		void loadFromFile() {
@@ -2812,47 +3230,41 @@ class PtHT {
 		    if (inFile.is_open()) {
 		        bool isLoaded = false;  // Track if patients are successfully loaded
 		        while (true) {
-		            patient = new Pt("", "", 0, "", "", "", 0);  // Initialize a new Pt object
+		            patient = new Pt("", "", 0, "", "", "", 0);  
 		
 		            string fName, lName, email, password, status;
 		            int phone, age;
 		
-		            // Read First Name and Last Name (separated into two lines)
-		            if (!getline(inFile, fName) || fName.empty()) break;  // Check if line is empty or EOF
-		            if (!getline(inFile, lName) || lName.empty()) break;  // Last name on the next line
+		            if (!getline(inFile, fName) || fName.empty()) break;  
+		            if (!getline(inFile, lName) || lName.empty()) break;  
 		
-		            // Set first and last name using setter
 		            patient->setFName(fName);
 		            patient->setLName(lName);
 		
-		            // Read phone and email
 		            inFile >> phone;
-		            inFile.ignore();  // Ignore newline after reading phone
+		            inFile.ignore();  
 		            getline(inFile, email);
 		
-		            patient->setPhone(phone);  // Set phone
-		            patient->setEmail(email);  // Set email
+		            patient->setPhone(phone);  
+		            patient->setEmail(email);  
 		
-		            // Read age
 		            inFile >> age;
-		            inFile.ignore();  // Ignore newline after reading age
+		            inFile.ignore();  
 		
-		            patient->setAge(age);  // Set age
+		            patient->setAge(age);  
 		
-		            // Read password and status
 		            getline(inFile, password);
 		            getline(inFile, status);
 		
-		            patient->setPassword(password);  // Set password
-		            patient->setStatus(status);      // Set status
+		            patient->setPassword(password);  
+		            patient->setStatus(status);      
 		
-		            // Skip any extra empty line (if present)
 		            string temp;
 		            getline(inFile, temp);
 		
-		            insert(patient);  // Insert patient into hash table
+		            insert(patient); 
 		
-		            isLoaded = true;  // Mark as loaded
+		            isLoaded = true;  
 		        }
 		
 		        inFile.close();
@@ -2887,7 +3299,7 @@ class PtHT {
 	    
 		void savePatientToFile(Pt* patient) {
 		    ofstream outFile;
-		    outFile.open("patient.txt", ios::app); // Append mode
+		    outFile.open("patient.txt", ios::app); 
 		
 		    if (outFile.is_open()) {
 		        outFile << patient->getFName() << endl;
@@ -3067,11 +3479,11 @@ class PtHT {
 		friend class UserManager;
 };
 
-// Class for Patient
+// TEO
 class PtManager {
 	public:
 		// When a user enters an email that doesn't exist, the system tries to create a new patient account but encounters an error.
-		// Soulution by ChatGPT: modify the addPt() method to accept a pre-provided email:
+		// Suggestion by ChatGPT: modify the addPt() method to accept a pre-provided email:
 		void addPt(PtHT& patientTable, string email = "") {
 			string fName, lName, password;
 			int phone, age;
@@ -3093,8 +3505,7 @@ class PtManager {
 				}
 			}
 			
-			// ChatGPT
-			if (email.empty()) {
+			if (email.empty()) { // This line generated by ChatGPT
 				bool validEmail = false;
 				while (!validEmail) {
 					cout << "Enter Email: ";
@@ -3129,615 +3540,599 @@ class PtManager {
 		}
 };
 
-// Hash Table for storing test questions
+// HANNAH
 class testHT {
-private:
-	const int TBL_SIZE = 100;
-    qn** tbl;
-    
-    // Hash function for question text
-    int hashFn(const string& question) {
-        int sum = 0;
-        for (int i = 0; i < question.length(); i++) {
-            sum += (int)question[i];
-        }
-        return sum % TBL_SIZE;
-    }
+	private:
+		const int TBL_SIZE = 100;
+		qn** tbl;
+		
+		// Hash function for question text
+		int hashFn(const string& question) {
+			int sum = 0;
+			for (int i = 0; i < question.length(); i++) {
+				sum += (int)question[i];
+			}
+			return sum % TBL_SIZE;
+		}
 
-public:
-    // Constructor
-    testHT() {
-        tbl = new qn*[TBL_SIZE];
-        for (int i = 0; i < TBL_SIZE; i++) {
-            tbl[i] = NULL;
-        }
-    }
-
-    // Destructor
-    ~testHT() {
-        for (int i = 0; i < TBL_SIZE; i++) {
-            if (tbl[i] != NULL) {
-                delete tbl[i];
-            }
-        }
-        delete[] tbl;
-    }
-
-    // Load questions from a file
-    void loadQuestionsFromFile() {
-        ifstream inFile("qn.txt");
-        string line;
-        int count = 0;
-
-        while (getline(inFile, line)) {
-            if (line.empty()) continue;  // Skip empty lines
-
-            // Create a new question and load it
-            qn* newQn = new qn;
-            newQn->questionText = line;
-            newQn->options[0] = "Never";    newQn->points[0] = 0;
-            newQn->options[1] = "Sometimes"; newQn->points[1] = 1;
-            newQn->options[2] = "Often";    newQn->points[2] = 2;
-            newQn->options[3] = "Always";   newQn->points[3] = 3;
-
-            // Hashing the question text and insert into the hash table
-            int hash = hashFn(newQn->questionText);
-            int i = 0;
-            while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
-                i++;
-                if (i >= TBL_SIZE) {
-                    cout << "Hash table is full!" << endl;
-                    delete newQn;
-                    return;
-                }
-            }
-
-            tbl[(hash + i * i) % TBL_SIZE] = newQn;
-            count++;
-        }
-
-        // cout << "Questions loaded successfully!" << endl;
-        inFile.close();
-    }
-
-    // Function to display all questions
-	void displayAllQuestions() {
-		int count = 0;
-		for (int i = 0; i < TBL_SIZE; i++) {
-			if (tbl[i] != NULL) {
-				cout << "\n--- Question " << ++count << " ---" << endl;
-				cout << "Question Text : " << tbl[i]->questionText << endl;
-				for (int j = 0; j < 4; j++) {
-					cout << "Option " << j + 1 << "      : " << tbl[i]->options[j] << " (" << tbl[i]->points[j] << " points)" << endl;
-				}
+	public:
+		// Constructor
+		testHT() {
+			tbl = new qn*[TBL_SIZE];
+			for (int i = 0; i < TBL_SIZE; i++) {
+				tbl[i] = NULL;
 			}
 		}
-		if (count == 0) {
-			cout << "No questions available." << endl;
-		}
-	}
 
-    // Function to get a question based on index
-    qn* getQuestion(int index) {
-        int count = 0;
-        for (int i = 0; i < TBL_SIZE; i++) {
-            if (tbl[i] != NULL) {
-                if (count == index) {
-                    return tbl[i];
-                }
-                count++;
-            }
-        }
-        return NULL;
-    }
-    
-    // In testHT class
-
-	void saveQnToFile(qn* question) {
-	    ofstream outFile;
-	    outFile.open("qn.txt", ios::app); // Append mode
-	
-	    if (outFile.is_open()) {
-	        outFile << question->questionText << endl;
-	        cout << "Question saved successfully!" << endl;
-	        outFile.close();
-	    } else {
-	        cout << "Unable to open qn.txt for saving." << endl;
-	    }
-	}
-	
-	void insert(qn* question) {
-	    int hash = hashFn(question->questionText);
-	    int i = 0;
-	    while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
-	        i++;
-	        if (i >= TBL_SIZE) {
-	            cout << "Hash table is full!" << endl;
-	            return;
-	        }
-	    }
-	    tbl[(hash + i * i) % TBL_SIZE] = new qn;
-	    *tbl[(hash + i * i) % TBL_SIZE] = *question;
-	}
-
-	// Function to edit a question
-	void editQuestion(testHT& questionTable) {
-		// Create an array of questions
-		qn* questionArray[10]; // Assuming max 100 questions
-		int count = 0;
-		int tableIndices[10]; // To track original indices
-		
-		for (int i = 0; i < questionTable.TBL_SIZE; i++) {
-			if (questionTable.tbl[i] != NULL) {
-				questionArray[count] = questionTable.tbl[i];
-				tableIndices[count] = i;
-				count++;
-			}
-		}
-		
-		if (count == 0) {
-			cout << "No questions available to edit." << endl;
-			return;
-		}
-		
-		// Display all questions with numbers
-		cout << "\n--- Available Questions ---\n";
-		for (int i = 0; i < count; i++) {
-			cout << (i+1) << ". " << questionArray[i]->questionText << endl;
-		}
-		
-		// Let admin select a question
-		int questionChoice;
-		cout << "\nEnter the number of the question to edit (1-" << count << "): ";
-		cin >> questionChoice;
-		
-		if (questionChoice < 1 || questionChoice > count) {
-			cout << "Invalid selection." << endl;
-			return;
-		}
-		
-		int selectedIndex = tableIndices[questionChoice-1];
-		qn* selectedQuestion = questionTable.tbl[selectedIndex];
-		
-		// Edit menu
-		int choice;
-		do {
-			cout << "\n--- Edit Question ---" << endl;
-			cout << "1. Edit Question Text (Current: " << selectedQuestion->questionText << ")" << endl;
-			cout << "0. Save and Return\n" << endl;
-			cout << "Select field to edit (0-1): ";
-			cin >> choice;
-			
-			cin.ignore(); // Clear input buffer
-			
-			switch(choice) {
-				case 1: {
-					string newText;
-					cout << "Enter new Question Text: ";
-					getline(cin, newText);
-					selectedQuestion->questionText = newText;
-					break;
-				}
-				case 0:
-					// Update the file
-					updateQuestionFile(questionTable);
-					cout << "Question updated successfully!" << endl;
-					break;
-				default:
-					cout << "Invalid choice, please try again." << endl;
-			}
-		} while (choice != 0);
-	}
-
-	// Function to update the question file after editing
-	void updateQuestionFile(testHT& questionTable) {
-		ofstream outFile("qn.txt");
-		
-		if (outFile.is_open()) {
-			for (int i = 0; i < questionTable.TBL_SIZE; i++) {
-				if (questionTable.tbl[i] != NULL) {
-					outFile << questionTable.tbl[i]->questionText << endl;
+		// Destructor
+		~testHT() {
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					delete tbl[i];
 				}
 			}
-			outFile.close();
-		} else {
-			cout << "Unable to open qn.txt for updating." << endl;
+			delete[] tbl;
 		}
-	}
 
+		// Load questions from a file
+		void loadQuestionsFromFile() {
+			ifstream inFile("qn.txt");
+			string line;
+			int count = 0;
 
-};
+			while (getline(inFile, line)) {
+				if (line.empty()) continue;  
 
-// Class for managing results and saving/loading
-class resultHT {
-private:
-	const int TBL_SIZE = 100;
-    result** tbl;
+				qn* newQn = new qn;
+				newQn->questionText = line;
+				newQn->options[0] = "Never";    newQn->points[0] = 0;
+				newQn->options[1] = "Sometimes"; newQn->points[1] = 1;
+				newQn->options[2] = "Often";    newQn->points[2] = 2;
+				newQn->options[3] = "Always";   newQn->points[3] = 3;
 
-    // Hash function for the phone number
-    int hashFn(int phone) {
-        return phone % TBL_SIZE;
-    }
-
-public:
-    resultHT() {
-        tbl = new result*[TBL_SIZE];
-        for (int i = 0; i < TBL_SIZE; i++) {
-            tbl[i] = NULL;
-        }
-    }
-
-    ~resultHT() {
-        for (int i = 0; i < TBL_SIZE; i++) {
-            if (tbl[i] != NULL) {
-                delete tbl[i];
-            }
-        }
-        delete[] tbl;
-    }
-
-	// Getter for TBL_SIZE
-	int getTableSize() {
-		return TBL_SIZE;
-	}
-
-	result* getEntry(int index) const { 
-		return tbl[index]; 
-	}
-
-    // Load results from file
-	void loadResultsFromFile() {
-		ifstream inFile("result.txt");
-		
-		if (inFile.is_open()) {
-			while (!inFile.eof()) {
-				result* newResult = new result;
-				
-				// Read name
-				getline(inFile, newResult->name);
-				if (newResult->name.empty() || inFile.eof()) {
-					delete newResult;
-					break;
-				}
-				
-				// Read phone
-				inFile >> newResult->phone;
-				inFile.ignore(); // Skip newline
-
-				inFile >> newResult->email;
-				
-				// Read score
-				inFile >> newResult->score;
-				inFile.ignore(); // Skip newline
-				
-				// Read situation
-				getline(inFile, newResult->situation);
-				
-				// Skip empty line
-				string temp;
-				getline(inFile, temp);
-				
-				// Insert into hash table
-				int hash = hashFn(newResult->phone);
+				int hash = hashFn(newQn->questionText);
 				int i = 0;
 				while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
 					i++;
 					if (i >= TBL_SIZE) {
 						cout << "Hash table is full!" << endl;
-						delete newResult;
+						delete newQn;
 						return;
 					}
 				}
-				tbl[(hash + i * i) % TBL_SIZE] = newResult;
+
+				tbl[(hash + i * i) % TBL_SIZE] = newQn;
+				count++;
 			}
+
+			// cout << "Questions loaded successfully!" << endl;
 			inFile.close();
-		} else {
-			cout << "Unable to open result.txt for reading." << endl;
 		}
-	}
 
-
-    // Function to display all test results
-	void displayAllResults() {
-	    int count = 0;
-	    for (int i = 0; i < TBL_SIZE; i++) {
-	        if (tbl[i] != NULL) {
-	            cout << "\n--- Result " << ++count << " ---" << endl;
-	            cout << "Name      : " << tbl[i]->name << endl;
-	            cout << "Phone     : " << tbl[i]->phone << endl;
-	            cout << "Email     : " << tbl[i]->email << endl;
-	            cout << "Score     : " << tbl[i]->score << endl;
-	            cout << "Situation : " << tbl[i]->situation << endl;
-	        }
-	    }
-	    if (count == 0) {
-	        cout << "No results found." << endl;
-	    }
-	}
-
-	void displayPatientResult(string email) {
+		// Function to display all questions
+		void displayAllQuestions() {
 			int count = 0;
 			for (int i = 0; i < TBL_SIZE; i++) {
-				if (tbl[i] != NULL && tbl[i]->email == email) {
+				if (tbl[i] != NULL) {
+					cout << "\n--- Question " << ++count << " ---" << endl;
+					cout << "Question Text : " << tbl[i]->questionText << endl;
+					for (int j = 0; j < 4; j++) {
+						cout << "Option " << j + 1 << "      : " << tbl[i]->options[j] << " (" << tbl[i]->points[j] << " points)" << endl;
+					}
+				}
+			}
+			if (count == 0) {
+				cout << "No questions available." << endl;
+			}
+		}
+
+		// Function to get a question based on index
+		qn* getQuestion(int index) {
+			int count = 0;
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					if (count == index) {
+						return tbl[i];
+					}
+					count++;
+				}
+			}
+			return NULL;
+		}
+		
+		void saveQnToFile(qn* question) {
+			ofstream outFile;
+			outFile.open("qn.txt", ios::app); // Append mode
+		
+			if (outFile.is_open()) {
+				outFile << question->questionText << endl;
+				cout << "Question saved successfully!" << endl;
+				outFile.close();
+			} else {
+				cout << "Unable to open qn.txt for saving." << endl;
+			}
+		}
+		
+		void insert(qn* question) {
+			int hash = hashFn(question->questionText);
+			int i = 0;
+			while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
+				i++;
+				if (i >= TBL_SIZE) {
+					cout << "Hash table is full!" << endl;
+					return;
+				}
+			}
+			tbl[(hash + i * i) % TBL_SIZE] = new qn;
+			*tbl[(hash + i * i) % TBL_SIZE] = *question;
+		}
+
+		// Function to edit a question
+		void editQuestion(testHT& questionTable) {
+			// Create an array of questions
+			qn* questionArray[10]; 
+			int count = 0;
+			int tableIndices[10]; // To track original indices
+			
+			for (int i = 0; i < questionTable.TBL_SIZE; i++) {
+				if (questionTable.tbl[i] != NULL) {
+					questionArray[count] = questionTable.tbl[i];
+					tableIndices[count] = i;
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No questions available to edit." << endl;
+				return;
+			}
+			
+			// Display all questions with numbers
+			cout << "\n--- Available Questions ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << (i+1) << ". " << questionArray[i]->questionText << endl;
+			}
+			
+			// Let admin select a question
+			int questionChoice;
+			cout << "\nEnter the number of the question to edit (1-" << count << "): ";
+			cin >> questionChoice;
+			
+			if (questionChoice < 1 || questionChoice > count) {
+				cout << "Invalid selection." << endl;
+				return;
+			}
+			
+			int selectedIndex = tableIndices[questionChoice-1];
+			qn* selectedQuestion = questionTable.tbl[selectedIndex];
+			
+			// Edit menu
+			int choice;
+			do {
+				cout << "\n--- Edit Question ---" << endl;
+				cout << "1. Edit Question Text (Current: " << selectedQuestion->questionText << ")" << endl;
+				cout << "0. Save and Return\n" << endl;
+				cout << "Select field to edit (0-1): ";
+				cin >> choice;
+				
+				cin.ignore(); // Clear input buffer
+				
+				switch(choice) {
+					case 1: {
+						string newText;
+						cout << "Enter new Question Text: ";
+						getline(cin, newText);
+						selectedQuestion->questionText = newText;
+						break;
+					}
+					case 0:
+						// Update the file
+						updateQuestionFile(questionTable);
+						cout << "Question updated successfully!" << endl;
+						break;
+					default:
+						cout << "Invalid choice, please try again." << endl;
+				}
+			} while (choice != 0);
+		}
+
+		// Function to update the question file after editing
+		void updateQuestionFile(testHT& questionTable) {
+			ofstream outFile("qn.txt");
+			
+			if (outFile.is_open()) {
+				for (int i = 0; i < questionTable.TBL_SIZE; i++) {
+					if (questionTable.tbl[i] != NULL) {
+						outFile << questionTable.tbl[i]->questionText << endl;
+					}
+				}
+				outFile.close();
+			} else {
+				cout << "Unable to open qn.txt for updating." << endl;
+			}
+		}
+};
+
+// HANNAH
+class resultHT {
+	private:
+		const int TBL_SIZE = 100;
+		result** tbl;
+
+		// Hash function for the phone number
+		int hashFn(int phone) {
+			return phone % TBL_SIZE;
+		}
+
+	public:
+		resultHT() {
+			tbl = new result*[TBL_SIZE];
+			for (int i = 0; i < TBL_SIZE; i++) {
+				tbl[i] = NULL;
+			}
+		}
+
+		~resultHT() {
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					delete tbl[i];
+				}
+			}
+			delete[] tbl;
+		}
+
+		// Getter for TBL_SIZE
+		int getTableSize() {
+			return TBL_SIZE;
+		}
+
+		result* getEntry(int index) const { 
+			return tbl[index]; 
+		}
+
+		// Load results from file
+		void loadResultsFromFile() {
+			ifstream inFile("result.txt");
+			
+			if (inFile.is_open()) {
+				while (!inFile.eof()) {
+					result* newResult = new result;
+					
+					getline(inFile, newResult->name);
+					if (newResult->name.empty() || inFile.eof()) {
+						delete newResult;
+						break;
+					}
+					
+					inFile >> newResult->phone;
+					inFile.ignore(); 
+
+					inFile >> newResult->email;
+					
+					inFile >> newResult->score;
+					inFile.ignore(); 
+					
+					getline(inFile, newResult->situation);
+					
+					string temp;
+					getline(inFile, temp);
+					
+					int hash = hashFn(newResult->phone);
+					int i = 0;
+					while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
+						i++;
+						if (i >= TBL_SIZE) {
+							cout << "Hash table is full!" << endl;
+							delete newResult;
+							return;
+						}
+					}
+					tbl[(hash + i * i) % TBL_SIZE] = newResult;
+				}
+				inFile.close();
+			} else {
+				cout << "Unable to open result.txt for reading." << endl;
+			}
+		}
+
+		// Function to display all test results
+		void displayAllResults() {
+			int count = 0;
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
 					cout << "\n--- Result " << ++count << " ---" << endl;
+					cout << "Name      : " << tbl[i]->name << endl;
+					cout << "Phone     : " << tbl[i]->phone << endl;
+					cout << "Email     : " << tbl[i]->email << endl;
 					cout << "Score     : " << tbl[i]->score << endl;
 					cout << "Situation : " << tbl[i]->situation << endl;
 				}
 			}
 			if (count == 0) {
-	        	cout << "No results found." << endl;
-			}
-	}
-
-
-    // Function to save result to file
-    void saveResultToFile(result* res) {
-        ofstream outFile("result.txt", ios::app);
-        if (outFile.is_open()) {
-            outFile << res->name << endl;
-            outFile << res->phone << endl;
-            outFile << res->email << endl;
-            outFile << res->score << endl;
-            outFile << res->situation << endl;
-            outFile << endl;  // Empty line between results
-            outFile.close();
-            cout << "Result saved successfully!" << endl;
-        } else {
-            cout << "Unable to open result.txt for saving." << endl;
-        }
-    }
-
-    // Function to insert result into the hash table
-    void insert(result* res) {
-        int hash = hashFn(res->phone);
-        int i = 0;
-        while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
-            i++;
-        }
-        tbl[(hash + i * i) % TBL_SIZE] = res;
-    }
-
-	// Add this function to the resultHT class
-	void deleteResult(resultHT& resultTable) {
-		// Create an array of results
-		result* resultArray[resultTable.getTableSize()];
-		int count = 0;
-		int tableIndices[resultTable.getTableSize()]; // To track original indices
-		
-		for (int i = 0; i < resultTable.getTableSize(); i++) {
-			if (resultTable.getEntry(i) != nullptr) {
-				resultArray[count] = resultTable.getEntry(i);
-				tableIndices[count] = i;
-				count++;
+				cout << "No results found." << endl;
 			}
 		}
-		
-		if (count == 0) {
-			cout << "No results available to delete." << endl;
-			return;
-		}
-		
-		// Display all results with numbers
-		cout << "\n--- Available Results ---\n";
-		for (int i = 0; i < count; i++) {
-			cout << (i+1) << ". " << resultArray[i]->name << " - " 
-				<< resultArray[i]->email << " (Score: " 
-				<< resultArray[i]->score << ")" << endl;
-		}
-		
-		// Let user select a result
-		int resultChoice;
-		cout << "\nEnter the number of the result to delete (1-" << count << "): ";
-		cin >> resultChoice;
-		
-		if (resultChoice < 1 || resultChoice > count) {
-			cout << "Invalid selection." << endl;
-			return;
-		}
-		
-		int selectedIndex = tableIndices[resultChoice-1];
-		result* selectedResult = resultTable.getEntry(selectedIndex);
-		
-		char confirm;
-		cout << "\nAre you sure you want to delete result for " 
-			<< selectedResult->name << " (Email: " << selectedResult->email << ")? (Y/N): ";
-		cin >> confirm;
-		
-		if (toupper(confirm) == 'Y') {
-			// Delete the result from the hash table
-			delete resultTable.getEntry(selectedIndex);
-			
-			// Set the entry to NULL
-			setTableElement(selectedIndex, NULL);
-			
-			// Update the file
-			updateResultFile(resultTable);
-			cout << "Result deleted successfully!" << endl;
-		} else {
-			cout << "Deletion cancelled." << endl;
-		}
-	}
 
-	// Function to allow a patient to delete their own results
-	void deleteResult(resultHT& resultTable, string currentEmail) {
-		// Create an array of results that belong to the current user
-		result* resultArray[resultTable.getTableSize()];
-		int count = 0;
-		int tableIndices[resultTable.getTableSize()]; // To track original indices
-		
-		for (int i = 0; i < resultTable.getTableSize(); i++) {
-			if (resultTable.getEntry(i) != nullptr && resultTable.getEntry(i)->email == currentEmail) {
-				resultArray[count] = resultTable.getEntry(i);
-				tableIndices[count] = i;
-				count++;
+		void displayPatientResult(string email) {
+				int count = 0;
+				for (int i = 0; i < TBL_SIZE; i++) {
+					if (tbl[i] != NULL && tbl[i]->email == email) {
+						cout << "\n--- Result " << ++count << " ---" << endl;
+						cout << "Score     : " << tbl[i]->score << endl;
+						cout << "Situation : " << tbl[i]->situation << endl;
+					}
+				}
+				if (count == 0) {
+					cout << "No results found." << endl;
+				}
+		}
+
+		// Function to save result to file
+		void saveResultToFile(result* res) {
+			ofstream outFile("result.txt", ios::app);
+			if (outFile.is_open()) {
+				outFile << res->name << endl;
+				outFile << res->phone << endl;
+				outFile << res->email << endl;
+				outFile << res->score << endl;
+				outFile << res->situation << endl;
+				outFile << endl;  // Empty line between results
+				outFile.close();
+				cout << "Result saved successfully!" << endl;
+			} else {
+				cout << "Unable to open result.txt for saving." << endl;
 			}
 		}
-		
-		if (count == 0) {
-			cout << "You have no test results available to delete." << endl;
-			return;
+
+		// Function to insert result into the hash table
+		void insert(result* res) {
+			int hash = hashFn(res->phone);
+			int i = 0;
+			while (tbl[(hash + i * i) % TBL_SIZE] != NULL) {
+				i++;
+			}
+			tbl[(hash + i * i) % TBL_SIZE] = res;
 		}
-		
-		// Display only the current user's results with numbers
-		cout << "\n--- Your Test Results ---\n";
-		for (int i = 0; i < count; i++) {
-			cout << (i+1) << ". Score: " << resultArray[i]->score 
-				<< " - Situation: " << resultArray[i]->situation << endl;
-		}
-		
-		// Let user select a result
-		int resultChoice;
-		cout << "\nEnter the number of the result to delete (1-" << count << "): ";
-		cin >> resultChoice;
-		
-		if (resultChoice < 1 || resultChoice > count) {
-			cout << "Invalid selection." << endl;
-			return;
-		}
-		
-		int selectedIndex = tableIndices[resultChoice-1];
-		result* selectedResult = resultTable.getEntry(selectedIndex);
-		
-		char confirm;
-		cout << "\nAre you sure you want to delete this result? (Y/N): ";
-		cin >> confirm;
-		
-		if (toupper(confirm) == 'Y') {
-			// Delete the result from the hash table
-			delete resultTable.getEntry(selectedIndex);
+
+		// Add this function to the resultHT class
+		void deleteResult(resultHT& resultTable) {
+			// Create an array of results
+			result* resultArray[resultTable.getTableSize()];
+			int count = 0;
+			int tableIndices[resultTable.getTableSize()]; // To track original indices
 			
-			// Set the entry to NULL
-			resultTable.setTableElement(selectedIndex, NULL);
-			
-			// Update the file
-			resultTable.updateResultFile(resultTable);
-			cout << "Result deleted successfully!" << endl;
-		} else {
-			cout << "Deletion cancelled." << endl;
-		}
-	}
-
-
-	// Add this setter method to the resultHT class
-	void setTableElement(int index, result* value) {
-		if (index >= 0 && index < TBL_SIZE)
-			tbl[index] = value;
-	}
-
-	// Add this function to update the result file after deletion
-	void updateResultFile(resultHT& resultTable) {
-		ofstream outFile("result.txt");
-		
-		if (outFile.is_open()) {
 			for (int i = 0; i < resultTable.getTableSize(); i++) {
-				result* res = resultTable.getEntry(i);
-				if (res != NULL) {
-					outFile << res->name << endl;
-					outFile << res->phone << endl;
-					outFile << res->email << endl;
-					outFile << res->score << endl;
-					outFile << res->situation << endl;
-					outFile << endl;  // Empty line between results
+				if (resultTable.getEntry(i) != nullptr) {
+					resultArray[count] = resultTable.getEntry(i);
+					tableIndices[count] = i;
+					count++;
 				}
 			}
-			outFile.close();
-		} else {
-			cout << "Unable to open result.txt for updating." << endl;
-		}
-	}
-
-};
-
-// Class to manage the test and calculate results
-class test {
-private:
-    testHT& testTable;
-    resultHT& resultTable;
-
-public:
-    test(testHT& t, resultHT& r) : testTable(t), resultTable(r) {}
-
-    // Function to take the test
-    void takeTest() {
-	    string name, email;
-	    int phone;
-	    int score = 0;
-	    
-	    cin.ignore(); 
-	    cout << "\nEnter your full name: ";
-	    getline(cin, name);
-	    cout << "Enter your phone number: ";
-	    cin >> phone;
-	    cin.ignore();  // To consume the leftover newline from `cin`
-		
-		
-	    cout << "Enter your email: ";
-	    cin >> email;
-
-	    int questionIndex = 0;
-	    qn* currentQuestion = NULL;
-	
-	    // Loop through all questions in the hash table
-	    while ((currentQuestion = testTable.getQuestion(questionIndex)) != NULL) {
-	        cout << "\n--- Question " << questionIndex + 1 << " ---\n";
-	        cout << currentQuestion->questionText << endl;
-	        for (int i = 0; i < 4; i++) {
-	            cout << "  " << i + 1 << ". " << currentQuestion->options[i] << endl;
-	        }
-	
-	        int answer;
-	        cout << "\nYour answer (1-4): ";
-	        cin >> answer;
-	
-	        if (answer >= 1 && answer <= 4) {
-	            score += currentQuestion->points[answer - 1];
-	        } else {
-				cout << "Invalid choice, please try again." << endl;
-				continue;
+			
+			if (count == 0) {
+				cout << "No results available to delete." << endl;
+				return;
 			}
-	
-	        questionIndex++;
-	    }
-	
-	    string situation;
-	    if (score <= 7) {
-	        situation = "Low Stress";
-	    } else if (score <= 15) {
-	        situation = "Moderate Stress";
-	    } else if (score <= 22) {
-	        situation = "High Stress";
-	    } else {
-	        situation = "Very High Stress";
-	    }
-	
-	    result* newResult = new result;
-	    newResult->name = name;
-	    newResult->phone = phone;
-	    newResult->score = score;
-	    newResult->situation = situation;
-	
-	    cout << "\nYour total score: " << score << endl;
-	    cout << "Your situation  : " << situation << endl;
-	
-	    char save;
-	    cout << "\nDo you want to save the result? (Y/N): ";
-	    cin >> save;
-	    if (save == 'Y' || save == 'y') {
-	        resultTable.saveResultToFile(newResult);
-	        resultTable.insert(newResult);
-	    } else {
-			cout << "Result not saved!" << endl;
+			
+			// Display all results with numbers
+			cout << "\n--- Available Results ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << (i+1) << ". " << resultArray[i]->name << " - " 
+					<< resultArray[i]->email << " (Score: " 
+					<< resultArray[i]->score << ")" << endl;
+			}
+			
+			// Let user select a result
+			int resultChoice;
+			cout << "\nEnter the number of the result to delete (1-" << count << "): ";
+			cin >> resultChoice;
+			
+			if (resultChoice < 1 || resultChoice > count) {
+				cout << "Invalid selection." << endl;
+				return;
+			}
+			
+			int selectedIndex = tableIndices[resultChoice-1];
+			result* selectedResult = resultTable.getEntry(selectedIndex);
+			
+			char confirm;
+			cout << "\nAre you sure you want to delete result for " 
+				<< selectedResult->name << " (Email: " << selectedResult->email << ")? (Y/N): ";
+			cin >> confirm;
+			
+			if (toupper(confirm) == 'Y') {
+				// Delete the result from the hash table
+				delete resultTable.getEntry(selectedIndex);
+				
+				// Set the entry to NULL
+				setTableElement(selectedIndex, NULL);
+				
+				// Update the file
+				updateResultFile(resultTable);
+				cout << "Result deleted successfully!" << endl;
+			} else {
+				cout << "Deletion cancelled." << endl;
+			}
 		}
-	}
-	
 
+		// Function to allow a patient to delete their own results
+		void deleteResult(resultHT& resultTable, string currentEmail) {
+			// Create an array of results that belong to the current user
+			result* resultArray[resultTable.getTableSize()];
+			int count = 0;
+			int tableIndices[resultTable.getTableSize()]; // To track original indices
+			
+			for (int i = 0; i < resultTable.getTableSize(); i++) {
+				if (resultTable.getEntry(i) != nullptr && resultTable.getEntry(i)->email == currentEmail) {
+					resultArray[count] = resultTable.getEntry(i);
+					tableIndices[count] = i;
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "You have no test results available to delete." << endl;
+				return;
+			}
+			
+			// Display only the current user's results with numbers
+			cout << "\n--- Your Test Results ---\n";
+			for (int i = 0; i < count; i++) {
+				cout << (i+1) << ". Score: " << resultArray[i]->score 
+					<< " - Situation: " << resultArray[i]->situation << endl;
+			}
+			
+			// Let user select a result
+			int resultChoice;
+			cout << "\nEnter the number of the result to delete (1-" << count << "): ";
+			cin >> resultChoice;
+			
+			if (resultChoice < 1 || resultChoice > count) {
+				cout << "Invalid selection." << endl;
+				return;
+			}
+			
+			int selectedIndex = tableIndices[resultChoice-1];
+			result* selectedResult = resultTable.getEntry(selectedIndex);
+			
+			char confirm;
+			cout << "\nAre you sure you want to delete this result? (Y/N): ";
+			cin >> confirm;
+			
+			if (toupper(confirm) == 'Y') {
+				// Delete the result from the hash table
+				delete resultTable.getEntry(selectedIndex);
+				
+				// Set the entry to NULL
+				resultTable.setTableElement(selectedIndex, NULL);
+				
+				// Update the file
+				resultTable.updateResultFile(resultTable);
+				cout << "Result deleted successfully!" << endl;
+			} else {
+				cout << "Deletion cancelled." << endl;
+			}
+		}
+
+		// Add this setter method to the resultHT class
+		void setTableElement(int index, result* value) {
+			if (index >= 0 && index < TBL_SIZE)
+				tbl[index] = value;
+		}
+
+		// Add this function to update the result file after deletion
+		void updateResultFile(resultHT& resultTable) {
+			ofstream outFile("result.txt");
+			
+			if (outFile.is_open()) {
+				for (int i = 0; i < resultTable.getTableSize(); i++) {
+					result* res = resultTable.getEntry(i);
+					if (res != NULL) {
+						outFile << res->name << endl;
+						outFile << res->phone << endl;
+						outFile << res->email << endl;
+						outFile << res->score << endl;
+						outFile << res->situation << endl;
+						outFile << endl;  // Empty line between results
+					}
+				}
+				outFile.close();
+			} else {
+				cout << "Unable to open result.txt for updating." << endl;
+			}
+		}
 };
 
-// Hash table for treatment records using quadratic probing
+// Class to manage the test and calculate results - HANNAH
+class test {
+	private:
+		testHT& testTable;
+		resultHT& resultTable;
+
+	public:
+		test(testHT& t, resultHT& r) : testTable(t), resultTable(r) {}
+
+		~test(){}
+
+		// Function to take the test
+		void takeTest() {
+			string name, email;
+			int phone;
+			int score = 0;
+			
+			cin.ignore(); 
+			cout << "\nEnter your full name: ";
+			getline(cin, name);
+			cout << "Enter your phone number: ";
+			cin >> phone;
+			cin.ignore();  
+			
+			
+			cout << "Enter your email: ";
+			cin >> email;
+
+			int questionIndex = 0;
+			qn* currentQuestion = NULL;
+		
+			// Loop through all questions in the hash table
+			while ((currentQuestion = testTable.getQuestion(questionIndex)) != NULL) {
+				cout << "\n--- Question " << questionIndex + 1 << " ---\n";
+				cout << currentQuestion->questionText << endl;
+				for (int i = 0; i < 4; i++) {
+					cout << "  " << i + 1 << ". " << currentQuestion->options[i] << endl;
+				}
+		
+				int answer;
+				cout << "\nYour answer (1-4): ";
+				cin >> answer;
+		
+				if (answer >= 1 && answer <= 4) {
+					score += currentQuestion->points[answer - 1];
+				} else {
+					cout << "Invalid choice, please try again." << endl;
+					continue;
+				}
+		
+				questionIndex++;
+			}
+		
+			string situation;
+			if (score <= 7) {
+				situation = "Low Stress";
+			} else if (score <= 15) {
+				situation = "Moderate Stress";
+			} else if (score <= 22) {
+				situation = "High Stress";
+			} else {
+				situation = "Very High Stress";
+			}
+		
+			result* newResult = new result;
+			newResult->name = name;
+			newResult->phone = phone;
+			newResult->score = score;
+			newResult->situation = situation;
+		
+			cout << "\nYour total score: " << score << endl;
+			cout << "Your situation  : " << situation << endl;
+		
+			char save;
+			cout << "\nDo you want to save the result? (Y/N): ";
+			cin >> save;
+			if (save == 'Y' || save == 'y') {
+				resultTable.saveResultToFile(newResult);
+				resultTable.insert(newResult);
+			} else {
+				cout << "Result not saved!" << endl;
+			}
+		}
+};
+
+// TEO
 class TxHT {
 	private:
-	    const int TBL_SIZE = 100; // Hash table size
-	    tx** tbl;                 // Pointer array for hash table
+	    const int TBL_SIZE = 100; 
+	    tx** tbl;                 
 	
 	    // Hash function for appointID
 	    int hashFn(string appointID) {
@@ -3772,7 +4167,6 @@ class TxHT {
 			return TBL_SIZE;
 		}
 
-		
 		tx* getEntry(int index) const { 
 			return tbl[index]; 
 		}
@@ -3816,7 +4210,7 @@ class TxHT {
 	                getline(inFile, treatment->homework);
 	                getline(inFile, treatment->nextSession);
 	                string temp;
-	                getline(inFile, temp); // Skip empty line
+	                getline(inFile, temp); 
 	                insert(treatment);
 	            }
 	            inFile.close();
@@ -3871,7 +4265,7 @@ class TxHT {
 		}
 };
 
-// Class for Treatment
+// TEO
 class Tx {
 	private:
 	    tx data; // Treatment record data
@@ -4191,13 +4585,118 @@ class Tx {
 				cout << "Unable to open tx.txt for updating." << endl;
 			}
 		}
-
 };
 
+// TEO
 class UserManager {
 public:
-    // Search across both patient and staff by email
-    void searchUsersByEmail(PtHT& patientTable, StaffHT& staffTable);
+	// Search across both patient and staff by email
+	void searchUsersByEmail(PtHT& patientTable, StaffHT& staffTable) {
+		string targetEmail;
+		bool userFound = false;
+		
+		cout << "\nEnter email to search: ";
+		cin.ignore();
+		getline(cin, targetEmail);
+
+		if (!isValidEmail(targetEmail)) {
+			cout << "Invalid email format. Please try again.\n" << endl;
+			return;
+		}
+		
+		Pt* foundPatient = NULL;
+		Staff* foundStaff = NULL;
+		int patientIndex = -1;
+		int staffIndex = -1;
+		
+		// Check patient table first
+		for (int i = 0; i < patientTable.TBL_SIZE; i++) {
+			if (patientTable.tbl[i] != NULL && patientTable.tbl[i]->getEmail() == targetEmail) {
+				foundPatient = patientTable.tbl[i];
+				patientIndex = i;
+				userFound = true;
+				
+				cout << "\n--- Patient Found ---" << endl;
+				cout << "First Name  : " << foundPatient->getFName() << endl;
+				cout << "Last Name   : " << foundPatient->getLName() << endl;
+				cout << "Phone       : " << foundPatient->getPhone() << endl;
+				cout << "Email       : " << foundPatient->getEmail() << endl;
+				cout << "Age         : " << foundPatient->getAge() << endl;
+				cout << "Status      : " << foundPatient->getStatus() << endl;
+				
+				int action;
+				cout << "\nActions:" << endl;
+				cout << "1. Edit Patient" << endl;
+				cout << "2. Delete Patient" << endl;
+				cout << "0. Return to Menu" << endl;
+				cout << "Select an action: ";
+				cin >> action;
+				
+				switch(action) {
+					case 1: 
+						editPatient(patientTable, patientIndex);
+						break;
+					case 2: 
+						deletePatient(patientTable, patientIndex);
+						break;
+					case 0:
+						break;
+					default:
+						cout << "Invalid choice, please try again." << endl;
+				}
+				
+				return;
+			}
+		}
+		
+		// If not found in patient table, check staff table
+		for (int i = 0; i < staffTable.TBL_SIZE; i++) {
+			if (staffTable.tbl[i] != NULL && staffTable.tbl[i]->getEmail() == targetEmail) {
+				foundStaff = staffTable.tbl[i];
+				staffIndex = i;
+				userFound = true;
+				
+				// Display found staff
+				cout << "\n--- Staff Found ---" << endl;
+				cout << "First Name : " << foundStaff->getFName() << endl;
+				cout << "Last Name  : " << foundStaff->getLName() << endl;
+				cout << "Phone      : " << foundStaff->getPhone() << endl;
+				cout << "Email      : " << foundStaff->getEmail() << endl;
+				cout << "NRIC       : " << foundStaff->getNric() << endl;
+				cout << "Role       : " << foundStaff->getRole() << endl;
+				cout << "Status     : " << foundStaff->getStatus() << endl;
+				
+				// Ask user for action
+				int action;
+				cout << "\nActions:" << endl;
+				cout << "1. Edit Staff" << endl;
+				cout << "2. Delete Staff" << endl;
+				cout << "0. Return to Menu" << endl;
+				cout << "Select an action: ";
+				cin >> action;
+				
+				switch(action) {
+					case 1: // Edit staff
+						editStaff(staffTable, staffIndex);
+						break;
+					case 2: // Delete staff
+						deleteStaff(staffTable, staffIndex);
+						break;
+					case 0:
+						break;
+					default:
+						cout << "Invalid choice, please try again." << endl;
+				}
+				
+				return;
+			}
+		}
+		
+		// If no user found
+		if (!userFound) {
+			cout << "\nNo users found with email: " << targetEmail << endl;
+		}
+	}
     
 	// Search for a specific user by email and return pointers to found objects
 	void searchUserByEmail(string email, PtHT& patientTable, StaffHT& staffTable, 
@@ -4226,462 +4725,876 @@ public:
 	}
 
 	// Edit patient information
-void editPatient(PtHT& patientTable, int index) {
-    if (index < 0 || index >= patientTable.TBL_SIZE || patientTable.tbl[index] == NULL) {
-        cout << "Invalid patient index." << endl;
-        return;
-    }
-    
-    Pt* patient = patientTable.tbl[index];
-    int choice;
-    
-    do {
-        cout << "\n--- Edit Patient ---" << endl;
-        cout << "1. Edit First Name (Current: " << patient->getFName() << ")" << endl;
-        cout << "2. Edit Last Name  (Current: " << patient->getLName() << ")" << endl;
-        cout << "3. Edit Phone      (Current: " << patient->getPhone() << ")" << endl;
-        cout << "4. Edit Age        (Current: " << patient->getAge() << ")" << endl;
-        cout << "5. Edit Password" << endl;
-        cout << "6. Change Status   (Current: " << patient->getStatus() << ")" << endl;
-        cout << "0. Save and Return\n" << endl;
-        cout << "Select field to edit (0-6): ";
-        cin >> choice;
-        
-        cin.ignore();
-        
-        switch(choice) {
-            case 1: {
-                string newFName;
-                cout << "Enter new First Name: ";
-                getline(cin, newFName);
-                patient->setFName(newFName);
-                break;
-            }
-            case 2: {
-                string newLName;
-                cout << "Enter new Last Name: ";
-                getline(cin, newLName);
-                patient->setLName(newLName);
-                break;
-            }
-            case 3: {
-                int newPhone;
-                cout << "Enter new Phone: ";
-                cin >> newPhone;
-                patient->setPhone(newPhone);
-                break;
-            }
-            case 4: {
-                int newAge;
-                cout << "Enter new Age: ";
-                cin >> newAge;
-                patient->setAge(newAge);
-                break;
-            }
-            case 5: {
-                string newPassword;
-                cout << "Enter new Password: ";
-                maskPwd(newPassword);
-                patient->setPassword(newPassword);
-                break;
-            }
-            case 6: {
-                string newStatus;
-				
-				int newStatusOp;
-
-				cout << "\n--- Available Status ---\n";
-				cout << "1. Active\n";
-				cout << "2. Inactive\n\n";
-
-				cout << "Enter your choice (1-2): ";
-				cin >> newStatusOp;
-
-				switch(newStatusOp) {
-					case 1: {
-						newStatus="Active";
-						cout << "Selected: Active\n";
-						break;
-					}
-
-					case 2: {
-						newStatus="Inactive";
-						cout << "Selected: Inactive\n";
-						break;
-					}
-
-					default: {
-						newStatus=patient->getStatus();
-						cout << "Invalid choice, please try again." << endl;
-					}
+	void editPatient(PtHT& patientTable, int index) {
+		if (index < 0 || index >= patientTable.TBL_SIZE || patientTable.tbl[index] == NULL) {
+			cout << "Invalid patient index." << endl;
+			return;
+		}
+		
+		Pt* patient = patientTable.tbl[index];
+		int choice;
+		
+		do {
+			cout << "\n--- Edit Patient ---" << endl;
+			cout << "1. Edit First Name (Current: " << patient->getFName() << ")" << endl;
+			cout << "2. Edit Last Name  (Current: " << patient->getLName() << ")" << endl;
+			cout << "3. Edit Phone      (Current: " << patient->getPhone() << ")" << endl;
+			cout << "4. Edit Age        (Current: " << patient->getAge() << ")" << endl;
+			cout << "5. Edit Password" << endl;
+			cout << "6. Change Status   (Current: " << patient->getStatus() << ")" << endl;
+			cout << "0. Save and Return\n" << endl;
+			cout << "Select field to edit (0-6): ";
+			cin >> choice;
+			
+			cin.ignore();
+			
+			switch(choice) {
+				case 1: {
+					string newFName;
+					cout << "Enter new First Name: ";
+					getline(cin, newFName);
+					patient->setFName(newFName);
+					break;
 				}
-
-                patient->setStatus(newStatus);
-                break;
-            }
-            case 0:
-                // Save updates to file
-                saveUpdatedPatients(patientTable);
-                cout << patient->getFName() << " profile updated successfully!" << endl;
-                break;
-            default:
-                cout << "Invalid choice, please try again." << endl;
-        }
-    } while (choice != 0);
-}
-
-// Delete patient
-void deletePatient(PtHT& patientTable, int index) {
-    if (index < 0 || index >= patientTable.TBL_SIZE || patientTable.tbl[index] == NULL) {
-        cout << "Invalid patient index." << endl;
-        return;
-    }
-    
-    char confirm;
-    cout << "Are you sure you want to delete this patient? (Y/N): ";
-    cin >> confirm;
-    
-    if (toupper(confirm) == 'Y') {
-        // Delete patient
-        delete patientTable.tbl[index];
-        patientTable.tbl[index] = NULL;
-        
-        // Save updates to file
-        saveUpdatedPatients(patientTable);
-        cout << "Patient deleted successfully!" << endl;
-    } else {
-        cout << "Deletion cancelled." << endl;
-    }
-}
-
-// Edit staff information
-void editStaff(StaffHT& staffTable, int index) {
-    if (index < 0 || index >= staffTable.TBL_SIZE || staffTable.tbl[index] == NULL) {
-        cout << "Invalid staff index." << endl;
-        return;
-    }
-    
-    Staff* staff = staffTable.tbl[index];
-    int choice;
-    
-    do {
-        cout << "\n--- Edit Staff ---" << endl;
-        cout << "1. Edit First Name (Current: " << staff->getFName() << ")" << endl;
-        cout << "2. Edit Last Name  (Current: " << staff->getLName() << ")" << endl;
-        cout << "3. Edit Phone      (Current: " << staff->getPhone() << ")" << endl;
-        cout << "4. Edit NRIC       (Current: " << staff->getNric() << ")" << endl;
-        cout << "5. Edit Role       (Current: " << staff->getRole() << ")" << endl;
-        cout << "6. Edit Password" << endl;
-        cout << "7. Change Status   (Current: " << staff->getStatus() << ")" << endl;
-        cout << "0. Save and Return\n" << endl;
-        cout << "Select field to edit (0-7): ";
-        cin >> choice;
-        
-        cin.ignore();
-        
-        switch(choice) {
-            case 1: {
-                string newFName;
-                cout << "\nEnter new First Name: ";
-                getline(cin, newFName);
-                staff->setFName(newFName);
-                break;
-            }
-            case 2: {
-                string newLName;
-                cout << "\nEnter new Last Name: ";
-                getline(cin, newLName);
-                staff->setLName(newLName);
-                break;
-            }
-            case 3: {
-                int newPhone;
-                cout << "\nEnter new Phone: ";
-                cin >> newPhone;
-                staff->setPhone(newPhone);
-                break;
-            }
-            case 4: {
-                string newNric;
-                cout << "\nEnter new NRIC: ";
-                getline(cin, newNric);
-                staff->setNric(newNric);
-                break;
-            }
-            case 5: {
-                string newRole;
-				int newRoleOp;
-
-				cout << "\n--- Available Roles ---\n";
-				cout << "1. Admin\n";
-				cout << "2. Staff\n";
-				cout << "3. Counsellor\n\n";
-
-				cout << "Enter your choice (1-3): ";
-				cin >> newRoleOp;
-
-				switch(newRoleOp) {
-					case 1: {
-						newRole="Admin";
-						cout << "Selected: Admin\n";
-						break;
-					}
-
-					case 2: {
-						newRole="Staff";
-						cout << "Selected: Staff\n";
-						break;
-					}
-
-					case 3: {
-						newRole="Counsellor";
-						cout << "Selected: Counsellor\n";
-						break;
-					}
-
-					default: {
-						newRole=staff->getRole();
-						cout << "Invalid choice, please try again." << endl;
-					}
+				case 2: {
+					string newLName;
+					cout << "Enter new Last Name: ";
+					getline(cin, newLName);
+					patient->setLName(newLName);
+					break;
 				}
-
-                staff->setRole(newRole);
-
-                break;
-            }
-            case 6: {
-                string newPassword;
-                cout << "\nEnter new Password: ";
-                maskPwd(newPassword);
-                staff->setPassword(newPassword);
-                break;
-            }
-            case 7: {
-                string newStatus;
-				int newStatusOp;
-
-				cout << "\n--- Available Status ---\n";
-				cout << "1. Active\n";
-				cout << "2. Inactive\n\n";
-
-				cout << "Enter your choice (1-2): ";
-				cin >> newStatusOp;
-
-				switch(newStatusOp) {
-					case 1: {
-						newStatus="Active";
-						cout << "Selected: Active\n";
-						break;
-					}
-
-					case 2: {
-						newStatus="Inactive";
-						cout << "Selected: Inactive\n";
-						break;
-					}
-
-					default: {
-						newStatus=staff->getStatus();
-						cout << "Invalid choice, please try again." << endl;
-					}
+				case 3: {
+					int newPhone;
+					cout << "Enter new Phone: ";
+					cin >> newPhone;
+					patient->setPhone(newPhone);
+					break;
 				}
+				case 4: {
+					int newAge;
+					cout << "Enter new Age: ";
+					cin >> newAge;
+					patient->setAge(newAge);
+					break;
+				}
+				case 5: {
+					string newPassword;
+					cout << "Enter new Password: ";
+					maskPwd(newPassword);
+					patient->setPassword(newPassword);
+					break;
+				}
+				case 6: {
+					string newStatus;
+					
+					int newStatusOp;
 
-                staff->setStatus(newStatus);
+					cout << "\n--- Available Status ---\n";
+					cout << "1. Active\n";
+					cout << "2. Inactive\n\n";
 
-                break;
-            }
-            case 0:
-                // Save updates to file
-                saveUpdatedStaff(staffTable);
-                cout << staff->getFName() << " profile updated successfully!" << endl;
-                break;
-            default:
-                cout << "Invalid choice, please try again." << endl;
-        }
-    } while (choice != 0);
-}
+					cout << "Enter your choice (1-2): ";
+					cin >> newStatusOp;
 
-// Delete staff
-void deleteStaff(StaffHT& staffTable, int index) {
-    if (index < 0 || index >= staffTable.TBL_SIZE || staffTable.tbl[index] == NULL) {
-        cout << "Invalid staff index." << endl;
-        return;
-    }
-    
-    char confirm;
-    cout << "Are you sure you want to delete this staff? (Y/N): ";
-    cin >> confirm;
-    
-    if (toupper(confirm) == 'Y') {
-        // Delete staff
-        delete staffTable.tbl[index];
-        staffTable.tbl[index] = NULL;
-        
-        // Save updates to file
-        saveUpdatedStaff(staffTable);
-        cout << "Staff deleted successfully!" << endl;
-    } else {
-        cout << "Deletion cancelled." << endl;
-    }
-}
+					switch(newStatusOp) {
+						case 1: {
+							newStatus="Active";
+							cout << "Selected: Active\n";
+							break;
+						}
 
-// Save updated patient information to file
-void saveUpdatedPatients(PtHT& patientTable) {
-    ofstream outFile("patient.txt");
-    
-    if (outFile.is_open()) {
-        for (int i = 0; i < patientTable.TBL_SIZE; i++) {
-            if (patientTable.tbl[i] != NULL) {
-                outFile << patientTable.tbl[i]->getFName() << endl;
-                outFile << patientTable.tbl[i]->getLName() << endl;
-                outFile << patientTable.tbl[i]->getPhone() << endl;
-                outFile << patientTable.tbl[i]->getEmail() << endl;
-                outFile << patientTable.tbl[i]->getAge() << endl;
-                outFile << patientTable.tbl[i]->getPassword() << endl;
-                outFile << patientTable.tbl[i]->getStatus() << endl << endl;
-            }
-        }
-        outFile.close();
-    } else {
-        cout << "Unable to open patient.txt for writing." << endl;
-    }
-}
+						case 2: {
+							newStatus="Inactive";
+							cout << "Selected: Inactive\n";
+							break;
+						}
 
-// Save updated staff information to file
-void saveUpdatedStaff(StaffHT& staffTable) {
-    ofstream outFile("staff.txt");
-    
-    if (outFile.is_open()) {
-        for (int i = 0; i < staffTable.TBL_SIZE; i++) {
-            if (staffTable.tbl[i] != NULL) {
-                outFile << staffTable.tbl[i]->getFName() << endl;
-                outFile << staffTable.tbl[i]->getLName() << endl;
-                outFile << staffTable.tbl[i]->getPhone() << endl;
-                outFile << staffTable.tbl[i]->getEmail() << endl;
-                outFile << staffTable.tbl[i]->getNric() << endl;
-                outFile << staffTable.tbl[i]->getPassword() << endl;
-                outFile << staffTable.tbl[i]->getRole() << endl;
-                outFile << staffTable.tbl[i]->getStatus() << endl << endl;
-            }
-        }
-        outFile.close();
-    } else {
-        cout << "Unable to open staff.txt for writing." << endl;
-    }
-}
+						default: {
+							newStatus=patient->getStatus();
+							cout << "Invalid choice, please try again." << endl;
+						}
+					}
+
+					patient->setStatus(newStatus);
+					break;
+				}
+				case 0:
+					saveUpdatedPatients(patientTable);
+					cout << patient->getFName() << " profile updated successfully!" << endl;
+					break;
+				default:
+					cout << "Invalid choice, please try again." << endl;
+			}
+		} while (choice != 0);
+	}
+
+	// Delete patient
+	void deletePatient(PtHT& patientTable, int index) {
+		if (index < 0 || index >= patientTable.TBL_SIZE || patientTable.tbl[index] == NULL) {
+			cout << "Invalid patient index." << endl;
+			return;
+		}
+		
+		char confirm;
+		cout << "Are you sure you want to delete this patient? (Y/N): ";
+		cin >> confirm;
+		
+		if (toupper(confirm) == 'Y') {
+			// Delete patient
+			delete patientTable.tbl[index];
+			patientTable.tbl[index] = NULL;
+			
+			// Save updates to file
+			saveUpdatedPatients(patientTable);
+			cout << "Patient deleted successfully!" << endl;
+		} else {
+			cout << "Deletion cancelled." << endl;
+		}
+	}
+
+	// Edit staff information
+	void editStaff(StaffHT& staffTable, int index) {
+		if (index < 0 || index >= staffTable.TBL_SIZE || staffTable.tbl[index] == NULL) {
+			cout << "Invalid staff index." << endl;
+			return;
+		}
+		
+		Staff* staff = staffTable.tbl[index];
+		int choice;
+		
+		do {
+			cout << "\n--- Edit Staff ---" << endl;
+			cout << "1. Edit First Name (Current: " << staff->getFName() << ")" << endl;
+			cout << "2. Edit Last Name  (Current: " << staff->getLName() << ")" << endl;
+			cout << "3. Edit Phone      (Current: " << staff->getPhone() << ")" << endl;
+			cout << "4. Edit NRIC       (Current: " << staff->getNric() << ")" << endl;
+			cout << "5. Edit Role       (Current: " << staff->getRole() << ")" << endl;
+			cout << "6. Edit Password" << endl;
+			cout << "7. Change Status   (Current: " << staff->getStatus() << ")" << endl;
+			cout << "0. Save and Return\n" << endl;
+			cout << "Select field to edit (0-7): ";
+			cin >> choice;
+			
+			cin.ignore();
+			
+			switch(choice) {
+				case 1: {
+					string newFName;
+					cout << "\nEnter new First Name: ";
+					getline(cin, newFName);
+					staff->setFName(newFName);
+					break;
+				}
+				case 2: {
+					string newLName;
+					cout << "\nEnter new Last Name: ";
+					getline(cin, newLName);
+					staff->setLName(newLName);
+					break;
+				}
+				case 3: {
+					int newPhone;
+					cout << "\nEnter new Phone: ";
+					cin >> newPhone;
+					staff->setPhone(newPhone);
+					break;
+				}
+				case 4: {
+					string newNric;
+					cout << "\nEnter new NRIC: ";
+					getline(cin, newNric);
+					staff->setNric(newNric);
+					break;
+				}
+				case 5: {
+					string newRole;
+					int newRoleOp;
+
+					cout << "\n--- Available Roles ---\n";
+					cout << "1. Admin\n";
+					cout << "2. Staff\n";
+					cout << "3. Counsellor\n\n";
+
+					cout << "Enter your choice (1-3): ";
+					cin >> newRoleOp;
+
+					switch(newRoleOp) {
+						case 1: {
+							newRole="Admin";
+							cout << "Selected: Admin\n";
+							break;
+						}
+
+						case 2: {
+							newRole="Staff";
+							cout << "Selected: Staff\n";
+							break;
+						}
+
+						case 3: {
+							newRole="Counsellor";
+							cout << "Selected: Counsellor\n";
+							break;
+						}
+
+						default: {
+							newRole=staff->getRole();
+							cout << "Invalid choice, please try again." << endl;
+						}
+					}
+
+					staff->setRole(newRole);
+
+					break;
+				}
+				case 6: {
+					string newPassword;
+					cout << "\nEnter new Password: ";
+					maskPwd(newPassword);
+					staff->setPassword(newPassword);
+					break;
+				}
+				case 7: {
+					string newStatus;
+					int newStatusOp;
+
+					cout << "\n--- Available Status ---\n";
+					cout << "1. Active\n";
+					cout << "2. Inactive\n\n";
+
+					cout << "Enter your choice (1-2): ";
+					cin >> newStatusOp;
+
+					switch(newStatusOp) {
+						case 1: {
+							newStatus="Active";
+							cout << "Selected: Active\n";
+							break;
+						}
+
+						case 2: {
+							newStatus="Inactive";
+							cout << "Selected: Inactive\n";
+							break;
+						}
+
+						default: {
+							newStatus=staff->getStatus();
+							cout << "Invalid choice, please try again." << endl;
+						}
+					}
+
+					staff->setStatus(newStatus);
+
+					break;
+				}
+				case 0:
+					saveUpdatedStaff(staffTable);
+					cout << staff->getFName() << " profile updated successfully!" << endl;
+					break;
+				default:
+					cout << "Invalid choice, please try again." << endl;
+			}
+		} while (choice != 0);
+	}
+
+	// Delete staff
+	void deleteStaff(StaffHT& staffTable, int index) {
+		if (index < 0 || index >= staffTable.TBL_SIZE || staffTable.tbl[index] == NULL) {
+			cout << "Invalid staff index." << endl;
+			return;
+		}
+		
+		char confirm;
+		cout << "Are you sure you want to delete this staff? (Y/N): ";
+		cin >> confirm;
+		
+		if (toupper(confirm) == 'Y') {
+			delete staffTable.tbl[index];
+			staffTable.tbl[index] = NULL;
+			
+			saveUpdatedStaff(staffTable);
+			cout << "Staff deleted successfully!" << endl;
+		} else {
+			cout << "Deletion cancelled." << endl;
+		}
+	}
+
+	// Save updated patient information to file
+	void saveUpdatedPatients(PtHT& patientTable) {
+		ofstream outFile("patient.txt");
+		
+		if (outFile.is_open()) {
+			for (int i = 0; i < patientTable.TBL_SIZE; i++) {
+				if (patientTable.tbl[i] != NULL) {
+					outFile << patientTable.tbl[i]->getFName() << endl;
+					outFile << patientTable.tbl[i]->getLName() << endl;
+					outFile << patientTable.tbl[i]->getPhone() << endl;
+					outFile << patientTable.tbl[i]->getEmail() << endl;
+					outFile << patientTable.tbl[i]->getAge() << endl;
+					outFile << patientTable.tbl[i]->getPassword() << endl;
+					outFile << patientTable.tbl[i]->getStatus() << endl << endl;
+				}
+			}
+			outFile.close();
+		} else {
+			cout << "Unable to open patient.txt for writing." << endl;
+		}
+	}
+
+	// Save updated staff information to file
+	void saveUpdatedStaff(StaffHT& staffTable) {
+		ofstream outFile("staff.txt");
+		
+		if (outFile.is_open()) {
+			for (int i = 0; i < staffTable.TBL_SIZE; i++) {
+				if (staffTable.tbl[i] != NULL) {
+					outFile << staffTable.tbl[i]->getFName() << endl;
+					outFile << staffTable.tbl[i]->getLName() << endl;
+					outFile << staffTable.tbl[i]->getPhone() << endl;
+					outFile << staffTable.tbl[i]->getEmail() << endl;
+					outFile << staffTable.tbl[i]->getNric() << endl;
+					outFile << staffTable.tbl[i]->getPassword() << endl;
+					outFile << staffTable.tbl[i]->getRole() << endl;
+					outFile << staffTable.tbl[i]->getStatus() << endl << endl;
+				}
+			}
+			outFile.close();
+		} else {
+			cout << "Unable to open staff.txt for writing." << endl;
+		}
+	}
 
 };
 
-// Search across both patient and staff by email
-void UserManager::searchUsersByEmail(PtHT& patientTable, StaffHT& staffTable) {
-    string targetEmail;
-    bool userFound = false;
-    
-    cout << "\nEnter email to search: ";
-    cin.ignore();
-    getline(cin, targetEmail);
+// Hash table for tickets using quadratic probing
+class TicketHT {
+	private:
+		const int TBL_SIZE = 100;
+		ticket** tbl;
+		
+		// Hash function for ticket name
+		int hashFn(string name) {
+			int sum = 0;
+			
+			for (int i = 0; i < name.length(); i++) {
+				sum += (int)name[i];   // Sum ASCII values
+			}
+			
+			return sum % TBL_SIZE;
+		}
+		
+	public:
+		// Constructor
+		TicketHT() {
+			tbl = new ticket*[TBL_SIZE]; 
+			for (int i = 0; i < TBL_SIZE; i++) {
+				tbl[i] = NULL;
+			}
+		}
+		
+		// Destructor
+		~TicketHT() {
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					delete tbl[i];
+				}
+			}
+			delete[] tbl;
+		}
 
-	if (!isValidEmail(targetEmail)) {
-		cout << "Invalid email format. Please try again.\n" << endl;
-		return;
+		// Getter for table element
+		ticket* getEntry(int index) {
+			if (index >= 0 && index < TBL_SIZE)
+				return tbl[index];
+			return NULL;
+		}
+		
+		// Setter for table element
+		void setTableElement(int index, ticket* value) {
+			if (index >= 0 && index < TBL_SIZE)
+				tbl[index] = value;
+		}
+		
+		// Insert ticket using quadratic probing
+		void insert(ticket* tkt) {
+			int hash = hashFn(tkt->name);
+			int i = 0;
+			
+			// Quadratic probing: h+0Â², h+1Â², h+2Â², h+3Â²...
+			while (tbl[(hash + i*i) % TBL_SIZE] != NULL) {
+				i++;
+				if (i >= TBL_SIZE) {
+					cout << "Hash table is full!" << endl;
+					return;
+				}
+			}
+			
+			tbl[(hash + i*i) % TBL_SIZE] = new ticket;
+			*tbl[(hash + i*i) % TBL_SIZE] = *tkt;
+		}
+		
+		// Read tickets from file and insert into hash table
+		void loadFromFile() {
+			ifstream inFile("ticket.txt");
+			ticket* tkt;
+			
+			if (inFile.is_open()) {
+				while (!inFile.eof()) {
+					tkt = new ticket;
+					
+					getline(inFile, tkt->name);
+					if (tkt->name.empty() || inFile.eof()) {
+						delete tkt;
+						break;
+					}
+					
+					inFile >> tkt->phone;
+					inFile.ignore();
+					getline(inFile, tkt->email);
+					inFile >> tkt->date;
+					inFile.ignore();
+					getline(inFile, tkt->content);
+					getline(inFile, tkt->status);
+					
+					string temp;
+					getline(inFile, temp);
+					
+					insert(tkt);
+				}
+				inFile.close();
+				cout << "Tickets loaded successfully!" << endl;
+			} else {
+				cout << "Unable to open ticket.txt for reading." << endl;
+			}
+		}
+		
+		// Display all tickets in hash table
+		void displayAllTickets() {
+			int count = 0;
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL) {
+					cout << "\n--- Ticket " << ++count << " ---" << endl;
+					cout << "Name    : " << tbl[i]->name << endl;
+					cout << "Phone   : " << tbl[i]->phone << endl;
+					cout << "Email   : " << tbl[i]->email << endl;
+					cout << "Date    : " << tbl[i]->date << endl;
+					cout << "Content : " << tbl[i]->content << endl;
+					cout << "Status  : " << tbl[i]->status << endl;
+				}
+			}
+			if (count == 0) {
+				cout << "No tickets found." << endl;
+			}
+		}
+
+		// Display tickets for a specific user by email
+		void displayUserTickets(string email) {
+			int count = 0;
+			for (int i = 0; i < TBL_SIZE; i++) {
+				if (tbl[i] != NULL && tbl[i]->email == email) {
+					cout << "\n--- Ticket " << ++count << " ---" << endl;
+					cout << "Name    : " << tbl[i]->name << endl;
+					cout << "Phone   : " << tbl[i]->phone << endl;
+					cout << "Date    : " << tbl[i]->date << endl;
+					cout << "Content : " << tbl[i]->content << endl;
+					cout << "Status  : " << tbl[i]->status << endl;
+				}
+			}
+			if (count == 0) {
+				cout << "No tickets found." << endl;
+			}
+		}
+
+		int getTableSize() { 
+		return TBL_SIZE; 
+	}
+};
+
+// Base class for Ticket
+class Ticket {
+	protected:
+		ticket data; 
+		
+	public:
+		// Constructor
+		Ticket() {
+			data.name = "";
+			data.phone = 0;
+			data.email = "";
+			data.date = 0;
+			data.content = "";
+			data.status = "Created";
+		}
+		
+		// Destructor
+		~Ticket() {
+
+		}
+		
+		// Save ticket to file
+		void saveTicketToFile(ticket& tkt, string filename = "ticket.txt") {
+			ofstream outFile;
+			outFile.open(filename, ios::app);  
+		
+			if (outFile.is_open()) {
+				outFile << tkt.name << endl;
+				outFile << tkt.phone << endl;
+				outFile << tkt.email << endl;
+				outFile << tkt.date << endl;
+				outFile << tkt.content << endl;
+				outFile << tkt.status << endl << endl;
+		
+				outFile.close();
+			} else {
+				cout << "Unable to open " << filename << " for saving." << endl;
+			}
+		}
+		
+		// Update tickets file
+		void updateTicketFile(TicketHT& ticketTable, string filename = "ticket.txt") {
+			ofstream outFile(filename);
+			
+			if (outFile.is_open()) {
+				for (int i = 0; i < ticketTable.getTableSize(); i++) {
+					ticket* tkt = ticketTable.getEntry(i);
+					if (tkt != NULL) {
+						outFile << tkt->name << endl;
+						outFile << tkt->phone << endl;
+						outFile << tkt->email << endl;
+						outFile << tkt->date << endl;
+						outFile << tkt->content << endl;
+						outFile << tkt->status << endl << endl;
+					}
+				}
+				outFile.close();
+			} else {
+				cout << "Unable to open " << filename << " for updating." << endl;
+			}
+    	}
+};
+
+// Derived class for ticket management
+class TicketManager : public Ticket {
+public:
+    // Add new ticket
+    void addTicket(TicketHT& ticketTable, string currentLastName, string currentFirstName, int currentPhone, string currentEmail) {
+        string name, content;
+        int date, phone;
+        string email;
+        
+        name = currentFirstName + " " + currentLastName;
+        phone = currentPhone;
+        email = currentEmail;
+        
+        checkAppointDateInput(date);
+        cin.ignore();
+        
+        cout << "Enter Content: ";
+        getline(cin, content);
+        
+        // Fill data
+        ticket tkt;
+        tkt.name = name;
+        tkt.phone = phone;
+        tkt.email = email;
+        tkt.date = date;
+        tkt.content = content;
+        tkt.status = "Created";
+        
+        char choice;
+        cout << "\nDo you want to save this ticket? (Y/N): ";
+        cin >> choice;
+        
+        if (toupper(choice) == 'Y') {
+            saveTicketToFile(tkt);
+            ticketTable.insert(&tkt);
+            cout << "Ticket added successfully!" << endl;
+        } else {
+            cout << "Ticket not saved!" << endl;
+        }
+    }
+    
+	// Add new ticket
+	void addTicket(TicketHT& ticketTable) {
+		string firstName, lastName, name, content, email;
+		int date, phone;
+		
+		cin.ignore();
+		cout << "\nEnter First Name: ";
+		getline(cin, firstName);
+		
+		cout << "Enter Last Name: ";
+		getline(cin, lastName);
+		
+		// Combine first and last name
+		name = firstName + " " + lastName;
+		
+		cout << "Enter Phone Number: +60";
+		bool validPhone = false;
+
+		while (!validPhone) {
+			if (cin >> phone) {
+				if (isValidPhone(phone)) {
+					validPhone = true;
+				} else {
+					cout << "Invalid phone number. Please enter 9-10 digits: +60";
+				}
+			}
+		}
+		cin.ignore();
+		
+		bool validEmail = false;
+		while (!validEmail) {
+			cout << "Enter Email: ";
+			cin >> email;
+			if (isValidEmail(email)) {
+				validEmail = true;
+			} else {
+				cout << "Invalid email format. Please try again.\n";
+			}
+		}
+		
+		checkAppointDateInput(date);
+		cin.ignore();
+		
+		cout << "Enter Content: ";
+		getline(cin, content);
+		
+		// Fill data
+		ticket tkt;
+		tkt.name = name;
+		tkt.phone = phone;
+		tkt.email = email;
+		tkt.date = date;
+		tkt.content = content;
+		tkt.status = "Created";
+		
+		char choice;
+		cout << "\nDo you want to save this ticket? (Y/N): ";
+		cin >> choice;
+		
+		if (toupper(choice) == 'Y') {
+			saveTicketToFile(tkt);
+			ticketTable.insert(&tkt);
+			cout << "Ticket added successfully!" << endl;
+		} else {
+			cout << "Ticket not saved!" << endl;
+		}
 	}
     
-    // Search patients
-    Pt* foundPatient = NULL;
-    Staff* foundStaff = NULL;
-    int patientIndex = -1;
-    int staffIndex = -1;
-    
-    // Check patient table first
-    for (int i = 0; i < patientTable.TBL_SIZE; i++) {
-        if (patientTable.tbl[i] != NULL && patientTable.tbl[i]->getEmail() == targetEmail) {
-            foundPatient = patientTable.tbl[i];
-            patientIndex = i;
-            userFound = true;
+    // Edit ticket
+    void editTicket(TicketHT& ticketTable) {
+        // Create an array of tickets
+        ticket* ticketArray[ticketTable.getTableSize()];
+        int count = 0;
+        int tableIndices[ticketTable.getTableSize()]; // To track original indices
+        
+        for (int i = 0; i < ticketTable.getTableSize(); i++) {
+            if (ticketTable.getEntry(i) != NULL) {
+                ticketArray[count] = ticketTable.getEntry(i);
+                tableIndices[count] = i;
+                count++;
+            }
+        }
+        
+        if (count == 0) {
+            cout << "No tickets available to edit." << endl;
+            return;
+        }
+        
+        // Display all tickets with numbers
+        cout << "\n--- Available Tickets ---\n";
+        for (int i = 0; i < count; i++) {
+            cout << (i+1) << ". " << ticketArray[i]->name << " - " 
+                << ticketArray[i]->date << " (" 
+                << ticketArray[i]->content.substr(0, 20) << "...)" << endl;
+        }
+        
+        // Let user select a ticket
+        int tktChoice;
+        cout << "\nEnter the number of the ticket to edit (1-" << count << "): ";
+        cin >> tktChoice;
+        
+        if (tktChoice < 1 || tktChoice > count) {
+            cout << "Invalid selection." << endl;
+            return;
+        }
+        
+        int selectedIndex = tableIndices[tktChoice-1];
+        ticket* selectedTkt = ticketTable.getEntry(selectedIndex);
+        int choice;
+        
+        do {
+            cout << "\n--- Edit Ticket ---" << endl;
+            cout << "1. Edit Content (Current: " << selectedTkt->content << ")" << endl;
+            cout << "2. Edit Status  (Current: " << selectedTkt->status << ")" << endl;
+            cout << "0. Save and Return\n" << endl;
+            cout << "Select field to edit (0-2): ";
+            cin >> choice;
             
-            // Display found patient
-            cout << "\n--- Patient Found ---" << endl;
-            cout << "First Name  : " << foundPatient->getFName() << endl;
-            cout << "Last Name   : " << foundPatient->getLName() << endl;
-            cout << "Phone       : " << foundPatient->getPhone() << endl;
-            cout << "Email       : " << foundPatient->getEmail() << endl;
-            cout << "Age         : " << foundPatient->getAge() << endl;
-            cout << "Status      : " << foundPatient->getStatus() << endl;
+            cin.ignore();
             
-            // Ask user for action
-            int action;
-            cout << "\nActions:" << endl;
-            cout << "1. Edit Patient" << endl;
-            cout << "2. Delete Patient" << endl;
-            cout << "0. Return to Menu" << endl;
-            cout << "Select an action: ";
-            cin >> action;
-            
-            switch(action) {
-                case 1: // Edit patient
-                    editPatient(patientTable, patientIndex);
+            switch(choice) {
+                case 1: {
+                    string newContent;
+                    cout << "Enter new Content: ";
+                    getline(cin, newContent);
+                    selectedTkt->content = newContent;
                     break;
-                case 2: // Delete patient
-                    deletePatient(patientTable, patientIndex);
+                }
+                case 2: {
+                    int statusOp;
+                    cout << "\n--- Status Options ---\n";
+                    cout << "1. Created\n";
+                    cout << "2. In Progress\n";
+                    cout << "3. Resolved\n";
+                    cout << "4. Closed\n\n";
+                    cout << "Enter your choice (1-4): ";
+                    cin >> statusOp;
+                    cin.ignore();
+                    
+                    switch(statusOp) {
+                        case 1:
+                            selectedTkt->status = "Created";
+                            break;
+                        case 2:
+                            selectedTkt->status = "In Progress";
+                            break;
+                        case 3:
+                            selectedTkt->status = "Resolved";
+                            break;
+                        case 4:
+                            selectedTkt->status = "Closed";
+                            break;
+                        default:
+                            cout << "Invalid choice, status unchanged." << endl;
+                    }
                     break;
+                }
                 case 0:
+                    updateTicketFile(ticketTable);
+                    cout << "Ticket updated successfully!" << endl;
                     break;
                 default:
                     cout << "Invalid choice, please try again." << endl;
             }
-            
-            return;
-        }
+        } while (choice != 0);
     }
     
-    // If not found in patient table, check staff table
-    for (int i = 0; i < staffTable.TBL_SIZE; i++) {
-        if (staffTable.tbl[i] != NULL && staffTable.tbl[i]->getEmail() == targetEmail) {
-            foundStaff = staffTable.tbl[i];
-            staffIndex = i;
-            userFound = true;
-            
-            // Display found staff
-            cout << "\n--- Staff Found ---" << endl;
-            cout << "First Name : " << foundStaff->getFName() << endl;
-            cout << "Last Name  : " << foundStaff->getLName() << endl;
-            cout << "Phone      : " << foundStaff->getPhone() << endl;
-            cout << "Email      : " << foundStaff->getEmail() << endl;
-            cout << "NRIC       : " << foundStaff->getNric() << endl;
-            cout << "Role       : " << foundStaff->getRole() << endl;
-            cout << "Status     : " << foundStaff->getStatus() << endl;
-            
-            // Ask user for action
-            int action;
-            cout << "\nActions:" << endl;
-            cout << "1. Edit Staff" << endl;
-            cout << "2. Delete Staff" << endl;
-            cout << "0. Return to Menu" << endl;
-            cout << "Select an action: ";
-            cin >> action;
-            
-            switch(action) {
-                case 1: // Edit staff
-                    editStaff(staffTable, staffIndex);
-                    break;
-                case 2: // Delete staff
-                    deleteStaff(staffTable, staffIndex);
-                    break;
-                case 0:
-                    break;
-                default:
-                    cout << "Invalid choice, please try again." << endl;
+    // Delete ticket
+    void deleteTicket(TicketHT& ticketTable) {
+        // Create an array of tickets
+        ticket* ticketArray[ticketTable.getTableSize()];
+        int count = 0;
+        int tableIndices[ticketTable.getTableSize()]; // To track original indices
+        
+        for (int i = 0; i < ticketTable.getTableSize(); i++) {
+            if (ticketTable.getEntry(i) != NULL) {
+                ticketArray[count] = ticketTable.getEntry(i);
+                tableIndices[count] = i;
+                count++;
             }
-            
+        }
+        
+        if (count == 0) {
+            cout << "No tickets available to delete." << endl;
             return;
         }
+        
+        // Display all tickets with numbers
+        cout << "\n--- Available Tickets ---\n";
+        for (int i = 0; i < count; i++) {
+            cout << (i+1) << ". " << ticketArray[i]->name << " - " 
+                << ticketArray[i]->date << " (" 
+                << ticketArray[i]->content.substr(0, 20) << "...)" << endl;
+        }
+        
+        // Let user select a ticket
+        int tktChoice;
+        cout << "\nEnter the number of the ticket to delete (1-" << count << "): ";
+        cin >> tktChoice;
+        
+        if (tktChoice < 1 || tktChoice > count) {
+            cout << "Invalid selection." << endl;
+            return;
+        }
+        
+        int selectedIndex = tableIndices[tktChoice-1];
+        ticket* selectedTkt = ticketTable.getEntry(selectedIndex);
+        
+        char confirm;
+        cout << "\nAre you sure you want to delete ticket for " << selectedTkt->name << "? (Y/N): ";
+        cin >> confirm;
+        
+        if (toupper(confirm) == 'Y') {
+            // Delete the ticket from the hash table
+            delete ticketTable.getEntry(selectedIndex);
+            ticketTable.setTableElement(selectedIndex, NULL);
+            
+            // Update the file
+            updateTicketFile(ticketTable);
+            cout << "Ticket deleted successfully!" << endl;
+        } else {
+            cout << "Deletion cancelled." << endl;
+        }
     }
-    
-    // If no user found
-    if (!userFound) {
-        cout << "\nNo users found with email: " << targetEmail << endl;
+
+	// Overloaded deleteTicket - only delete specific user's tickets
+    void deleteTicket(TicketHT& ticketTable, string currentEmail) {
+        // Create an array of tickets
+        ticket* ticketArray[ticketTable.getTableSize()];
+        int count = 0;
+        int tableIndices[ticketTable.getTableSize()]; // To track original indices
+        
+        for (int i = 0; i < ticketTable.getTableSize(); i++) {
+            if (ticketTable.getEntry(i) != NULL && ticketTable.getEntry(i)->email == currentEmail) {
+                ticketArray[count] = ticketTable.getEntry(i);
+                tableIndices[count] = i;
+                count++;
+            }
+        }
+        
+        if (count == 0) {
+            cout << "No tickets available to delete." << endl;
+            return;
+        }
+        
+        // Display user's tickets with numbers
+        cout << "\n--- Your Tickets ---\n";
+        for (int i = 0; i < count; i++) {
+            cout << (i+1) << ". Date: " << ticketArray[i]->date << " - " 
+                << "Content: " << ticketArray[i]->content.substr(0, 20) << "..." << endl;
+        }
+        
+        // Let user select a ticket
+        int tktChoice;
+        cout << "\nEnter the number of the ticket to delete (1-" << count << "): ";
+        cin >> tktChoice;
+        
+        if (tktChoice < 1 || tktChoice > count) {
+            cout << "Invalid selection." << endl;
+            return;
+        }
+        
+        int selectedIndex = tableIndices[tktChoice-1];
+        ticket* selectedTkt = ticketTable.getEntry(selectedIndex);
+        
+        char confirm;
+        cout << "\nAre you sure you want to delete this ticket? (Y/N): ";
+        cin >> confirm;
+        
+        if (toupper(confirm) == 'Y') {
+            delete ticketTable.getEntry(selectedIndex);
+            ticketTable.setTableElement(selectedIndex, NULL);
+            
+            updateTicketFile(ticketTable);
+            cout << "Ticket deleted successfully!" << endl;
+        } else {
+            cout << "Deletion cancelled." << endl;
+        }
     }
-}
+};
 
 class SearchSort{
 	private:
@@ -7689,11 +8602,500 @@ class SearchSort{
 			delete[] patientAppointments;
 		}
 
-	};
+		// Display tickets function
+		void displayTickets(ticket** tickets, int count, const string& title) {
+			cout << "\n" << title << endl;
+			for (i = 0; i < count; i++) {
+				cout << "\n--- Ticket " << i+1 << " ---" << endl;
+				cout << "Name    : " << tickets[i]->name << endl;
+				cout << "Phone   : " << tickets[i]->phone << endl;
+				cout << "Email   : " << tickets[i]->email << endl;
+				cout << "Date    : " << tickets[i]->date << endl;
+				cout << "Content : " << tickets[i]->content << endl;
+			}
+		}
 
+		// Sort Tickets by Date (Newest to Oldest - Descending)
+		void sortTicketByDateDescending(TicketHT& ticketTable) {
+			// Count non-null tickets
+			count = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL) {
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No tickets to display." << endl;
+				return;
+			}
+			
+			// Create dynamic array
+			ticket** tickets = new ticket*[count];
+			index = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL) {
+					tickets[index++] = ticketTable.getEntry(i);
+				}
+			}
+			
+			// Selection sort by date (descending)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i;
+				for (j = i + 1; j < count; j++) {
+					if (tickets[j]->date > tickets[currentMin]->date) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					ticket* temp = tickets[i];
+					tickets[i] = tickets[currentMin];
+					tickets[currentMin] = temp;
+				}
+			}
+			
+			// Display sorted tickets
+			displayTickets(tickets, count, "Tickets sorted by date (Newest to Oldest):");
+			
+			delete[] tickets;
+		}
 
-	// Display search appointment details
-    void displaysortedAppointment(appoint* apt) {
+		// Sort Tickets by Date (Oldest to Newest - Ascending)
+		void sortTicketByDateAscending(TicketHT& ticketTable) {
+			// Count non-null tickets
+			count = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL) {
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No tickets to display." << endl;
+				return;
+			}
+			
+			// Create dynamic array
+			ticket** tickets = new ticket*[count];
+			index = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL) {
+					tickets[index++] = ticketTable.getEntry(i);
+				}
+			}
+			
+			// Selection sort by date (Ascending)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i;
+				for (j = i + 1; j < count; j++) {
+					if (tickets[j]->date < tickets[currentMin]->date) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					ticket* temp = tickets[i];
+					tickets[i] = tickets[currentMin];
+					tickets[currentMin] = temp;
+				}
+			}
+			
+			// Display sorted tickets
+			displayTickets(tickets, count, "Tickets sorted by date (Newest to Oldest):");
+			
+			delete[] tickets;
+		}
+		
+		// Sort Tickets by Date (Oldest to Newest - Ascending) for specific patient
+		void sortPatientTicketByDateAscending(TicketHT& ticketTable, string patientEmail) {
+			// Count non-null tickets that belong to the patient
+			count = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL && 
+					ticketTable.getEntry(i)->email == patientEmail) {
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No tickets found for this patient." << endl;
+				return;
+			}
+			
+			// Create dynamic array of patient's tickets only
+			ticket** patientTickets = new ticket*[count];
+			index = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL && 
+					ticketTable.getEntry(i)->email == patientEmail) {
+					patientTickets[index++] = ticketTable.getEntry(i);
+				}
+			}
+			
+			// Selection sort by date (ascending)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i;
+				for (j = i + 1; j < count; j++) {
+					if (patientTickets[j]->date < patientTickets[currentMin]->date) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					ticket* temp = patientTickets[i];
+					patientTickets[i] = patientTickets[currentMin];
+					patientTickets[currentMin] = temp;
+				}
+			}
+			
+			// Display sorted tickets
+			displayTickets(patientTickets, count, "Your tickets sorted by date (Oldest to Newest):");
+			
+			delete[] patientTickets;
+		}
+
+		// Sort Tickets by Date (Newest to Oldest - Descending) for specific patient
+		void sortPatientTicketByDateDescending(TicketHT& ticketTable, string patientEmail) {
+			// Count non-null tickets that belong to the patient
+			count = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL && 
+					ticketTable.getEntry(i)->email == patientEmail) {
+					count++;
+				}
+			}
+			
+			if (count == 0) {
+				cout << "No tickets found for this patient." << endl;
+				return;
+			}
+			
+			// Create dynamic array of patient's tickets only
+			ticket** patientTickets = new ticket*[count];
+			index = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL && 
+					ticketTable.getEntry(i)->email == patientEmail) {
+					patientTickets[index++] = ticketTable.getEntry(i);
+				}
+			}
+			
+			// Selection sort by date (descending)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i;
+				for (j = i + 1; j < count; j++) {
+					if (patientTickets[j]->date > patientTickets[currentMin]->date) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					ticket* temp = patientTickets[i];
+					patientTickets[i] = patientTickets[currentMin];
+					patientTickets[currentMin] = temp;
+				}
+			}
+			
+			// Display sorted tickets
+			displayTickets(patientTickets, count, "Your tickets sorted by date (Newest to Oldest):");
+			
+			delete[] patientTickets;
+		}
+		
+		// Search Ticket by Name (Binary Search)
+		void searchTicketByName(TicketHT& ticketTable) {
+			string targetName;
+			cout << "\nEnter name to search: ";
+			cin.ignore();
+			getline(cin, targetName);
+			
+			// Count non-null tickets
+			count = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No tickets available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			ticket** tickets = new ticket*[count];
+			index = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL) {
+					tickets[index++] = ticketTable.getEntry(i);
+				}
+			}  
+			
+			// Sort by name (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (tickets[j]->name < tickets[currentMin]->name) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					ticket* temp = tickets[i];
+					tickets[i] = tickets[currentMin];
+					tickets[currentMin] = temp;
+				}
+			}
+			
+			// Binary search
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				string currentName = tickets[mid]->name;
+
+				if (currentName == targetName) {
+					displayTicket(tickets[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int left = mid - 1;
+					while (left >= 0 && tickets[left]->name == targetName) {
+						displayTicket(tickets[left]);
+						found++;
+						left--;
+					}
+
+					// Check for duplicates on right side
+					int right = mid + 1;
+					while (right < count && tickets[right]->name == targetName) {
+						displayTicket(tickets[right]);
+						found++;
+						right++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] tickets;
+					return;
+				}
+
+				if (currentName < targetName) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No ticket found with name: " << targetName << endl;
+			}
+			delete[] tickets; 
+		}
+
+		// Search Ticket by Phone (Binary Search)
+		void searchTicketByPhone(TicketHT& ticketTable) {
+			int targetPhone;
+			cout << "\nEnter phone number to search: ";
+			bool validPhone = false;
+
+			while (!validPhone) {
+				if (cin >> targetPhone) {
+					if (isValidPhone(targetPhone)) {
+						validPhone = true;
+					} else {
+						cout << "Invalid phone number. Please enter 9-10 digits: +60";
+					}
+				}
+			}
+			cin.ignore();
+			
+			// Count non-null tickets
+			count = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No tickets available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			ticket** tickets = new ticket*[count];
+			index = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL) {
+					tickets[index++] = ticketTable.getEntry(i);
+				}
+			}  
+			
+			// Sort by phone (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (tickets[j]->phone < tickets[currentMin]->phone) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					ticket* temp = tickets[i];
+					tickets[i] = tickets[currentMin];
+					tickets[currentMin] = temp;
+				}
+			}
+			
+			// Binary search
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				int currentPhone = tickets[mid]->phone;
+
+				if (currentPhone == targetPhone) {
+					displayTicket(tickets[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int left = mid - 1;
+					while (left >= 0 && tickets[left]->phone == targetPhone) {
+						displayTicket(tickets[left]);
+						found++;
+						left--;
+					}
+
+					// Check for duplicates on right side
+					int right = mid + 1;
+					while (right < count && tickets[right]->phone == targetPhone) {
+						displayTicket(tickets[right]);
+						found++;
+						right++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] tickets;
+					return;
+				}
+
+				if (currentPhone < targetPhone) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No ticket found with phone: " << targetPhone << endl;
+			}
+			delete[] tickets;
+		}
+
+		// Search Ticket by Email (Binary Search)
+		void searchTicketByEmail(TicketHT& ticketTable) {
+			string targetEmail;
+			cout << "\nEnter email to search: ";
+			cin.ignore();
+			getline(cin, targetEmail);
+			
+			// Count non-null tickets
+			count = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL) {
+					count++;
+				}
+			}
+				
+			if (count == 0) {
+				cout << "No tickets available to search." << endl;
+				return;
+			}
+				
+			// Create dynamic array
+			ticket** tickets = new ticket*[count];
+			index = 0;
+			for (i = 0; i < ticketTable.getTableSize(); i++) {
+				if (ticketTable.getEntry(i) != NULL) {
+					tickets[index++] = ticketTable.getEntry(i);
+				}
+			}  
+			
+			// Sort by email (selection sort)
+			for (i = 0; i < count - 1; i++) {
+				currentMin = i; 
+				for (j = i + 1; j < count; j++) {
+					if (tickets[j]->email < tickets[currentMin]->email) {
+						currentMin = j;
+					}
+				}
+				if (currentMin != i) {
+					ticket* temp = tickets[i];
+					tickets[i] = tickets[currentMin];
+					tickets[currentMin] = temp;
+				}
+			}
+			
+			// Binary search
+			first = 0;
+			last = count - 1;
+			found = 0;
+			
+			while (first <= last) {
+				mid = first + (last - first) / 2;
+				string currentEmail = tickets[mid]->email;
+
+				if (currentEmail == targetEmail) {
+					displayTicket(tickets[mid]);
+					found = 1;
+
+					// Check for duplicates on left side
+					int left = mid - 1;
+					while (left >= 0 && tickets[left]->email == targetEmail) {
+						displayTicket(tickets[left]);
+						found++;
+						left--;
+					}
+
+					// Check for duplicates on right side
+					int right = mid + 1;
+					while (right < count && tickets[right]->email == targetEmail) {
+						displayTicket(tickets[right]);
+						found++;
+						right++;
+					}
+
+					cout << "\nTotal matches found: " << found << endl;
+					delete[] tickets;
+					return;
+				}
+
+				if (currentEmail < targetEmail) {
+					first = mid + 1;
+				} else {
+					last = mid - 1;
+				}
+			}
+
+			if (!found) {
+				cout << "No ticket found with email: " << targetEmail << endl;
+			}
+			delete[] tickets;
+		}
+
+		// Display ticket details
+		void displayTicket(ticket* t) {
+			cout << "\n--- Ticket Found ---" << endl;
+			cout << "Name: " << t->name << endl;
+			cout << "Phone: " << t->phone << endl;
+			cout << "Email: " << t->email << endl;
+			cout << "Date: " << t->date << endl;
+			cout << "Content: " << t->content << endl;
+		}
+
+};
+
+// Display search appointment details
+void displaysortedAppointment(appoint* apt) {
         if (!apt) return;
         cout << "\n--- Appointment Found ---\n";
         cout << "ID: " << apt->appointID << "\n";
@@ -7709,10 +9111,10 @@ class SearchSort{
 		cout << "Net Amount: " << apt->appointNetAmt << "\n";
 		cout << "Payment Status: " << apt->appointPayStat << "\n";
         cout << "Status: " << apt->appointStat << "\n";
-	}
+}
 	
-	// Sort and Display appointments by Date to Ascending (Selection Sort)
-    void sortByDateAscending(AppointHT& appointmentTable) {
+// Sort and Display appointments by Date to Ascending (Selection Sort)
+void sortByDateAscending(AppointHT& appointmentTable) {
         // Count non-null appointments
         int count = 0;
         int i, j;
@@ -7759,10 +9161,10 @@ class SearchSort{
 
         // Clean up
         delete[] apps;
-    }
+}
     
-	// Sort and Display appointments by Date to Decending (Selection Sort)
-    void sortByDateDescending(AppointHT& appointmentTable) {
+// Sort and Display appointments by Date to Decending (Selection Sort)
+void sortByDateDescending(AppointHT& appointmentTable) {
         // Count non-null appointments
         int count = 0;
         int i, j;
@@ -7808,10 +9210,10 @@ class SearchSort{
 
         // Clean up
         delete[] apps;
-    }
+}
 	
-	//Sort and Display appoinments by Time to Ascending (Selection Sort)
-	void sortByTimeAscending(AppointHT& appointmentTable) {
+//Sort and Display appoinments by Time to Ascending (Selection Sort)
+void sortByTimeAscending(AppointHT& appointmentTable) {
         // Count non-null appointments
         int count = 0;
         int i, j;
@@ -7861,10 +9263,10 @@ class SearchSort{
 
         // Clean up
         delete[] apps;
-    }
+}
 	
-	//Sort and Display appoinments by Time to Descending (Selection Sort)
-	void sortByTimeDescending(AppointHT& appointmentTable) {
+//Sort and Display appoinments by Time to Descending (Selection Sort)
+void sortByTimeDescending(AppointHT& appointmentTable) {
         // Count non-null appointments
         int count = 0;
         int i, j;
@@ -7914,10 +9316,10 @@ class SearchSort{
 
         // Clean up
         delete[] apps;
-    }
+}
 	
-	// Sort and Display appointmets by Net Amount to Ascending (Selection Sort)
-	void sortByNetAmountAscending(AppointHT& appointmentTable){
+// Sort and Display appointmets by Net Amount to Ascending (Selection Sort)
+void sortByNetAmountAscending(AppointHT& appointmentTable){
 	// Count non-null appointments
         int count = 0;
         int i, j;
@@ -7964,10 +9366,10 @@ class SearchSort{
 
         // Clean up
         delete[] apps;
-    }
+}
 	
-	// Sort and Display appointmets by Net Amount to Descending (Selection Sort)
-	void sortByNetAmountDescending(AppointHT& appointmentTable){
+// Sort and Display appointmets by Net Amount to Descending (Selection Sort)
+void sortByNetAmountDescending(AppointHT& appointmentTable){
 	// Count non-null appointments
         int count = 0;
         int i, j;
@@ -8014,10 +9416,10 @@ class SearchSort{
 
         // Clean up
         delete[] apps;
-    }
+}
 
-	// Patient Sort and Display appointments by Date to Ascending (Selection Sort)
-	void PatientsortByDateAscending(AppointHT& appointmentTable, string patientEmail) {
+// Patient Sort and Display appointments by Date to Ascending (Selection Sort)
+void PatientsortByDateAscending(AppointHT& appointmentTable, string patientEmail) {
 	    int count;
         int i, j;
         int index;
@@ -8068,10 +9470,10 @@ class SearchSort{
 	
 	    // Clean up
 	    delete[] apps;
-	}
+}
 	
 	// Patient Sort and Display appointments by Date to Descending (Selection Sort)
-	void PatientsortByDateDescending(AppointHT& appointmentTable, string patientEmail) {
+void PatientsortByDateDescending(AppointHT& appointmentTable, string patientEmail) {
 	    int count;
         int i, j;
         int index;
@@ -8122,10 +9524,10 @@ class SearchSort{
 	
 	    // Clean up
 	    delete[] apps;
-	}
+}
 
-	// Patient Sort and Display appointments by Time to Ascending (Selection Sort)
-	void PatientsortByTimeAscending(AppointHT& appointmentTable, string patientEmail) {
+// Patient Sort and Display appointments by Time to Ascending (Selection Sort)
+void PatientsortByTimeAscending(AppointHT& appointmentTable, string patientEmail) {
 	    int count;
         int i, j;
         int index;
@@ -8179,10 +9581,10 @@ class SearchSort{
 	
 	    // Clean up
 	    delete[] apps;
-	}
+}
 	
-	// Patient Sort and Display appointments by Time to Descending (Selection Sort)
-	void PatientsortByTimeDescending(AppointHT& appointmentTable, string patientEmail) {
+// Patient Sort and Display appointments by Time to Descending (Selection Sort)
+void PatientsortByTimeDescending(AppointHT& appointmentTable, string patientEmail) {
 	    int count;
         int i, j;
         int index;
@@ -8236,10 +9638,10 @@ class SearchSort{
 	
 	    // Clean up
 	    delete[] apps;
-	}
+}
 	
-	// Patient Sort and Display appointments by Net Amount to Ascending (Selection Sort)
-	void PatientsortByNetAmountAscending(AppointHT& appointmentTable, string patientEmail) {
+// Patient Sort and Display appointments by Net Amount to Ascending (Selection Sort)
+void PatientsortByNetAmountAscending(AppointHT& appointmentTable, string patientEmail) {
 	    int count;
         int i, j;
         int index;
@@ -8290,10 +9692,10 @@ class SearchSort{
 	
 	    // Clean up
 	    delete[] apps;
-	}
+}
 	
-	// Patient Sort and Display appointments by Net Amount to Descending (Selection Sort)
-	void PatientsortByNetAmountDescending(AppointHT& appointmentTable, string patientEmail) {
+// Patient Sort and Display appointments by Net Amount to Descending (Selection Sort)
+void PatientsortByNetAmountDescending(AppointHT& appointmentTable, string patientEmail) {
 	    int count;
         int i, j;
         int index;
@@ -8344,29 +9746,8 @@ class SearchSort{
 	
 	    // Clean up
 	    delete[] apps;
-	}
-
-// Function copied from TPD4124 project, TEO & FOOK
-bool verifyCaptcha() {
-    // Generate a random simple math problem
-    srand(time(0));
-    int num1 = rand() % 10;
-    int num2 = rand() % 10;
-    int correctAnswer = num1 + num2;
-    int userAnswer;
-    
-    cout << "Please solve this math problem: " << num1 << " + " << num2 << " = ";
-    cin >> userAnswer;
-    
-    if (userAnswer == correctAnswer) {
-        cout << "Verification successful!\n\n";
-        return true;
-    } else {
-        cout << "Incorrect answer. Please try again.\n\n";
-        return false;
-    }
 }
-	
+
 int main() {
     AppointHT appointmentTable;
     Appoint appointment;
@@ -8384,9 +9765,12 @@ int main() {
     Tx treatment;
     UserManager userManager;
     SearchSort ss;
+	Coupon couponManager;
 	CouponHT couponTable;
+	TicketHT ticketTable;
+    TicketManager ticketManager;
 
-    // Load existing data from files
+    // Load data from files
     appointmentTable.loadFromFile();
     serviceTable.loadFromFile();
     categoryTable.loadFromFile();
@@ -8396,6 +9780,7 @@ int main() {
     resultTable.loadResultsFromFile();
     treatmentTable.loadFromFile();
 	couponTable.loadFromFile();
+	ticketTable.loadFromFile();
     
     test testManager(testTable, resultTable);
 
@@ -8427,9 +9812,8 @@ int main() {
 				continue;
 			}
 
-			// Add CAPTCHA verification
 			if (!verifyCaptcha()) {
-				continue;  // Return to login loop if CAPTCHA fails
+				continue; 
 			}
 
             // Check if user exists
@@ -8592,11 +9976,12 @@ int main() {
                 cout << " 2. Manage Appointments\n";
                 cout << " 3. View Treatments\n";
                 cout << " 4. Manage Tests\n";
-                cout << " 5. Edit My Profile\n"; 
+                cout << " 5. Manage Tickets\n";
+                cout << " 6. Edit My Profile\n"; 
 				cout << " 0. Logout\n";
 	            cout << "-1. Exit Program\n\n";
 	            
-	            cout << "Enter your choice (-1-5): ";
+	            cout << "Enter your choice (-1-6): ";
 	            cin >> choice;
             } else if (currentRole == 1) { // Counsellor
                 cout << " 1. View Services\n";
@@ -8604,11 +9989,12 @@ int main() {
                 cout << " 3. Manage Treatments\n";
                 cout << " 4. Manage Tests\n";
 		        cout << " 5. View Patients\n"; 
-		        cout << " 6. Edit My Profile\n"; 
+                cout << " 6. Manage Tickets\n";
+		        cout << " 7. Edit My Profile\n"; 
 				cout << " 0. Logout\n";
 	            cout << "-1. Exit Program\n\n";
 	            
-	            cout << "Enter your choice (-1-6): ";
+	            cout << "Enter your choice (-1-7): ";
 	            cin >> choice;
             } else if (currentRole == 2) { // Staff
                 cout << " 1. Manage Services\n";
@@ -8616,11 +10002,13 @@ int main() {
                 cout << " 3. Manage Treatments\n";
                 cout << " 4. Manage Tests\n";
                 cout << " 5. Manage Users\n";
-		        cout << " 6. Edit My Profile\n";
+                cout << " 6. Manage Coupons\n";
+                cout << " 7. Manage Tickets\n";
+		        cout << " 8. Edit My Profile\n";
 				cout << " 0. Logout\n";
 	            cout << "-1. Exit Program\n\n";
 	            
-	            cout << "Enter your choice (-1-6): ";
+	            cout << "Enter your choice (-1-8): ";
 	            cin >> choice;
             } else if (currentRole == 3) { // Admin
                 cout << " 1. Manage Categories\n";
@@ -8629,11 +10017,13 @@ int main() {
                 cout << " 4. Manage Treatments\n";
                 cout << " 5. Manage Tests\n";
                 cout << " 6. Manage Users\n";
-		        cout << " 7. Edit My Profile\n";
+                cout << " 7. Manage Coupons\n";
+                cout << " 8. Manage Tickets\n";
+		        cout << " 9. Edit My Profile\n";
 				cout << " 0. Logout\n";
 	            cout << "-1. Exit Program\n\n";
 	            
-	            cout << "Enter your choice (-1-7): ";
+	            cout << "Enter your choice (-1-9): ";
 	            cin >> choice;
             }
             
@@ -8649,9 +10039,7 @@ int main() {
                 continue;
             }
             
-            // Handle submenus based on role and choice
-            int subChoice = -1;
-            int subChoice2=-1, subChoice3=-1;
+            int subChoice = -1, subChoice2=-1, subChoice3=-1;
             
             if (currentRole == 0) { // Patient
             	
@@ -8932,9 +10320,81 @@ int main() {
                                 cout << "Invalid choice, please try again.\n";
                         }
                         break;
+					
+					case 5: {
+                        cout << "\n--- Ticket Management ---\n";
+                        cout << "1. Create Ticket\n";
+                        cout << "2. View My Tickets\n";
+                        cout << "3. Sort Tickets\n";
+                        cout << "4. Delete Ticket\n";
+                        cout << "0. Back to Main Menu\n\n";
+                        
+                        cout << "Enter your choice (0-4): ";
+						cin >> subChoice;
+
+						switch(subChoice) {
+							case 1: {
+								ticketManager.addTicket(ticketTable, currentLastName, currentFirstName, currentPhone, currentEmail);
+								break;
+							}
+
+							case 2: {
+								ticketTable.displayUserTickets(currentEmail);
+								break;
+							}
+
+							case 3: {
+                            	cout << "\n--- Sort Tickets ---\n";
+                            	cout << "1. Sort Tickets by Date (Newest to Oldest)\n";
+                            	cout << "2. Sort Tickets by Date (Oldest to Newest)\n";
+		                        cout << "0. Back to Main Menu\n\n";
+		                        
+		                        cout << "Enter your choice (0-2): ";
+		                        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										ss.sortPatientTicketByDateDescending(ticketTable, currentEmail);
+										break;
+									}
+
+									case 2: {
+										ss.sortPatientTicketByDateAscending(ticketTable, currentEmail);
+										break;
+									}
+
+									case 0: {
+										break;
+									}
+
+									default: {
+										cout << "Invalid choice, please try again.\n";
+									}
+								}
+
+								break;
+							}
+
+							case 4: {
+								ticketManager.deleteTicket(ticketTable, currentEmail);
+								break;
+							}
+
+							case 0: {
+								break;
+							}
+
+							default: {
+								cout << "Invalid choice, please try again.\n";
+							}
+						}
+
+
+						break;
+					}
                         
                     // Edit My Profile
-					case 5: 
+					case 6: 
 						
 						for (int i = 0; i < patientTable.getTblSize(); i++) {
 						    if (patientTable.getTableElement(i) != NULL && patientTable.getTableElement(i)->getEmail() == currentEmail) {
@@ -9236,7 +10696,7 @@ int main() {
                                 break;
                             case 2:
                             	
-                            	resultTable.displayPatientResult(currentEmail);
+                            	resultTable.displayAllResults();
                             	
                                 break;
                             case 3:
@@ -9452,8 +10912,80 @@ int main() {
 		                }
 		                
 		                break;
+
+					case 6: {
+                        cout << "\n--- Ticket Management ---\n";
+                        cout << "1. Create Ticket\n";
+                        cout << "2. View My Tickets\n";
+                        cout << "3. Sort Tickets\n";
+                        cout << "4. Delete Ticket\n";
+                        cout << "0. Back to Main Menu\n\n";
+                        
+                        cout << "Enter your choice (0-4): ";
+						cin >> subChoice;
+
+						switch(subChoice) {
+							case 1: {
+								ticketManager.addTicket(ticketTable, currentLastName, currentFirstName, currentPhone, currentEmail);
+								break;
+							}
+
+							case 2: {
+								ticketTable.displayUserTickets(currentEmail);
+								break;
+							}
+
+							case 3: {
+                            	cout << "\n--- Sort Tickets ---\n";
+                            	cout << "1. Sort Tickets by Date (Newest to Oldest)\n";
+                            	cout << "2. Sort Tickets by Date (Oldest to Newest)\n";
+		                        cout << "0. Back to Main Menu\n\n";
+		                        
+		                        cout << "Enter your choice (0-2): ";
+		                        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										ss.sortPatientTicketByDateDescending(ticketTable, currentEmail);
+										break;
+									}
+
+									case 2: {
+										ss.sortPatientTicketByDateAscending(ticketTable, currentEmail);
+										break;
+									}
+
+									case 0: {
+										break;
+									}
+
+									default: {
+										cout << "Invalid choice, please try again.\n";
+									}
+								}
+
+								break;
+							}
+
+							case 4: {
+								ticketManager.deleteTicket(ticketTable, currentEmail);
+								break;
+							}
+
+							case 0: {
+								break;
+							}
+
+							default: {
+								cout << "Invalid choice, please try again.\n";
+							}
+						}
+
+
+						break;
+					}
 		                
-		            case 6: // Edit My Profile
+		            case 7: // Edit My Profile
 						for (int i = 0; i < staffTable.getTblSize(); i++) {
 						    if (staffTable.getTableElement(i) != NULL && 
 						        staffTable.getTableElement(i)->getEmail() == currentEmail) {
@@ -9773,7 +11305,7 @@ int main() {
                                 break;
                             case 2:
                             	
-                            	resultTable.displayPatientResult(currentEmail);
+                            	resultTable.displayAllResults();
                             	
                                 break;
                             case 3:
@@ -10090,8 +11622,240 @@ int main() {
 						
 						break;
 					}
+
+					case 6: {
+						cout << "\n--- Coupon Management ---\n";
+						cout << "1. Add Coupon\n";
+						cout << "2. View All Coupons\n";
+						cout << "3. Search Coupons\n";
+						cout << "4. Sort Coupons\n";
+						cout << "5. Edit Coupon\n";
+		                cout << "0. Back to Main Menu\n\n";
+		                
+		                cout << "Enter your choice (0-5): ";
+		                cin >> subChoice;
+
+						switch(subChoice) {
+							case 1: {
+								couponManager.addCoupon(couponTable);
+								break;
+							}
+
+							case 2: {
+								couponTable.displayAllCoupons();
+								break;
+							}
+
+							case 3: {
+								cout << "--- Search Coupons ---\n\n";
+								cout << "1. Search Coupons by Code\n";
+								cout << "2. Search Coupons by Status\n";
+		                        cout << "0. Back to Main Menu\n\n";
+				                
+						        cout << "Enter your choice (0-2): ";
+						        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										couponTable.searchCouponByCode();
+										break;
+									}
+
+									case 2: {
+										couponTable.searchCouponByStatus();
+										break;
+									}
+
+									case 0: {
+										break;
+									}
+
+									default: {
+										cout << "Invalid choice, please try again.\n";
+									}
+								}
+
+								break;
+							}
+
+							case 4: {
+								cout << "--- Sort Coupons ---\n\n";
+								cout << "1. Sort Coupons by Discount Percentage (Least to Most)\n";
+								cout << "2. Sort Coupons by Discount Percentage (Most to Least)\n";
+								cout << "3. Sort Coupons by Stock (Least to Most)\n";
+								cout << "4. Sort Coupons by Stock (Most to Least)\n";
+		                        cout << "0. Back to Main Menu\n\n";
+				                
+						        cout << "Enter your choice (0-4): ";
+						        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										couponTable.sortCouponsByDiscountLowToHigh();
+										break;
+									}
+
+									case 2: {
+										couponTable.sortCouponsByDiscountHighToLow(); 
+										break;
+									}
+
+									case 3: {
+										couponTable.sortCouponsByStockLowToHigh();
+										break;
+									}
+
+									case 4: {
+										couponTable.sortCouponsByStockHighToLow();
+									}
+
+									case 0: {
+										break;
+									}
+
+									default: {
+										cout << "Invalid choice, please try again.\n";
+									}
+								}
+
+								break;
+							}
+
+							case 5: {
+								couponTable.editCoupon();
+								break;
+							}
+
+							case 0: {
+								break;
+							}
+
+							default: {
+								cout << "Invalid choice, please try again.\n";
+							}
+						}
+
+						break;
+					}
+
+					case 7: {
+                        cout << "\n--- Ticket Management ---\n";
+                        cout << "1. Create Ticket\n";
+                        cout << "2. View All Tickets\n";
+                        cout << "3. Search Tickets\n";
+                        cout << "4. Sort Tickets\n";
+                        cout << "5. Edit Ticket\n";
+                        cout << "6. Delete Ticket\n";
+                        cout << "0. Back to Main Menu\n\n";
+                        
+                        cout << "Enter your choice (0-6): ";
+						cin >> subChoice;
+
+						switch(subChoice) {
+							case 1: {
+								ticketManager.addTicket(ticketTable);
+								break;
+							}
+
+							case 2: {
+								ticketTable.displayAllTickets();
+								break;
+							}
+
+							case 3: {
+								cout << "--- Search Tickets ---\n\n";
+								cout << "1. Search Tickets by Name\n";
+								cout << "2. Search Tickets by Phone\n";
+								cout << "3. Search Tickets by email\n";
+		                        cout << "0. Back to Main Menu\n\n";
+				                
+						        cout << "Enter your choice (0-3): ";
+						        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										ss.searchTicketByName(ticketTable);
+										break;
+									}
+
+									case 2: {
+										ss.searchTicketByPhone(ticketTable);
+										break;
+									}
+
+									case 3: {
+										ss.searchTicketByEmail(ticketTable);
+										break;
+									}
+
+									case 0: {
+										break;
+									}
+
+									default: {
+										cout << "Invalid choice, please try again.\n";
+									}
+								}
+
+								break;
+							}
+
+							case 4: {
+                            	cout << "\n--- Sort Tickets ---\n";
+                            	cout << "1. Sort Tickets by Date (Newest to Oldest)\n";
+                            	cout << "2. Sort Tickets by Date (Oldest to Newest)\n";
+		                        cout << "0. Back to Main Menu\n\n";
+		                        
+		                        cout << "Enter your choice (0-2): ";
+		                        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										ss.sortTicketByDateDescending(ticketTable);
+										break;
+									}
+
+									case 2: {
+										ss.sortTicketByDateAscending(ticketTable);
+										break;
+									}
+
+									case 0: {
+										break;
+									}
+
+									default: {
+										cout << "Invalid choice, please try again.\n";
+									}
+								}
+
+								break;
+							}
+
+							case 5: {
+								ticketManager.editTicket(ticketTable);
+								break;
+							}
+
+							case 6: {
+								ticketManager.deleteTicket(ticketTable);
+								break;
+							}
+
+							case 0: {
+								break;
+							}
+
+							default: {
+								cout << "Invalid choice, please try again.\n";
+							}
+						}
+
+
+						break;
+					}
 					
-					case 6: // Edit My Profile
+					case 8: // Edit My Profile
 						for (int i = 0; i < staffTable.getTblSize(); i++) {
 							if (staffTable.getTableElement(i) != NULL && 
 								staffTable.getTableElement(i)->getEmail() == currentEmail) {
@@ -10452,7 +12216,7 @@ int main() {
 		                                break;
 		                            case 2:
 		                            	
-		                            	resultTable.displayPatientResult(currentEmail);
+		                            	resultTable.displayAllResults();
 		                            	
 		                                break;
 		                            case 3:
@@ -10765,8 +12529,246 @@ int main() {
 								
 								break;
 							}
+
+							case 7: {
+						cout << "\n--- Coupon Management ---\n";
+						cout << "1. Add Coupon\n";
+						cout << "2. View All Coupons\n";
+						cout << "3. Search Coupons\n";
+						cout << "4. Sort Coupons\n";
+						cout << "5. Edit Coupon\n";
+						cout << "6. Delete Coupon\n";
+		                cout << "0. Back to Main Menu\n\n";
+		                
+		                cout << "Enter your choice (0-6): ";
+		                cin >> subChoice;
+
+						switch(subChoice) {
+							case 1: {
+								couponManager.addCoupon(couponTable);
+								break;
+							}
+
+							case 2: {
+								couponTable.displayAllCoupons();
+								break;
+							}
+
+							case 3: {
+								cout << "--- Search Coupons ---\n\n";
+								cout << "1. Search Coupons by Code\n";
+								cout << "2. Search Coupons by Status\n";
+		                        cout << "0. Back to Main Menu\n\n";
+				                
+						        cout << "Enter your choice (0-2): ";
+						        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										couponTable.searchCouponByCode();
+										break;
+									}
+
+									case 2: {
+										couponTable.searchCouponByStatus();
+										break;
+									}
+
+									case 0: {
+										break;
+									}
+
+									default: {
+										cout << "Invalid choice, please try again.\n";
+									}
+								}
+
+								break;
+							}
+
+							case 4: {
+								cout << "--- Sort Coupons ---\n\n";
+								cout << "1. Sort Coupons by Discount Percentage (Least to Most)\n";
+								cout << "2. Sort Coupons by Discount Percentage (Most to Least)\n";
+								cout << "3. Sort Coupons by Stock (Least to Most)\n";
+								cout << "4. Sort Coupons by Stock (Most to Least)\n";
+		                        cout << "0. Back to Main Menu\n\n";
+				                
+						        cout << "Enter your choice (0-4): ";
+						        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										couponTable.sortCouponsByDiscountLowToHigh();
+										break;
+									}
+
+									case 2: {
+										couponTable.sortCouponsByDiscountHighToLow(); 
+										break;
+									}
+
+									case 3: {
+										couponTable.sortCouponsByStockLowToHigh();
+										break;
+									}
+
+									case 4: {
+										couponTable.sortCouponsByStockHighToLow();
+									}
+
+									case 0: {
+										break;
+									}
+
+									default: {
+										cout << "Invalid choice, please try again.\n";
+									}
+								}
+
+								break;
+							}
+
+							case 5: {
+								couponTable.editCoupon();
+								break;
+							}
+
+							case 6: {
+								couponTable.deleteCoupon();
+								break;
+							}
+
+							case 0: {
+								break;
+							}
+
+							default: {
+								cout << "Invalid choice, please try again.\n";;
+							}
+						}
+
+						break;
+					}
 							
-							case 7: // Edit My Profile
+					case 8: {
+                        cout << "\n--- Ticket Management ---\n";
+                        cout << "1. Create Ticket\n";
+                        cout << "2. View All Tickets\n";
+                        cout << "3. Search Tickets\n";
+                        cout << "4. Sort Tickets\n";
+                        cout << "5. Edit Ticket\n";
+                        cout << "6. Delete Ticket\n";
+                        cout << "0. Back to Main Menu\n\n";
+                        
+                        cout << "Enter your choice (0-6): ";
+						cin >> subChoice;
+
+						switch(subChoice) {
+							case 1: {
+								ticketManager.addTicket(ticketTable);
+								break;
+							}
+
+							case 2: {
+								ticketTable.displayAllTickets();
+								break;
+							}
+
+							case 3: {
+								cout << "--- Search Tickets ---\n\n";
+								cout << "1. Search Tickets by Name\n";
+								cout << "2. Search Tickets by Phone\n";
+								cout << "3. Search Tickets by email\n";
+		                        cout << "0. Back to Main Menu\n\n";
+				                
+						        cout << "Enter your choice (0-3): ";
+						        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										ss.searchTicketByName(ticketTable);
+										break;
+									}
+
+									case 2: {
+										ss.searchTicketByPhone(ticketTable);
+										break;
+									}
+
+									case 3: {
+										ss.searchTicketByEmail(ticketTable);
+										break;
+									}
+
+									case 0: {
+										break;
+									}
+
+									default: {
+										cout << "Invalid choice, please try again.\n";
+									}
+								}
+
+								break;
+							}
+
+							case 4: {
+                            	cout << "\n--- Sort Tickets ---\n";
+                            	cout << "1. Sort Tickets by Date (Newest to Oldest)\n";
+                            	cout << "2. Sort Tickets by Date (Oldest to Newest)\n";
+		                        cout << "0. Back to Main Menu\n\n";
+		                        
+		                        cout << "Enter your choice (0-2): ";
+		                        cin >> subChoice2;
+
+								switch(subChoice2) {
+									case 1: {
+										ss.sortTicketByDateDescending(ticketTable);
+										break;
+									}
+
+									case 2: {
+										ss.sortTicketByDateAscending(ticketTable);
+										break;
+									}
+
+									case 0: {
+										break;
+									}
+
+									default: {
+										cout << "Invalid choice, please try again.\n";
+									}
+								}
+
+								break;
+							}
+
+							case 5: {
+								ticketManager.editTicket(ticketTable);
+								break;
+							}
+
+							case 6: {
+								ticketManager.deleteTicket(ticketTable);
+								break;
+							}
+
+							case 0: {
+								break;
+							}
+
+							default: {
+								cout << "Invalid choice, please try again.\n";
+							}
+						}
+
+
+						break;
+					}
+					
+					case 9: // Edit My Profile
 								for (int i = 0; i < staffTable.getTblSize(); i++) {
 									if (staffTable.getTableElement(i) != NULL && 
 										staffTable.getTableElement(i)->getEmail() == currentEmail) {
